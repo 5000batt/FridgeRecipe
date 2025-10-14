@@ -1,0 +1,35 @@
+package com.kjw.fridgerecipe.domain.model
+
+import java.time.LocalDate
+
+enum class UnitType(val label: String) {
+    COUNT("개"),
+    GRAM("g"),
+    MILLILITTER("ml"),
+    ETC("기")
+}
+
+enum class StorageType(val label: String) {
+    REFRIGERATED("냉장"),
+    FROZEN("냉동"),
+    ROOM_TEMPERATURE("실온")
+}
+
+enum class CategoryType(val label: String) {
+    VEGETABLE("채소"),
+    MEAT("육류"),
+    SEAFOOD("해산물"),
+    DAIRY("유제품"),
+    ETC("기타")
+}
+
+data class Ingredient (
+    val id: Long? = null,               // 객체 고유 식별자
+    val name: String,                   // 이름
+    val amount: Double,                 // 수량
+    val unit: UnitType,                 // 단위
+    val expirationDate: LocalDate,      // 소비기한
+    val storageLocation: StorageType,   // 보관위치
+    val category: CategoryType,         // 카테고리
+    val emoticon: IngredientIcon        // 이모티콘
+)
