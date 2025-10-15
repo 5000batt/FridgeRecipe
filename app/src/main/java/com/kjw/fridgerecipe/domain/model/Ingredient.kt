@@ -6,7 +6,7 @@ enum class UnitType(val label: String) {
     COUNT("개"),
     GRAM("g"),
     MILLILITTER("ml"),
-    ETC("기")
+    ETC("기타")
 }
 
 enum class StorageType(val label: String) {
