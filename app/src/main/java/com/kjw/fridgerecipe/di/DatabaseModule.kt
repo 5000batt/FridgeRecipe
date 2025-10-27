@@ -17,12 +17,16 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
+    fun provideDatabase(
+        @ApplicationContext context: Context,
+        callback: AppDatabase.DatabaseCallback
+    ): AppDatabase {
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java,
             "fridge_recipe_db"
         )
+        .addCallback(callback)
         .build()
     }
 
