@@ -13,12 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -49,37 +49,31 @@ fun MainScreen(viewModel: IngredientViewModel = hiltViewModel()) {
             .groupBy { it.storageLocation }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("냉장고 현황") })
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        StorageType.entries.forEach { storageType ->
+            val items = categorizedIngredients[storageType] ?: emptyList()
+
+            StorageSection(
+                title = storageType.label,
+                items = items,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
         }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-        ) {
-            StorageType.entries.forEach { storageType ->
-                val items = categorizedIngredients[storageType] ?: emptyList()
 
-                StorageSection(
-                    title = storageType.label,
-                    items = items,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
+        Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "오늘의 추천 레시피",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                Text("보유 재료 기반 추천 레시피 요약...")
-            }
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "오늘의 추천 레시피",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Text("보유 재료 기반 추천 레시피 요약...")
         }
     }
 }
