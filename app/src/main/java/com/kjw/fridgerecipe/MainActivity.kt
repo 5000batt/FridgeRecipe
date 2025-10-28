@@ -22,9 +22,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.kjw.fridgerecipe.presentation.navigation.BottomNavItem
-import com.kjw.fridgerecipe.presentation.ui.IngredientListScreen
-import com.kjw.fridgerecipe.presentation.ui.MainScreen
-import com.kjw.fridgerecipe.presentation.ui.RecipeScreen
+import com.kjw.fridgerecipe.presentation.ui.screen.IngredientListScreen
+import com.kjw.fridgerecipe.presentation.ui.screen.MainScreen
+import com.kjw.fridgerecipe.presentation.ui.screen.RecipeScreen
 import com.kjw.fridgerecipe.ui.theme.FridgeRecipeTheme
 import dagger.hilt.android.AndroidEntryPoint
 

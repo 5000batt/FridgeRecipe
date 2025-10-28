@@ -1,4 +1,4 @@
-package com.kjw.fridgerecipe.presentation.ui
+package com.kjw.fridgerecipe.presentation.ui.screen
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
