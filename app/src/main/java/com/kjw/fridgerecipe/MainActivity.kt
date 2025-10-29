@@ -5,7 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -21,7 +24,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.kjw.fridgerecipe.presentation.navigation.BottomNavItem
+import com.kjw.fridgerecipe.presentation.navigation.NavItem
+import com.kjw.fridgerecipe.presentation.ui.screen.AddIngredientScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.IngredientListScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.MainScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.RecipeScreen
@@ -40,23 +44,48 @@ class MainActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
                 val currentScreen = remember(currentRoute) {
-                    listOf(BottomNavItem.Home, BottomNavItem.Ingredients, BottomNavItem.Recipes)
+                    listOf(
+                        NavItem.Home,
+                        NavItem.Ingredients,
+                        NavItem.Recipes,
+                        NavItem.AddIngredient
+                    )
                         .find { it.route == currentRoute }
                 }
-                val currentTitle = currentScreen?.title ?: BottomNavItem.Home.title
+                val currentTitle = currentScreen?.title ?: NavItem.Home.title
 
                 Scaffold(
-                    bottomBar = { AppBottomNavigationBar(navController = navController, currentRoute = currentRoute) },
-                    topBar = { TopAppBar(title = { Text(currentTitle) }) }
+                    topBar = {
+                        TopAppBar(title = { Text(currentTitle) })
+                     },
+                    bottomBar = {
+                        if (currentRoute != NavItem.AddIngredient.route) {
+                            AppBottomNavigationBar(navController = navController, currentRoute = currentRoute)
+                        }
+                    },
+                    floatingActionButton = {
+                        if (currentRoute == NavItem.Ingredients.route) {
+                            FloatingActionButton(onClick = {
+                                navController.navigate(NavItem.AddIngredient.route)
+                            }) {
+                                Icon(Icons.Filled.Add, contentDescription = "재료 추가")
+                            }
+                        }
+                    }
                 ) { paddingValues ->
                     NavHost(
                         navController = navController,
-                        startDestination = BottomNavItem.Home.route,
+                        startDestination = NavItem.Home.route,
                         modifier = Modifier.padding(paddingValues)
                     ) {
-                        composable(BottomNavItem.Home.route) { MainScreen() }
-                        composable(BottomNavItem.Ingredients.route) { IngredientListScreen() }
-                        composable(BottomNavItem.Recipes.route) { RecipeScreen() }
+                        composable(NavItem.Home.route) { MainScreen() }
+                        composable(NavItem.Ingredients.route) { IngredientListScreen() }
+                        composable(NavItem.Recipes.route) { RecipeScreen() }
+                        composable(NavItem.AddIngredient.route) {
+                            AddIngredientScreen(
+                                onNavigateBack = { navController.popBackStack() }
+                            )
+                        }
                     }
                 }
             }
@@ -66,13 +95,13 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppBottomNavigationBar(navController: NavController, currentRoute: String?) {
-    val items = listOf(BottomNavItem.Home, BottomNavItem.Ingredients, BottomNavItem.Recipes)
+    val items = listOf(NavItem.Home, NavItem.Ingredients, NavItem.Recipes)
 
     NavigationBar {
         items.forEach { screen ->
             val selected = currentRoute == screen.route
             NavigationBarItem(
-                icon = { Icon(screen.icon, contentDescription = screen.label) },
+                icon = { screen.icon?.let { Icon(it, contentDescription = screen.label) } },
                 label = { Text(screen.label) },
                 selected = selected,
                 onClick = {

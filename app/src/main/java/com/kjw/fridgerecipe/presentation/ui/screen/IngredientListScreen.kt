@@ -31,6 +31,7 @@ fun IngredientListScreen(viewModel: IngredientViewModel = hiltViewModel()) {
             .fillMaxSize()
             .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState())
+            .padding(bottom = 80.dp)
     ) {
         StorageType.entries.forEach { storageType ->
             val items = categorizedIngredients[storageType] ?: emptyList()
