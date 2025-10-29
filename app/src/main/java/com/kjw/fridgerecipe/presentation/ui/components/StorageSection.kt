@@ -3,7 +3,6 @@ package com.kjw.fridgerecipe.presentation.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
@@ -14,7 +13,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.presentation.ui.common.ListDisplayType
@@ -26,6 +27,17 @@ fun StorageSection(
     displayType: ListDisplayType,
     modifier: Modifier = Modifier
 ) {
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp.dp
+
+    val itemWidthWithSpacing = 88.dp
+
+    val singleRowMaxItems = remember(screenWidthDp) {
+        val availableWidth = screenWidthDp - (16.dp * 2)
+        if ((availableWidth / itemWidthWithSpacing).toInt() > 2) 2
+        else (availableWidth / itemWidthWithSpacing).toInt()
+    }
+
     Column(modifier = modifier) {
         Text(
             text = "$title (${items.size}개)",
@@ -48,16 +60,27 @@ fun StorageSection(
                     }
                 }
                 ListDisplayType.GRID -> {
-                    LazyHorizontalGrid(
-                        rows = GridCells.Fixed(2),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier
-                            .height(208.dp)
-                            .fillMaxWidth()
-                    ) {
-                        items(items) { ingredient ->
-                            IngredientChip(ingredient)
+                    if (items.size <= singleRowMaxItems) {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.heightIn(min = 80.dp, max = 100.dp)
+                        ) {
+                            items(items) { ingredient ->
+                                IngredientChip(ingredient)
+                            }
+                        }
+                    } else {
+                        LazyHorizontalGrid(
+                            rows = GridCells.Fixed(singleRowMaxItems),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier
+                                .heightIn(min = 100.dp, max = 208.dp)
+                                .fillMaxWidth()
+                        ) {
+                            items(items) { ingredient ->
+                                IngredientChip(ingredient)
+                            }
                         }
                     }
                 }
