@@ -1,41 +1,318 @@
 package com.kjw.fridgerecipe.presentation.ui.screen
 
+import android.widget.Toast
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.kjw.fridgerecipe.domain.model.CategoryType
+import com.kjw.fridgerecipe.domain.model.Ingredient
+import com.kjw.fridgerecipe.domain.model.IngredientIcon
+import com.kjw.fridgerecipe.domain.model.StorageType
+import com.kjw.fridgerecipe.domain.model.UnitType
+import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.Instant
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddIngredientScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    viewModel: IngredientViewModel = hiltViewModel()
 ) {
+    var name by remember { mutableStateOf("") }
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var amount by remember { mutableStateOf("") }
+    var amountError by remember { mutableStateOf<String?>(null) }
+    var selectedUnit by remember { mutableStateOf(UnitType.COUNT) }
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var selectedStorage by remember { mutableStateOf(StorageType.REFRIGERATED) }
+    var selectedCategory by remember { mutableStateOf(CategoryType.ETC) }
+
+    var unitExpanded by remember { mutableStateOf(false) }
+    var storageExpanded by remember { mutableStateOf(false) }
+    var categoryExpanded by remember { mutableStateOf(false) }
+
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = selectedDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    )
+
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.addResultEvent.collect { result ->
+            when (result) {
+                is IngredientViewModel.AddResult.Success -> {
+                    Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
+                    onNavigateBack()
+                }
+                is IngredientViewModel.AddResult.Failure -> {
+                    Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(modifier = Modifier.fillMaxWidth()) {
-            IconButton(onClick = onNavigateBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "뒤로 가기")
+        // 이름
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it; nameError = null },
+            label = { Text("재료 이름 *")},
+            isError = nameError != null,
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+        Text(
+            text = nameError ?: "",
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, top = 4.dp)
+                .heightIn(min = 18.dp)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // 수량 & 단위
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = amount,
+                onValueChange = { amount = it.filter { char -> char.isDigit() || char == '.' }; amountError = null },
+                label = { Text("수량 *") },
+                isError = amountError != null,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            ExposedDropdownMenuBox(
+                expanded = unitExpanded,
+                onExpandedChange = { unitExpanded = !unitExpanded },
+                modifier = Modifier.weight(1f)
+            ) {
+                OutlinedTextField(
+                    value = selectedUnit.label,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("단위") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded)},
+                    modifier = Modifier.menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = unitExpanded,
+                    onDismissRequest = { unitExpanded = false }
+                ) {
+                    UnitType.entries.forEach { unit ->
+                        DropdownMenuItem(
+                            text = { Text(unit.label) },
+                            onClick = {
+                                selectedUnit = unit
+                                unitExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+        Text(
+            text = amountError ?: "",
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, top = 4.dp)
+                .heightIn(min = 18.dp)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // 소비 기한
+        OutlinedTextField(
+            value = selectedDate.format(DateTimeFormatter.ISO_DATE),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("소비기한 *")},
+            trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = "날짜 선택") },
+            modifier = Modifier
+                .fillMaxWidth()
+                // https://developer.android.com/develop/ui/compose/components/datepickers#docked
+                // text fields에서는 Modifier.clickable이 작동하지 않으므로 대체해서 사용(위 공식문서 참고)
+                .pointerInput(selectedDate) {
+                    awaitEachGesture {
+                        awaitFirstDown(pass = PointerEventPass.Initial)
+                        val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                        if (upEvent != null) {
+                            showDatePicker = true
+                        }
+                    }
+                }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // 보관 위치
+        ExposedDropdownMenuBox(
+            expanded = storageExpanded,
+            onExpandedChange = { storageExpanded = !storageExpanded}
+        ) {
+            OutlinedTextField(
+                value = selectedStorage.label,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("보관 위치") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = storageExpanded) },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+            ExposedDropdownMenu(
+                expanded = storageExpanded,
+                onDismissRequest = { storageExpanded = false }
+            ) {
+                StorageType.entries.forEach { storage ->
+                    DropdownMenuItem(
+                        text = { Text(storage.label) },
+                        onClick = {
+                            selectedStorage = storage
+                            storageExpanded = false
+                        }
+                    )
+                }
             }
         }
 
-        Text("재료 입력 폼 (구현 예정)")
+        Spacer(modifier = Modifier.height(8.dp))
 
-        Button(onClick = { }) {
+        // 카테고리 선택
+        ExposedDropdownMenuBox(
+            expanded = categoryExpanded,
+            onExpandedChange = { categoryExpanded = !categoryExpanded}
+        ) {
+            OutlinedTextField(
+                value = selectedCategory.label,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("카테고리") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+            ExposedDropdownMenu(
+                expanded = categoryExpanded,
+                onDismissRequest = { categoryExpanded = false }
+            ) {
+                CategoryType.entries.forEach { category ->
+                    DropdownMenuItem(
+                        text = { Text( category.label) },
+                        onClick = {
+                            selectedCategory =  category
+                            categoryExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            onClick = {
+                val amountDouble = amount.toDoubleOrNull()
+                if (name.isBlank()) {
+                    nameError = "재료 이름을 입력해주세요."
+                } else if (amountDouble == null || amountDouble <= 0) {
+                    amountError = if (amountDouble == null) "숫자만 입력해주세요." else "0보다 큰 값을 입력해주세요."
+                } else {
+                    val newIngredient = Ingredient(
+                        name = name.trim(),
+                        amount = amountDouble,
+                        unit = selectedUnit,
+                        expirationDate = selectedDate,
+                        storageLocation = selectedStorage,
+                        category = selectedCategory,
+                        emoticon = IngredientIcon.DEFAULT
+                    )
+                    viewModel.addIngredient(newIngredient)
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text("저장 하기")
+        }
+    }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            selectedDate = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+                        }
+                        showDatePicker = false
+                    }
+                ) { Text("확인") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("취소") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
 }
