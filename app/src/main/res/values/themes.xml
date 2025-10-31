@@ -2,4 +2,13 @@
 <resources>
 
     <style name="Theme.FridgeRecipe" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@android:color/white</item>
+
+        <item name="windowSplashScreenAnimatedIcon">@drawable/default_image</item>
+
+        <item name="postSplashScreenTheme">@style/Theme.FridgeRecipe</item>
+    </style>
+
 </resources>
