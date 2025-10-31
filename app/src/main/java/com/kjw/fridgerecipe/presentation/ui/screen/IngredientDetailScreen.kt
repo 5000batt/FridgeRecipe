@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +19,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -51,6 +54,7 @@ import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.domain.model.UnitType
+import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_ID_DEFAULT
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import java.time.LocalDate
 import java.time.ZoneId
@@ -64,7 +68,7 @@ fun IngredientDetailScreen(
     viewModel: IngredientViewModel = hiltViewModel(),
     ingredientId: Long
 ) {
-    val isEditMode = ingredientId != -1L
+    val isEditMode = ingredientId != INGREDIENT_ID_DEFAULT
     val selectedIngredient by viewModel.selectedIngredient.collectAsState()
 
     LaunchedEffect(ingredientId, isEditMode) {
@@ -89,17 +93,18 @@ fun IngredientDetailScreen(
     var categoryExpanded by remember { mutableStateOf(false) }
 
     var showDatePicker by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        viewModel.addResultEvent.collect { result ->
+        viewModel.operationResultEvent.collect { result ->
             when (result) {
-                is IngredientViewModel.AddResult.Success -> {
+                is IngredientViewModel.OperationResult.Success -> {
                     Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
                     onNavigateBack()
                 }
-                is IngredientViewModel.AddResult.Failure -> {
+                is IngredientViewModel.OperationResult.Failure -> {
                     Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
                 }
             }
@@ -285,35 +290,75 @@ fun IngredientDetailScreen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Button(
-            onClick = {
-                val amountDouble = amount.toDoubleOrNull()
-                if (name.isBlank()) {
-                    nameError = "재료 이름을 입력해주세요."
-                } else if (amountDouble == null || amountDouble <= 0) {
-                    amountError = if (amountDouble == null) "숫자만 입력해주세요." else "0보다 큰 값을 입력해주세요."
-                } else {
-                    val newIngredient = Ingredient(
-                        id = if (isEditMode) ingredientId else null,
-                        name = name.trim(),
-                        amount = amountDouble,
-                        unit = selectedUnit,
-                        expirationDate = selectedDate,
-                        storageLocation = selectedStorage,
-                        category = selectedCategory,
-                        emoticon = IngredientIcon.DEFAULT
-                    )
+        if (isEditMode) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = {
+                        showDeleteDialog = true
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("삭제")
+                }
 
-                    if (isEditMode) {
-                        viewModel.updateIngredient(newIngredient)
+                Button(
+                    onClick = {
+                        val amountDouble = amount.toDoubleOrNull()
+                        if (name.isBlank()) {
+                            nameError = "재료 이름을 입력해주세요."
+                        } else if (amountDouble == null || amountDouble <= 0) {
+                            amountError = if (amountDouble == null) "숫자만 입력해주세요." else "0보다 큰 값을 입력해주세요."
+                        } else {
+                            val newIngredient = Ingredient(
+                                id = ingredientId,
+                                name = name.trim(),
+                                amount = amountDouble,
+                                unit = selectedUnit,
+                                expirationDate = selectedDate,
+                                storageLocation = selectedStorage,
+                                category = selectedCategory,
+                                emoticon = IngredientIcon.DEFAULT
+                            )
+
+                            viewModel.updateIngredient(newIngredient)
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("수정")
+                }
+            }
+        } else {
+            Button(
+                onClick = {
+                    val amountDouble = amount.toDoubleOrNull()
+                    if (name.isBlank()) {
+                        nameError = "재료 이름을 입력해주세요."
+                    } else if (amountDouble == null || amountDouble <= 0) {
+                        amountError = if (amountDouble == null) "숫자만 입력해주세요." else "0보다 큰 값을 입력해주세요."
                     } else {
+                        val newIngredient = Ingredient(
+                            id = null,
+                            name = name.trim(),
+                            amount = amountDouble,
+                            unit = selectedUnit,
+                            expirationDate = selectedDate,
+                            storageLocation = selectedStorage,
+                            category = selectedCategory,
+                            emoticon = IngredientIcon.DEFAULT
+                        )
+
                         viewModel.addIngredient(newIngredient)
                     }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(if (isEditMode) "수정 하기" else "저장 하기")
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("저장")
+            }
         }
     }
 
@@ -340,5 +385,32 @@ fun IngredientDetailScreen(
         ) {
             DatePicker(state = datePickerState)
         }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("재료 삭제") },
+            text = { Text("정말로 '${selectedIngredient?.name ?: "이 재료"}'를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        selectedIngredient?.let {
+                            viewModel.delIngredient(it)
+                        }
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text("삭제", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteDialog = false }
+                ) {
+                    Text("취소")
+                }
+            }
+        )
     }
 }

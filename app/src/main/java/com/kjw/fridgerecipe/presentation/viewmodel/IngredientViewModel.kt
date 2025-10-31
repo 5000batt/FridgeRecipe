@@ -29,13 +29,13 @@ class IngredientViewModel @Inject constructor(
     private val updateIngredientUseCase: UpdateIngredientUseCase
     ) : ViewModel() {
 
-    sealed class AddResult {
-        data class Success(val message: String) : AddResult()
-        data class Failure(val message: String) : AddResult()
+    sealed class OperationResult {
+        data class Success(val message: String) : OperationResult()
+        data class Failure(val message: String) : OperationResult()
     }
 
-    private val _addResultEvent = MutableSharedFlow<AddResult>()
-    val addResultEvent: SharedFlow<AddResult> = _addResultEvent.asSharedFlow()
+    private val _operationResultEvent = MutableSharedFlow<OperationResult>()
+    val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
     val ingredients: StateFlow<List<Ingredient>> = getIngredientsUseCase()
         .stateIn(
             scope = viewModelScope,
@@ -60,9 +60,9 @@ class IngredientViewModel @Inject constructor(
         viewModelScope.launch {
             val success = addIngredientUseCase(ingredient)
             if (success) {
-                _addResultEvent.emit(AddResult.Success("저장되었습니다."))
+                _operationResultEvent.emit(OperationResult.Success("저장되었습니다."))
             } else {
-                _addResultEvent.emit(AddResult.Failure("저장에 실패했습니다."))
+                _operationResultEvent.emit(OperationResult.Failure("저장에 실패했습니다."))
             }
         }
     }
@@ -71,16 +71,21 @@ class IngredientViewModel @Inject constructor(
         viewModelScope.launch {
             val success = updateIngredientUseCase(ingredient)
             if (success) {
-                _addResultEvent.emit(AddResult.Success("수정되었습니다."))
+                _operationResultEvent.emit(OperationResult.Success("수정되었습니다."))
             } else {
-                _addResultEvent.emit(AddResult.Failure("수정에 실패했습니다."))
+                _operationResultEvent.emit(OperationResult.Failure("수정에 실패했습니다."))
             }
         }
     }
 
     fun delIngredient(ingredient: Ingredient) {
         viewModelScope.launch {
-            delIngredientUseCase(ingredient)
+            val success = delIngredientUseCase(ingredient)
+            if (success) {
+                _operationResultEvent.emit(OperationResult.Success("삭제되었습니다."))
+            } else {
+                _operationResultEvent.emit(OperationResult.Failure("삭제에 실패했습니다."))
+            }
         }
     }
 }
