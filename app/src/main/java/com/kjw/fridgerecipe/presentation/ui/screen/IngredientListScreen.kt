@@ -25,7 +25,10 @@ import com.kjw.fridgerecipe.presentation.ui.components.StorageSection
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 
 @Composable
-fun IngredientListScreen(viewModel: IngredientViewModel = hiltViewModel()) {
+fun IngredientListScreen(
+    viewModel: IngredientViewModel = hiltViewModel(),
+    onIngredientClick: (Long) -> Unit
+) {
     val allIngredients by viewModel.ingredients.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
 
@@ -74,6 +77,7 @@ fun IngredientListScreen(viewModel: IngredientViewModel = hiltViewModel()) {
                     title = storageType.label,
                     items = items,
                     displayType = ListDisplayType.GRID,
+                    onIngredientClick = onIngredientClick
                 )
             }
         }

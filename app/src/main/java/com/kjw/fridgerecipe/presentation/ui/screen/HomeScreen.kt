@@ -26,7 +26,10 @@ import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(viewModel: IngredientViewModel = hiltViewModel()) {
+fun HomeScreen(
+    viewModel: IngredientViewModel = hiltViewModel(),
+    onIngredientClick: (Long) -> Unit
+) {
     val ingredients by viewModel.ingredients.collectAsState()
 
     val oneWeekLater = remember { LocalDate.now().plusDays(7) }
@@ -50,7 +53,8 @@ fun MainScreen(viewModel: IngredientViewModel = hiltViewModel()) {
                 title = storageType.label,
                 items = items,
                 displayType = ListDisplayType.ROW,
-                modifier = Modifier.padding(vertical = 8.dp)
+                modifier = Modifier.padding(vertical = 8.dp),
+                onIngredientClick = onIngredientClick
             )
         }
 

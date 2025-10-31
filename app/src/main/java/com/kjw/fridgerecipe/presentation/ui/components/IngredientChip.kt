@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import java.time.LocalDate
@@ -45,7 +46,9 @@ fun IngredientChip(ingredient: Ingredient) {
         Text(
             text = ingredient.name,
             style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(horizontal = 4.dp)
+            modifier = Modifier.padding(horizontal = 4.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
 
         Spacer(modifier = Modifier.height(2.dp))
@@ -53,7 +56,9 @@ fun IngredientChip(ingredient: Ingredient) {
         Text(
             text = ingredient.expirationDate.format(DateTimeFormatter.ofPattern("y.MM.dd")),
             style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.padding(horizontal = 4.dp)
+            modifier = Modifier.padding(horizontal = 4.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

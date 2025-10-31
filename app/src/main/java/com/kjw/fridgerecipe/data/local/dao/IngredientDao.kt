@@ -16,4 +16,9 @@ interface IngredientDao {
     @Query("SELECT * FROM ingredients ORDER BY expirationDate ASC")
     fun getAllIngredients(): Flow<List<IngredientEntity>>
 
+    @Query("SELECT * FROM ingredients WHERE id = :id")
+    suspend fun getIngredientById(id: Long): IngredientEntity?
+
+    @Update
+    suspend fun updateIngredient(entity: IngredientEntity)
 }

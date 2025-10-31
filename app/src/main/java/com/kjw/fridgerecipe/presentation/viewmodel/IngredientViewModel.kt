@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.usecase.AddIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.DelIngredientUseCase
+import com.kjw.fridgerecipe.domain.usecase.GetIngredientByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
+import com.kjw.fridgerecipe.domain.usecase.UpdateIngredientUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +24,9 @@ import javax.inject.Inject
 class IngredientViewModel @Inject constructor(
     private val addIngredientUseCase: AddIngredientUseCase,
     private val delIngredientUseCase: DelIngredientUseCase,
-    getIngredientsUseCase: GetIngredientsUseCase
+    getIngredientsUseCase: GetIngredientsUseCase,
+    private val getIngredientByIdUseCase: GetIngredientByIdUseCase,
+    private val updateIngredientUseCase: UpdateIngredientUseCase
     ) : ViewModel() {
 
     sealed class AddResult {
@@ -32,13 +36,25 @@ class IngredientViewModel @Inject constructor(
 
     private val _addResultEvent = MutableSharedFlow<AddResult>()
     val addResultEvent: SharedFlow<AddResult> = _addResultEvent.asSharedFlow()
-
     val ingredients: StateFlow<List<Ingredient>> = getIngredientsUseCase()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    private val _selectedIngredient = MutableStateFlow<Ingredient?>(null)
+    val selectedIngredient: StateFlow<Ingredient?> = _selectedIngredient.asStateFlow()
+
+    fun loadIngredient(id: Long) {
+        viewModelScope.launch {
+            _selectedIngredient.value = getIngredientByIdUseCase(id)
+        }
+    }
+
+    fun clearSelectedIngredient() {
+        _selectedIngredient.value = null
+    }
 
     fun addIngredient(ingredient: Ingredient) {
         viewModelScope.launch {
@@ -47,6 +63,17 @@ class IngredientViewModel @Inject constructor(
                 _addResultEvent.emit(AddResult.Success("저장되었습니다."))
             } else {
                 _addResultEvent.emit(AddResult.Failure("저장에 실패했습니다."))
+            }
+        }
+    }
+
+    fun updateIngredient(ingredient: Ingredient) {
+        viewModelScope.launch {
+            val success = updateIngredientUseCase(ingredient)
+            if (success) {
+                _addResultEvent.emit(AddResult.Success("수정되었습니다."))
+            } else {
+                _addResultEvent.emit(AddResult.Failure("수정에 실패했습니다."))
             }
         }
     }

@@ -26,4 +26,11 @@ class IngredientRepositoryImpl @Inject constructor(private val dao: IngredientDa
         }
     }
 
+    override suspend fun getIngredientById(id: Long): Ingredient? {
+        return dao.getIngredientById(id)?.toDomain()
+    }
+
+    override suspend fun updateIngredient(ingredient: Ingredient) {
+        dao.updateIngredient(ingredient.toEntity())
+    }
 }

@@ -1,6 +1,10 @@
 package com.kjw.fridgerecipe.presentation.ui.components
 
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -25,7 +29,8 @@ fun StorageSection(
     title: String,
     items: List<Ingredient>,
     displayType: ListDisplayType,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onIngredientClick: (Long) -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
@@ -55,7 +60,13 @@ fun StorageSection(
                         modifier = Modifier.heightIn(min = 80.dp, max = 100.dp)
                     ) {
                         items(items) { ingredient ->
-                            IngredientChip(ingredient)
+                            Box(modifier = Modifier.clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = LocalIndication.current,
+                                onClick = { ingredient.id?.let { onIngredientClick(it) } } // ID가 있을 때만 호출
+                            )) {
+                                IngredientChip(ingredient)
+                            }
                         }
                     }
                 }
@@ -66,7 +77,13 @@ fun StorageSection(
                             modifier = Modifier.heightIn(min = 80.dp, max = 100.dp)
                         ) {
                             items(items) { ingredient ->
-                                IngredientChip(ingredient)
+                                Box(modifier = Modifier.clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = LocalIndication.current,
+                                    onClick = { ingredient.id?.let { onIngredientClick(it) } } // ID가 있을 때만 호출
+                                )) {
+                                    IngredientChip(ingredient)
+                                }
                             }
                         }
                     } else {
@@ -79,7 +96,13 @@ fun StorageSection(
                                 .fillMaxWidth()
                         ) {
                             items(items) { ingredient ->
-                                IngredientChip(ingredient)
+                                Box(modifier = Modifier.clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = LocalIndication.current,
+                                    onClick = { ingredient.id?.let { onIngredientClick(it) } } // ID가 있을 때만 호출
+                                )) {
+                                    IngredientChip(ingredient)
+                                }
                             }
                         }
                     }

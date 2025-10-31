@@ -11,4 +11,7 @@ interface IngredientRepository {
 
     fun getAllIngredients(): Flow<List<Ingredient>>
 
+    suspend fun getIngredientById(id: Long): Ingredient?
+
+    suspend fun updateIngredient(ingredient: Ingredient)
 }

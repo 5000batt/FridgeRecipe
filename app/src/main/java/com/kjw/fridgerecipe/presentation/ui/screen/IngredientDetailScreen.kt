@@ -33,6 +33,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,28 +59,36 @@ import java.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddIngredientScreen(
+fun IngredientDetailScreen(
     onNavigateBack: () -> Unit,
-    viewModel: IngredientViewModel = hiltViewModel()
+    viewModel: IngredientViewModel = hiltViewModel(),
+    ingredientId: Long
 ) {
-    var name by remember { mutableStateOf("") }
+    val isEditMode = ingredientId != -1L
+    val selectedIngredient by viewModel.selectedIngredient.collectAsState()
+
+    LaunchedEffect(ingredientId, isEditMode) {
+        if (isEditMode) {
+            viewModel.loadIngredient(ingredientId)
+        } else {
+            viewModel.clearSelectedIngredient()
+        }
+    }
+
+    var name by remember(selectedIngredient) { mutableStateOf(selectedIngredient?.name ?: "") }
     var nameError by remember { mutableStateOf<String?>(null) }
-    var amount by remember { mutableStateOf("") }
+    var amount by remember(selectedIngredient) { mutableStateOf(selectedIngredient?.amount?.toString() ?: "") }
     var amountError by remember { mutableStateOf<String?>(null) }
-    var selectedUnit by remember { mutableStateOf(UnitType.COUNT) }
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    var selectedStorage by remember { mutableStateOf(StorageType.REFRIGERATED) }
-    var selectedCategory by remember { mutableStateOf(CategoryType.ETC) }
+    var selectedUnit by remember(selectedIngredient) { mutableStateOf(selectedIngredient?.unit ?: UnitType.COUNT) }
+    var selectedDate by remember(selectedIngredient) { mutableStateOf(selectedIngredient?.expirationDate ?: LocalDate.now()) }
+    var selectedStorage by remember(selectedIngredient) { mutableStateOf(selectedIngredient?.storageLocation ?: StorageType.REFRIGERATED) }
+    var selectedCategory by remember(selectedIngredient) { mutableStateOf(selectedIngredient?.category ?: CategoryType.ETC) }
 
     var unitExpanded by remember { mutableStateOf(false) }
     var storageExpanded by remember { mutableStateOf(false) }
     var categoryExpanded by remember { mutableStateOf(false) }
 
     var showDatePicker by remember { mutableStateOf(false) }
-
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-    )
 
     val context = LocalContext.current
 
@@ -131,11 +140,18 @@ fun AddIngredientScreen(
             verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
                 value = amount,
-                onValueChange = { amount = it.filter { char -> char.isDigit() || char == '.' }; amountError = null },
+                onValueChange = { newValue ->
+                    val regex = Regex("^\\d*\\.?\\d{0,2}\$")
+                    if (newValue.isEmpty() || newValue.matches(regex)) {
+                        amount = newValue
+                        amountError = null
+                    }
+                },
                 label = { Text("수량 *") },
                 isError = amountError != null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                singleLine = true
             )
             Spacer(modifier = Modifier.width(8.dp))
             ExposedDropdownMenuBox(
@@ -278,6 +294,7 @@ fun AddIngredientScreen(
                     amountError = if (amountDouble == null) "숫자만 입력해주세요." else "0보다 큰 값을 입력해주세요."
                 } else {
                     val newIngredient = Ingredient(
+                        id = if (isEditMode) ingredientId else null,
                         name = name.trim(),
                         amount = amountDouble,
                         unit = selectedUnit,
@@ -286,23 +303,32 @@ fun AddIngredientScreen(
                         category = selectedCategory,
                         emoticon = IngredientIcon.DEFAULT
                     )
-                    viewModel.addIngredient(newIngredient)
+
+                    if (isEditMode) {
+                        viewModel.updateIngredient(newIngredient)
+                    } else {
+                        viewModel.addIngredient(newIngredient)
+                    }
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("저장 하기")
+            Text(if (isEditMode) "수정 하기" else "저장 하기")
         }
     }
 
     if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = selectedDate.atStartOfDay(ZoneId.of("UTC")).toInstant().toEpochMilli()
+        )
+
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            selectedDate = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+                            selectedDate = Instant.ofEpochMilli(millis).atZone(ZoneId.of("UTC")).toLocalDate()
                         }
                         showDatePicker = false
                     }
