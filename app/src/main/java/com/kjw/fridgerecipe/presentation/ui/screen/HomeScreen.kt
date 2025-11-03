@@ -1,5 +1,6 @@
 package com.kjw.fridgerecipe.presentation.ui.screen
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,6 +9,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.presentation.ui.common.ListDisplayType
+import com.kjw.fridgerecipe.presentation.ui.components.RecipeCard
 import com.kjw.fridgerecipe.presentation.ui.components.StorageSection
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import java.time.LocalDate
@@ -39,6 +43,9 @@ fun HomeScreen(
             .filter { it.expirationDate.isBefore(oneWeekLater) }
             .groupBy { it.storageLocation }
     }
+
+    val recipe by viewModel.recipe.collectAsState()
+    val isRecipeLoading by viewModel.isRecipeLoading.collectAsState()
 
     Column(
         modifier = Modifier
@@ -66,7 +73,22 @@ fun HomeScreen(
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            Text("보유 재료 기반 추천 레시피 요약...")
+
+            Button(onClick = { viewModel.fetchRecipes() }) {
+                Text("AI 레시피 추천 받기")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (isRecipeLoading) {
+                CircularProgressIndicator()
+            } else if (recipe == null) {
+                Text("추천 버튼을 눌러주세요.")
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    RecipeCard(recipe = recipe!!)
+                }
+            }
         }
     }
 }

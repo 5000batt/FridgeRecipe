@@ -3,10 +3,12 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.domain.model.Ingredient
+import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.usecase.AddIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.DelIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
+import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateIngredientUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -27,7 +29,8 @@ class IngredientViewModel @Inject constructor(
     private val delIngredientUseCase: DelIngredientUseCase,
     getIngredientsUseCase: GetIngredientsUseCase,
     private val getIngredientByIdUseCase: GetIngredientByIdUseCase,
-    private val updateIngredientUseCase: UpdateIngredientUseCase
+    private val updateIngredientUseCase: UpdateIngredientUseCase,
+    private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase
     ) : ViewModel() {
 
     sealed class OperationResult {
@@ -53,6 +56,11 @@ class IngredientViewModel @Inject constructor(
 
     private val _selectedIngredient = MutableStateFlow<Ingredient?>(null)
     val selectedIngredient: StateFlow<Ingredient?> = _selectedIngredient.asStateFlow()
+
+    private val _recipe = MutableStateFlow<Recipe?>(null)
+    val recipe: StateFlow<Recipe?> = _recipe.asStateFlow()
+    private val _isRecipeLoading = MutableStateFlow(false)
+    val isRecipeLoading: StateFlow<Boolean> = _isRecipeLoading.asStateFlow()
 
     fun loadIngredient(id: Long) {
         viewModelScope.launch {
@@ -93,6 +101,18 @@ class IngredientViewModel @Inject constructor(
                 _operationResultEvent.emit(OperationResult.Success("삭제되었습니다."))
             } else {
                 _operationResultEvent.emit(OperationResult.Failure("삭제에 실패했습니다."))
+            }
+        }
+    }
+
+    fun fetchRecipes() {
+        viewModelScope.launch {
+            _isRecipeLoading.value = true
+            try {
+                val currentIngredient = ingredients.value
+                _recipe.value = getRecommendedRecipeUseCase(currentIngredient)
+            } finally {
+                _isRecipeLoading.value = false
             }
         }
     }
