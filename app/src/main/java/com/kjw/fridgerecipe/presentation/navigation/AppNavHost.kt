@@ -17,8 +17,8 @@ import com.kjw.fridgerecipe.presentation.ui.screen.RecipeScreen
 fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    onIngredientClick: (Long) -> Unit,
-    onRecipeClick: (Long) -> Unit
+    onNavigateToIngredientDetail: (Long) -> Unit,
+    onNavigateToRecipeDetail: (Long) -> Unit
 ) {
     NavHost(
         navController = navController,
@@ -26,10 +26,10 @@ fun AppNavHost(
         modifier = modifier
     ) {
         composable(NavItem.Home.route) {
-            HomeScreen(onIngredientClick = onIngredientClick)
+            HomeScreen()
         }
         composable(NavItem.Ingredients.route) {
-            IngredientListScreen(onIngredientClick = onIngredientClick)
+            IngredientListScreen(onIngredientClick = onNavigateToIngredientDetail)
         }
         composable(
             route = INGREDIENT_DETAIL_ROUTE_PATTERN,
@@ -46,7 +46,7 @@ fun AppNavHost(
             )
         }
         composable(NavItem.Recipes.route) {
-            RecipeScreen(onRecipeClick = onRecipeClick)
+            RecipeScreen(onRecipeClick = onNavigateToRecipeDetail)
         }
         composable(
             route = RECIPE_DETAIL_ROUTE_PATTERN,

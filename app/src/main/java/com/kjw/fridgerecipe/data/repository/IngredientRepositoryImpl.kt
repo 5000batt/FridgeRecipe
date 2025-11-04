@@ -20,7 +20,6 @@ class IngredientRepositoryImpl @Inject constructor(private val dao: IngredientDa
     }
 
     override fun getAllIngredients(): Flow<List<Ingredient>> {
-        // select 구현
         return dao.getAllIngredients().map { entities ->
             entities.map { it.toDomain() }
         }

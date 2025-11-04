@@ -2,8 +2,8 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.Recipe
-import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipeByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipesUseCase
@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,7 +21,6 @@ class RecipeViewModel @Inject constructor(
     private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase,
     private val getSavedRecipesUseCase: GetSavedRecipesUseCase,
     private val getSavedRecipeByIdUseCase: GetSavedRecipeByIdUseCase,
-    private val getIngredientsUseCase: GetIngredientsUseCase
 ) : ViewModel() {
 
     private val _recipe = MutableStateFlow<Recipe?>(null)
@@ -33,13 +31,11 @@ class RecipeViewModel @Inject constructor(
     private val _seenRecipeIds = MutableStateFlow<Set<Long>>(emptySet())
     private var currentIngredientsQuery: String = ""
 
-    fun fetchRecipes() {
+    fun fetchRecipes(selectedIngredients: List<Ingredient>) {
         viewModelScope.launch {
             _isRecipeLoading.value = true
             try {
-                val currentIngredients = getIngredientsUseCase().first()
-
-                val ingredientsQuery = currentIngredients
+                val ingredientsQuery = selectedIngredients
                     .map { it.name }
                     .sorted()
                     .joinToString(",")
@@ -49,7 +45,7 @@ class RecipeViewModel @Inject constructor(
                     currentIngredientsQuery = ingredientsQuery
                 }
 
-                val newRecipe = getRecommendedRecipeUseCase(currentIngredients, _seenRecipeIds.value)
+                val newRecipe = getRecommendedRecipeUseCase(selectedIngredients, _seenRecipeIds.value)
 
                 _recipe.value = newRecipe
 
@@ -81,5 +77,17 @@ class RecipeViewModel @Inject constructor(
 
     fun clearSelectedRecipe() {
         _selectedRecipe.value = null
+    }
+
+    private val _selectedIds = MutableStateFlow<Set<Long>>(emptySet())
+    val selectedIds: StateFlow<Set<Long>> = _selectedIds.asStateFlow()
+
+    fun toggleIngredientSelection(id: Long) {
+        val currentIds = _selectedIds.value
+        if (id in currentIds) {
+            _selectedIds.value = currentIds - id
+        } else {
+            _selectedIds.value = currentIds + id
+        }
     }
 }

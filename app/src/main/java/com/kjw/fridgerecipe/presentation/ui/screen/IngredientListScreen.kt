@@ -77,7 +77,10 @@ fun IngredientListScreen(
                     title = storageType.label,
                     items = items,
                     displayType = ListDisplayType.GRID,
-                    onIngredientClick = onIngredientClick
+                    selectedIds = emptySet(),
+                    onIngredientClick = { ingredient ->
+                        ingredient.id?.let { onIngredientClick(it) }
+                    }
                 )
             }
         }

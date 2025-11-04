@@ -78,19 +78,19 @@ fun MainAppScreen() {
             }
         }
     ) { paddingValues ->
-        val onIngredientClick: (Long) -> Unit = { ingredientId ->
+        val onNavigateToIngredientDetail: (Long) -> Unit = { ingredientId ->
             navController.navigate("$INGREDIENT_DETAIL_BASE_ROUTE?$INGREDIENT_ID_ARG=$ingredientId")
         }
 
-        val onRecipeClick: (Long) -> Unit = { recipeId ->
+        val onNavigateToRecipeDetail: (Long) -> Unit = { recipeId ->
             navController.navigate("$RECIPE_DETAIL_BASE_ROUTE/$recipeId")
         }
 
         AppNavHost(
             navController = navController,
             modifier = Modifier.padding(paddingValues),
-            onIngredientClick = onIngredientClick,
-            onRecipeClick = onRecipeClick
+            onNavigateToIngredientDetail = onNavigateToIngredientDetail,
+            onNavigateToRecipeDetail = onNavigateToRecipeDetail
         )
     }
 }

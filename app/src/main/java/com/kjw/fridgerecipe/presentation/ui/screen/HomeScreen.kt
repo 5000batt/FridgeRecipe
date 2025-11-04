@@ -27,23 +27,18 @@ import com.kjw.fridgerecipe.presentation.ui.components.RecipeCard
 import com.kjw.fridgerecipe.presentation.ui.components.StorageSection
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
-import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     ingredientViewModel: IngredientViewModel = hiltViewModel(),
-    recipeViewModel: RecipeViewModel = hiltViewModel(),
-    onIngredientClick: (Long) -> Unit
+    recipeViewModel: RecipeViewModel = hiltViewModel()
 ) {
-    val ingredients by ingredientViewModel.ingredients.collectAsState()
+    val allIngredients by ingredientViewModel.ingredients.collectAsState()
+    val selectedIds by recipeViewModel.selectedIds.collectAsState()
 
-    val oneWeekLater = remember { LocalDate.now().plusDays(7) }
-
-    val categorizedIngredients = remember(ingredients) {
-        ingredients
-            .filter { it.expirationDate.isBefore(oneWeekLater) }
-            .groupBy { it.storageLocation }
+    val categorizedIngredients = remember(allIngredients) {
+        allIngredients.groupBy { it.storageLocation }
     }
 
     val recipe by recipeViewModel.recipe.collectAsState()
@@ -63,7 +58,10 @@ fun HomeScreen(
                 items = items,
                 displayType = ListDisplayType.ROW,
                 modifier = Modifier.padding(vertical = 8.dp),
-                onIngredientClick = onIngredientClick
+                selectedIds = selectedIds,
+                onIngredientClick = { ingredient ->
+                    ingredient.id?.let { recipeViewModel.toggleIngredientSelection(it) }
+                }
             )
         }
 
@@ -76,11 +74,22 @@ fun HomeScreen(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
+            val buttonText = when {
+                isRecipeLoading -> "추천 받는 중..."
+                selectedIds.isEmpty() -> "재료를 먼저 선택해주세요"
+                recipe == null -> "선택 재료로 레시피 추천 받기"
+                else -> "다른 추천 받기"
+            }
+
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { recipeViewModel.fetchRecipes() }
+                onClick = {
+                    val selectedIngredients = allIngredients.filter { it.id in selectedIds }
+                    recipeViewModel.fetchRecipes(selectedIngredients)
+                },
+                enabled = selectedIds.isNotEmpty() && !isRecipeLoading
             ) {
-                Text(if (recipe == null) "레시피 추천 받기" else "다른 추천 받기")
+                Text(buttonText)
             }
 
             Spacer(modifier = Modifier.height(8.dp))
