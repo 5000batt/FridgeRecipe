@@ -9,6 +9,7 @@ import com.kjw.fridgerecipe.domain.usecase.DelIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
+import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipesUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateIngredientUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -30,7 +31,8 @@ class IngredientViewModel @Inject constructor(
     getIngredientsUseCase: GetIngredientsUseCase,
     private val getIngredientByIdUseCase: GetIngredientByIdUseCase,
     private val updateIngredientUseCase: UpdateIngredientUseCase,
-    private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase
+    private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase,
+    private val getSavedRecipesUseCase: GetSavedRecipesUseCase
     ) : ViewModel() {
 
     sealed class OperationResult {
@@ -116,4 +118,11 @@ class IngredientViewModel @Inject constructor(
             }
         }
     }
+
+    val savedRecipes: StateFlow<List<Recipe>> = getSavedRecipesUseCase()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 }

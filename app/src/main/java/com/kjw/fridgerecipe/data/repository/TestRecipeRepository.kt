@@ -5,6 +5,7 @@ import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 import com.kjw.fridgerecipe.domain.model.RecipeStep
 import com.kjw.fridgerecipe.domain.repository.RecipeRepository
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class TestRecipeRepository @Inject constructor() : RecipeRepository {
@@ -30,5 +31,9 @@ class TestRecipeRepository @Inject constructor() : RecipeRepository {
                 RecipeStep(number = 4, description = "기름을 두른 팬에 약불로 천천히 말아줍니다.")
             )
         )
+    }
+
+    override fun getAllSavedRecipes(): Flow<List<Recipe>> {
+        TODO("Not yet implemented")
     }
 }

@@ -11,6 +11,7 @@ data class RecipeStep(
 )
 
 data class Recipe(
+    val id: Long = 0L,
     val title: String,
     val servings: String,
     val time: String,

@@ -1,5 +1,8 @@
 package com.kjw.fridgerecipe.data.repository.mapper
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.kjw.fridgerecipe.data.local.entity.RecipeEntity
 import com.kjw.fridgerecipe.data.remote.RecipeDto
 import com.kjw.fridgerecipe.data.remote.RecipeIngredientDto
 import com.kjw.fridgerecipe.data.remote.RecipeStepDto
@@ -29,5 +32,34 @@ fun RecipeStepDto.toDomainModel(): RecipeStep {
     return RecipeStep(
         number = this.number ?: 1,
         description = this.description ?: "설명 없음"
+    )
+}
+
+fun Recipe.toEntity(): RecipeEntity {
+    val gson = Gson()
+    return RecipeEntity(
+        id = this.id,
+        title = this.title,
+        servings = this.servings,
+        time = this.time,
+        level = this.level,
+        ingredients = gson.toJson(this.ingredients),
+        steps = gson.toJson(this.steps)
+    )
+}
+
+fun RecipeEntity.toDomainModel(): Recipe {
+    val gson = Gson()
+    val ingredientListType = object : TypeToken<List<RecipeIngredient>>() {}.type
+    val stepListType = object : TypeToken<List<RecipeStep>>() {}.type
+
+    return Recipe(
+        id = this.id,
+        title = this.title,
+        servings = this.servings,
+        time = this.time,
+        level = this.level,
+        ingredients = gson.fromJson(this.ingredients, ingredientListType) ?: emptyList(),
+        steps = gson.fromJson(this.steps, stepListType) ?: emptyList()
     )
 }

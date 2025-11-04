@@ -5,8 +5,11 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.kjw.fridgerecipe.data.local.converter.LocalDateConverter
+import com.kjw.fridgerecipe.data.local.converter.RecipeTypeConverters
 import com.kjw.fridgerecipe.data.local.dao.IngredientDao
+import com.kjw.fridgerecipe.data.local.dao.RecipeDao
 import com.kjw.fridgerecipe.data.local.entity.IngredientEntity
+import com.kjw.fridgerecipe.data.local.entity.RecipeEntity
 import com.kjw.fridgerecipe.data.repository.mapper.toEntity
 import com.kjw.fridgerecipe.di.ApplicationScope
 import com.kjw.fridgerecipe.domain.model.CategoryType
@@ -20,10 +23,11 @@ import java.time.LocalDate
 import javax.inject.Inject
 import kotlin.random.Random
 
-@Database(entities = [IngredientEntity::class], version = 1, exportSchema = false)
-@TypeConverters(LocalDateConverter::class)
+@Database(entities = [IngredientEntity::class, RecipeEntity::class], version = 2, exportSchema = false)
+@TypeConverters(LocalDateConverter::class, RecipeTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun ingredientDao(): IngredientDao
+    abstract fun recipeDao(): RecipeDao
 
     class DatabaseCallback @Inject constructor(
         @ApplicationScope private val applicationScope: CoroutineScope,
