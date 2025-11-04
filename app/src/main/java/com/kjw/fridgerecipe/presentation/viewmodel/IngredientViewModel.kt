@@ -9,6 +9,7 @@ import com.kjw.fridgerecipe.domain.usecase.DelIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
+import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipeByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipesUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateIngredientUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,7 +33,8 @@ class IngredientViewModel @Inject constructor(
     private val getIngredientByIdUseCase: GetIngredientByIdUseCase,
     private val updateIngredientUseCase: UpdateIngredientUseCase,
     private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase,
-    private val getSavedRecipesUseCase: GetSavedRecipesUseCase
+    private val getSavedRecipesUseCase: GetSavedRecipesUseCase,
+    private val getSavedRecipeByIdUseCase: GetSavedRecipeByIdUseCase
     ) : ViewModel() {
 
     sealed class OperationResult {
@@ -125,4 +127,17 @@ class IngredientViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    private val _selectedRecipe = MutableStateFlow<Recipe?>(null)
+    val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe.asStateFlow()
+
+    fun loadRecipeById(id: Long) {
+        viewModelScope.launch {
+            _selectedRecipe.value = getSavedRecipeByIdUseCase(id)
+        }
+    }
+
+    fun clearSelectedRecipe() {
+        _selectedRecipe.value = null
+    }
 }

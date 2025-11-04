@@ -21,6 +21,7 @@ import com.kjw.fridgerecipe.presentation.navigation.AppNavHost
 import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_DETAIL_BASE_ROUTE
 import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_ID_ARG
 import com.kjw.fridgerecipe.presentation.navigation.NavItem
+import com.kjw.fridgerecipe.presentation.navigation.RECIPE_DETAIL_BASE_ROUTE
 import com.kjw.fridgerecipe.presentation.ui.components.AppBottomNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,10 +30,13 @@ fun MainAppScreen() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val isDetailScreen = currentRoute?.startsWith(INGREDIENT_DETAIL_BASE_ROUTE) == true
-    val currentScreen = remember(currentRoute, isDetailScreen) {
-        if (isDetailScreen) {
+    val isIngredientDetailScreen = currentRoute?.startsWith(INGREDIENT_DETAIL_BASE_ROUTE) == true
+    val isRecipeDetailScreen = currentRoute?.startsWith(RECIPE_DETAIL_BASE_ROUTE) == true
+    val currentScreen = remember(currentRoute, isIngredientDetailScreen) {
+        if (isIngredientDetailScreen) {
             NavItem.IngredientDetail
+        } else if (isRecipeDetailScreen) {
+            NavItem.RecipeDetail
         } else {
             listOf(
                 NavItem.Home,
@@ -48,7 +52,7 @@ fun MainAppScreen() {
             TopAppBar(
                 title = { Text(currentTitle) },
                 navigationIcon = {
-                    if (isDetailScreen) {
+                    if (isIngredientDetailScreen || isRecipeDetailScreen) {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -60,7 +64,7 @@ fun MainAppScreen() {
             )
         },
         bottomBar = {
-            if (!isDetailScreen) {
+            if (!(isIngredientDetailScreen || isRecipeDetailScreen)) {
                 AppBottomNavigationBar(navController = navController, currentRoute = currentRoute)
             }
         },
@@ -78,10 +82,15 @@ fun MainAppScreen() {
             navController.navigate("$INGREDIENT_DETAIL_BASE_ROUTE?$INGREDIENT_ID_ARG=$ingredientId")
         }
 
+        val onRecipeClick: (Long) -> Unit = { recipeId ->
+            navController.navigate("$RECIPE_DETAIL_BASE_ROUTE/$recipeId")
+        }
+
         AppNavHost(
             navController = navController,
             modifier = Modifier.padding(paddingValues),
-            onIngredientClick = onIngredientClick
+            onIngredientClick = onIngredientClick,
+            onRecipeClick = onRecipeClick
         )
     }
 }

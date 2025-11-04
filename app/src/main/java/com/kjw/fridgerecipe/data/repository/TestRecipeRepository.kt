@@ -36,4 +36,8 @@ class TestRecipeRepository @Inject constructor() : RecipeRepository {
     override fun getAllSavedRecipes(): Flow<List<Recipe>> {
         TODO("Not yet implemented")
     }
+
+    override suspend fun getSavedRecipeById(id: Long): Recipe? {
+        TODO("Not yet implemented")
+    }
 }

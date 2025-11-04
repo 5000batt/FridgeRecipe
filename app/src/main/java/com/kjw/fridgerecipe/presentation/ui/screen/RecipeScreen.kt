@@ -1,5 +1,8 @@
 package com.kjw.fridgerecipe.presentation.ui.screen
 
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,7 +31,8 @@ import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 
 @Composable
 fun RecipeScreen(
-    viewModel: IngredientViewModel = hiltViewModel()
+    viewModel: IngredientViewModel = hiltViewModel(),
+    onRecipeClick: (Long) -> Unit
 ) {
     val savedRecipes by viewModel.savedRecipes.collectAsState()
 
@@ -43,7 +48,10 @@ fun RecipeScreen(
         } else {
             items(savedRecipes) { recipe ->
                 RecipeListItem(
-                    recipe = recipe
+                    recipe = recipe,
+                    onClick = {
+                        onRecipeClick(recipe.id)
+                    }
                 )
             }
         }
@@ -52,11 +60,17 @@ fun RecipeScreen(
 
 @Composable
 fun RecipeListItem(
-    recipe: Recipe
+    recipe: Recipe,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = LocalIndication.current,
+                onClick = onClick
+            ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {

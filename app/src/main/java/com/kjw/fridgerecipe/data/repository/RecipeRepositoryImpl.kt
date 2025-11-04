@@ -67,4 +67,8 @@ class RecipeRepositoryImpl @Inject constructor(
                 entityList.map { it.toDomainModel() }
             }
     }
+
+    override suspend fun getSavedRecipeById(id: Long): Recipe? {
+        return recipeDao.getRecipeById(id)?.toDomainModel()
+    }
 }

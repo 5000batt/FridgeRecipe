@@ -7,4 +7,6 @@ interface RecipeRepository {
     suspend fun getAiRecipes(prompt: String): Recipe?
 
     fun getAllSavedRecipes(): Flow<List<Recipe>>
+
+    suspend fun getSavedRecipeById(id: Long): Recipe?
 }
