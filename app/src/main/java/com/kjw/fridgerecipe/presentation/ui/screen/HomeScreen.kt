@@ -76,8 +76,11 @@ fun HomeScreen(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            Button(onClick = { recipeViewModel.fetchRecipes() }) {
-                Text("AI 레시피 추천 받기")
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { recipeViewModel.fetchRecipes() }
+            ) {
+                Text(if (recipe == null) "레시피 추천 받기" else "다른 추천 받기")
             }
 
             Spacer(modifier = Modifier.height(8.dp))

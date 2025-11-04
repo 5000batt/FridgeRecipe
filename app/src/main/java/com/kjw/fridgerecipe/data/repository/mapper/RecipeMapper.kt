@@ -44,7 +44,8 @@ fun Recipe.toEntity(): RecipeEntity {
         time = this.time,
         level = this.level,
         ingredients = gson.toJson(this.ingredients),
-        steps = gson.toJson(this.steps)
+        steps = gson.toJson(this.steps),
+        ingredientsQuery = this.ingredientsQuery
     )
 }
 
@@ -60,6 +61,7 @@ fun RecipeEntity.toDomainModel(): Recipe {
         time = this.time,
         level = this.level,
         ingredients = gson.fromJson(this.ingredients, ingredientListType) ?: emptyList(),
-        steps = gson.fromJson(this.steps, stepListType) ?: emptyList()
+        steps = gson.fromJson(this.steps, stepListType) ?: emptyList(),
+        ingredientsQuery = this.ingredientsQuery
     )
 }

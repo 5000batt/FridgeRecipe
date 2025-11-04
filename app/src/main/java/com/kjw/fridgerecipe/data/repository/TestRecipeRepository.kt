@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class TestRecipeRepository @Inject constructor() : RecipeRepository {
-    override suspend fun getAiRecipes(prompt: String): Recipe {
+    override suspend fun getAiRecipes(prompt: String, ingredientsQuery: String): Recipe {
 
         delay(1500)
 
@@ -38,6 +38,10 @@ class TestRecipeRepository @Inject constructor() : RecipeRepository {
     }
 
     override suspend fun getSavedRecipeById(id: Long): Recipe? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun findSavedRecipeByQuery(query: String): List<Recipe> {
         TODO("Not yet implemented")
     }
 }

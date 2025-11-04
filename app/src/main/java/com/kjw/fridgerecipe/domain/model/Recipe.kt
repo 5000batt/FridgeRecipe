@@ -17,5 +17,6 @@ data class Recipe(
     val time: String,
     val level: String,
     val ingredients: List<RecipeIngredient>,
-    val steps: List<RecipeStep>
+    val steps: List<RecipeStep>,
+    val ingredientsQuery: String = ""
 )

@@ -21,7 +21,7 @@ class RecipeRepositoryImpl @Inject constructor(
     private val recipeDao: RecipeDao
 ) : RecipeRepository {
 
-    override suspend fun getAiRecipes(prompt: String): Recipe? {
+    override suspend fun getAiRecipes(prompt: String, ingredientsQuery: String): Recipe? {
 
         val geminiRequest = GeminiRequest(
             contents = listOf(GeminiRequest.Content(parts = listOf(GeminiRequest.Part(text = prompt))))
@@ -49,11 +49,9 @@ class RecipeRepositoryImpl @Inject constructor(
                 .trim()
 
             val recipeResponse = gson.fromJson(aiResponseText, AiRecipeResponse::class.java)
-            recipeResponse.recipe.toDomainModel()
-
             val domainRecipe = recipeResponse.recipe.toDomainModel()
-            recipeDao.insertRecipe(domainRecipe.toEntity())
-            domainRecipe
+            val newId = recipeDao.insertRecipe(domainRecipe.copy(ingredientsQuery = ingredientsQuery).toEntity())
+            domainRecipe.copy(id = newId)
 
         } catch (e: Exception) {
             Log.e("RecipeRepo", "AI 레시피 호출 실패", e)
@@ -70,5 +68,9 @@ class RecipeRepositoryImpl @Inject constructor(
 
     override suspend fun getSavedRecipeById(id: Long): Recipe? {
         return recipeDao.getRecipeById(id)?.toDomainModel()
+    }
+
+    override suspend fun findSavedRecipeByQuery(query: String): List<Recipe> {
+        return recipeDao.findRecipeByQuery(query).map { it.toDomainModel() }
     }
 }

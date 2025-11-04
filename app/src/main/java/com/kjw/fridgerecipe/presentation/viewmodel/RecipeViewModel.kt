@@ -30,12 +30,33 @@ class RecipeViewModel @Inject constructor(
     private val _isRecipeLoading = MutableStateFlow(false)
     val isRecipeLoading: StateFlow<Boolean> = _isRecipeLoading.asStateFlow()
 
+    private val _seenRecipeIds = MutableStateFlow<Set<Long>>(emptySet())
+    private var currentIngredientsQuery: String = ""
+
     fun fetchRecipes() {
         viewModelScope.launch {
             _isRecipeLoading.value = true
             try {
-                val currentIngredient = getIngredientsUseCase().first()
-                _recipe.value = getRecommendedRecipeUseCase(currentIngredient)
+                val currentIngredients = getIngredientsUseCase().first()
+
+                val ingredientsQuery = currentIngredients
+                    .map { it.name }
+                    .sorted()
+                    .joinToString(",")
+
+                if (ingredientsQuery != currentIngredientsQuery) {
+                    _seenRecipeIds.value = emptySet()
+                    currentIngredientsQuery = ingredientsQuery
+                }
+
+                val newRecipe = getRecommendedRecipeUseCase(currentIngredients, _seenRecipeIds.value)
+
+                _recipe.value = newRecipe
+
+                newRecipe?.id?.let {
+                    _seenRecipeIds.value = _seenRecipeIds.value + it
+                }
+
             } finally {
                 _isRecipeLoading.value = false
             }
