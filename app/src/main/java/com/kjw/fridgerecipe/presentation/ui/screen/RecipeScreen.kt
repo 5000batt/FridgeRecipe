@@ -27,11 +27,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.domain.model.Recipe
-import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
+import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
 
 @Composable
 fun RecipeScreen(
-    viewModel: IngredientViewModel = hiltViewModel(),
+    viewModel: RecipeViewModel = hiltViewModel(),
     onRecipeClick: (Long) -> Unit
 ) {
     val savedRecipes by viewModel.savedRecipes.collectAsState()

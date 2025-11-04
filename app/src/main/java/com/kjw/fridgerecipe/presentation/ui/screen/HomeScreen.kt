@@ -26,15 +26,17 @@ import com.kjw.fridgerecipe.presentation.ui.common.ListDisplayType
 import com.kjw.fridgerecipe.presentation.ui.components.RecipeCard
 import com.kjw.fridgerecipe.presentation.ui.components.StorageSection
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
+import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: IngredientViewModel = hiltViewModel(),
+    ingredientViewModel: IngredientViewModel = hiltViewModel(),
+    recipeViewModel: RecipeViewModel = hiltViewModel(),
     onIngredientClick: (Long) -> Unit
 ) {
-    val ingredients by viewModel.ingredients.collectAsState()
+    val ingredients by ingredientViewModel.ingredients.collectAsState()
 
     val oneWeekLater = remember { LocalDate.now().plusDays(7) }
 
@@ -44,8 +46,8 @@ fun HomeScreen(
             .groupBy { it.storageLocation }
     }
 
-    val recipe by viewModel.recipe.collectAsState()
-    val isRecipeLoading by viewModel.isRecipeLoading.collectAsState()
+    val recipe by recipeViewModel.recipe.collectAsState()
+    val isRecipeLoading by recipeViewModel.isRecipeLoading.collectAsState()
 
     Column(
         modifier = Modifier
@@ -74,7 +76,7 @@ fun HomeScreen(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            Button(onClick = { viewModel.fetchRecipes() }) {
+            Button(onClick = { recipeViewModel.fetchRecipes() }) {
                 Text("AI 레시피 추천 받기")
             }
 

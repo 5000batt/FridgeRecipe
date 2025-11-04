@@ -31,10 +31,7 @@ class IngredientViewModel @Inject constructor(
     private val delIngredientUseCase: DelIngredientUseCase,
     getIngredientsUseCase: GetIngredientsUseCase,
     private val getIngredientByIdUseCase: GetIngredientByIdUseCase,
-    private val updateIngredientUseCase: UpdateIngredientUseCase,
-    private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase,
-    private val getSavedRecipesUseCase: GetSavedRecipesUseCase,
-    private val getSavedRecipeByIdUseCase: GetSavedRecipeByIdUseCase
+    private val updateIngredientUseCase: UpdateIngredientUseCase
     ) : ViewModel() {
 
     sealed class OperationResult {
@@ -60,11 +57,6 @@ class IngredientViewModel @Inject constructor(
 
     private val _selectedIngredient = MutableStateFlow<Ingredient?>(null)
     val selectedIngredient: StateFlow<Ingredient?> = _selectedIngredient.asStateFlow()
-
-    private val _recipe = MutableStateFlow<Recipe?>(null)
-    val recipe: StateFlow<Recipe?> = _recipe.asStateFlow()
-    private val _isRecipeLoading = MutableStateFlow(false)
-    val isRecipeLoading: StateFlow<Boolean> = _isRecipeLoading.asStateFlow()
 
     fun loadIngredient(id: Long) {
         viewModelScope.launch {
@@ -107,37 +99,5 @@ class IngredientViewModel @Inject constructor(
                 _operationResultEvent.emit(OperationResult.Failure("삭제에 실패했습니다."))
             }
         }
-    }
-
-    fun fetchRecipes() {
-        viewModelScope.launch {
-            _isRecipeLoading.value = true
-            try {
-                val currentIngredient = ingredients.value
-                _recipe.value = getRecommendedRecipeUseCase(currentIngredient)
-            } finally {
-                _isRecipeLoading.value = false
-            }
-        }
-    }
-
-    val savedRecipes: StateFlow<List<Recipe>> = getSavedRecipesUseCase()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-    private val _selectedRecipe = MutableStateFlow<Recipe?>(null)
-    val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe.asStateFlow()
-
-    fun loadRecipeById(id: Long) {
-        viewModelScope.launch {
-            _selectedRecipe.value = getSavedRecipeByIdUseCase(id)
-        }
-    }
-
-    fun clearSelectedRecipe() {
-        _selectedRecipe.value = null
     }
 }

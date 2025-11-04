@@ -14,13 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.presentation.ui.components.RecipeCard
-import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
+import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
 
 @Composable
 fun RecipeDetailScreen(
     recipeId: Long?,
     onNavigateBack: () -> Unit,
-    viewModel: IngredientViewModel = hiltViewModel()
+    viewModel: RecipeViewModel = hiltViewModel()
 ) {
     val recipe by viewModel.selectedRecipe.collectAsState()
 
