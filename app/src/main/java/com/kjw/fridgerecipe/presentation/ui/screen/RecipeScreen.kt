@@ -87,7 +87,7 @@ fun RecipeListItem(
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(recipe.servings, style = MaterialTheme.typography.bodyMedium)
                 Text(recipe.time, style = MaterialTheme.typography.bodyMedium)
-                Text(recipe.level, style = MaterialTheme.typography.bodyMedium)
+                Text(recipe.level.label, style = MaterialTheme.typography.bodyMedium)
             }
         }
     }

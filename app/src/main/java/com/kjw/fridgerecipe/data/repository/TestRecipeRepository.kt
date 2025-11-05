@@ -1,5 +1,6 @@
 package com.kjw.fridgerecipe.data.repository
 
+import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 import com.kjw.fridgerecipe.domain.model.RecipeStep
@@ -17,7 +18,7 @@ class TestRecipeRepository @Inject constructor() : RecipeRepository {
             title = "계란말이",
             servings = "1-2인분",
             time = "15분",
-            level = "초급",
+            level = LevelType.BEGINNER,
             ingredients = listOf(
                 RecipeIngredient(name = "계란 (보유)", quantity = "3개"),
                 RecipeIngredient(name = "양파 (보유)", quantity = "1/4개"),

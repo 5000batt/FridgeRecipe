@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -19,6 +20,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,8 +41,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 import com.kjw.fridgerecipe.domain.model.RecipeStep
@@ -45,6 +52,7 @@ import com.kjw.fridgerecipe.presentation.navigation.RECIPE_ID_DEFAULT
 import com.kjw.fridgerecipe.presentation.ui.common.OperationResult
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeEditScreen(
     onNavigateBack: () -> Unit,
@@ -65,12 +73,19 @@ fun RecipeEditScreen(
 
     var title by remember(selectedRecipe) { mutableStateOf(selectedRecipe?.title ?: "") }
     var titleError by remember { mutableStateOf<String?>(null) }
-    var servings by remember(selectedRecipe) { mutableStateOf(selectedRecipe?.servings ?: "") }
+    var servingsState by remember(selectedRecipe) {
+        mutableStateOf(selectedRecipe?.servings?.filter { it.isDigit() } ?: "")
+    }
     var servingsError by remember { mutableStateOf<String?>(null) }
-    var time by remember(selectedRecipe) { mutableStateOf(selectedRecipe?.time ?: "") }
+    var timeState by remember(selectedRecipe) {
+        mutableStateOf(selectedRecipe?.time?.filter { it.isDigit() } ?: "")
+    }
     var timeError by remember { mutableStateOf<String?>(null) }
-    var level by remember(selectedRecipe) { mutableStateOf(selectedRecipe?.level ?: "") }
-    var levelError by remember { mutableStateOf<String?>(null) }
+    var level by remember(selectedRecipe) {
+        mutableStateOf(selectedRecipe?.level ?: LevelType.ETC)
+    }
+    var levelMenuExpanded by remember { mutableStateOf(false) }
+
     val ingredientsState = remember(selectedRecipe) {
         mutableStateListOf(*(selectedRecipe?.ingredients?.toTypedArray() ?: emptyArray()))
     }
@@ -137,63 +152,98 @@ fun RecipeEditScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = servings,
-                onValueChange = { servings = it; servingsError = null },
-                label = { Text("인분 (예: 2인분) *") },
-                isError = servingsError != null,
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-            Text(
-                text = servingsError ?: "",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 4.dp)
-                    .heightIn(min = 18.dp)
-            )
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = servingsState,
+                    onValueChange = { newValue ->
+                        if (newValue.length <= 3 && newValue.all { it.isDigit()} ) {
+                            servingsState = newValue
+                            servingsError = null
+                        }
+                    },
+                    label = { Text("조리 양 *") },
+                    isError = servingsError != null,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    suffix = { Text("인분") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = timeState,
+                    onValueChange = { newValue ->
+                        if (newValue.length <= 3 && newValue.all { it.isDigit() }) {
+                            timeState = newValue
+                            timeError = null
+                        }
+                    },
+                    label = { Text("조리 시간 *") },
+                    isError = timeError != null,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    suffix = { Text("분") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+            }
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = servingsError ?: "",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 16.dp, top = 4.dp)
+                        .heightIn(min = 18.dp)
+                )
+                Text(
+                    text = timeError ?: "",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 16.dp, top = 4.dp)
+                        .heightIn(min = 18.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = time,
-                onValueChange = { time = it; timeError = null },
-                label = { Text("조리 시간 (예: 30분) *") },
-                isError = timeError != null,
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-            Text(
-                text = timeError ?: "",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 4.dp)
-                    .heightIn(min = 18.dp)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = level,
-                onValueChange = { level = it; levelError = null },
-                label = { Text("난이도 (예: 초급) *") },
-                isError = levelError != null,
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-            Text(
-                text = levelError ?: "",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 4.dp)
-                    .heightIn(min = 18.dp)
-            )
+            ExposedDropdownMenuBox(
+                expanded = levelMenuExpanded,
+                onExpandedChange = {
+                    levelMenuExpanded = !levelMenuExpanded
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = level.label,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("난이도 *") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = levelMenuExpanded) },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = levelMenuExpanded,
+                    onDismissRequest = { levelMenuExpanded = false }
+                ) {
+                    LevelType.entries.forEach { levelType ->
+                        DropdownMenuItem(
+                            text = { Text(levelType.label) },
+                            onClick = {
+                                level = levelType
+                                levelMenuExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
 
             Divider(modifier = Modifier.padding(vertical = 16.dp))
 
@@ -262,6 +312,29 @@ fun RecipeEditScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
 
+        val validateInputs: () -> Boolean = {
+            titleError = null
+            servingsError = null
+            timeError = null
+
+            var isValid = true
+
+            if (title.isBlank()) {
+                titleError = "레시피 이름을 입력해주세요."
+                isValid = false
+            }
+            if (servingsState.isBlank()) {
+                servingsError = "조리 양을 입력해주세요."
+                isValid = false
+            }
+            if (timeState.isBlank()) {
+                timeError = "조리 시간을 입력해주세요."
+                isValid = false
+            }
+
+            isValid
+        }
+
         if (isEditMode) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -279,20 +352,12 @@ fun RecipeEditScreen(
 
                 Button(
                     onClick = {
-                        if (title.isBlank()) {
-                            titleError = "레시피 이름을 입력해주세요."
-                        } else if (servings.isBlank()) {
-                            servingsError = "몇 인분인지를 입력해주세요."
-                        } else if (time.isBlank()) {
-                            timeError = "조리 시간을 입력해주세요."
-                        } else if (level.isBlank()) {
-                            levelError = "조리 난이도를 입력해주세요."
-                        } else {
+                        if (validateInputs()) {
                             val updatedRecipe = selectedRecipe!!.copy(
                                 title = title.trim(),
-                                servings = servings.trim(),
-                                time = time.trim(),
-                                level = level.trim(),
+                                servings = "${servingsState}인분",
+                                time = "${timeState}분",
+                                level = level,
                                 ingredients = ingredientsState.toList(),
                                 steps = stepsState.toList()
                             )
@@ -308,21 +373,13 @@ fun RecipeEditScreen(
         } else {
             Button(
                 onClick = {
-                    if (title.isBlank()) {
-                        titleError = "레시피 이름을 입력해주세요."
-                    } else if (servings.isBlank()) {
-                        servingsError = "몇 인분인지를 입력해주세요."
-                    } else if (time.isBlank()) {
-                        timeError = "조리 시간을 입력해주세요."
-                    } else if (level.isBlank()) {
-                        levelError = "조리 난이도를 입력해주세요."
-                    } else {
+                    if (validateInputs()) {
                         val newRecipe = Recipe(
                             id = null,
                             title = title.trim(),
-                            servings = servings.trim(),
-                            time = time.trim(),
-                            level = level.trim(),
+                            servings = "${servingsState}인분",
+                            time = "${timeState}분",
+                            level = level,
                             ingredients = ingredientsState.toList(),
                             steps = stepsState.toList()
                         )

@@ -1,5 +1,18 @@
 package com.kjw.fridgerecipe.domain.model
 
+enum class LevelType(val label: String) {
+    BEGINNER("초급"),
+    INTERMEDIATE("중급"),
+    ADVANCED("고급"),
+    ETC("기타");
+
+    companion object {
+        fun fromString(label: String?): LevelType {
+            return entries.find { it.label == label } ?: ETC
+        }
+    }
+}
+
 data class RecipeIngredient(
     val name: String,
     val quantity: String
@@ -15,7 +28,7 @@ data class Recipe(
     val title: String,
     val servings: String,
     val time: String,
-    val level: String,
+    val level: LevelType,
     val ingredients: List<RecipeIngredient>,
     val steps: List<RecipeStep>,
     val ingredientsQuery: String = ""

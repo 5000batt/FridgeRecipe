@@ -82,7 +82,7 @@ fun RecipeInfoRow(recipe: Recipe) {
     ) {
         InfoItem(icon = Icons.Default.Person, text = recipe.servings)
         InfoItem(icon = Icons.Default.Favorite, text = recipe.time)
-        InfoItem(icon = Icons.Default.Star, text = recipe.level)
+        InfoItem(icon = Icons.Default.Star, text = recipe.level.label)
     }
 }
 

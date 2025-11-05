@@ -6,6 +6,7 @@ import com.kjw.fridgerecipe.data.local.entity.RecipeEntity
 import com.kjw.fridgerecipe.data.remote.RecipeDto
 import com.kjw.fridgerecipe.data.remote.RecipeIngredientDto
 import com.kjw.fridgerecipe.data.remote.RecipeStepDto
+import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 import com.kjw.fridgerecipe.domain.model.RecipeStep
@@ -16,7 +17,7 @@ fun RecipeDto.toDomainModel(): Recipe {
         title = this.title ?: "제목 없음",
         servings = this.info?.servings ?: "-",
         time = this.info?.time ?: "-",
-        level = this.info?.level ?: "-",
+        level = LevelType.fromString(this.info?.level),
         ingredients = this.ingredients?.map { it.toDomainModel() } ?: emptyList(),
         steps = this.steps?.map { it.toDomainModel() } ?: emptyList()
     )
@@ -43,7 +44,7 @@ fun Recipe.toEntity(): RecipeEntity {
         title = this.title,
         servings = this.servings,
         time = this.time,
-        level = this.level,
+        level = this.level.label,
         ingredients = gson.toJson(this.ingredients),
         steps = gson.toJson(this.steps),
         ingredientsQuery = this.ingredientsQuery
@@ -60,7 +61,7 @@ fun RecipeEntity.toDomainModel(): Recipe {
         title = this.title,
         servings = this.servings,
         time = this.time,
-        level = this.level,
+        level = LevelType.fromString(this.level),
         ingredients = gson.fromJson(this.ingredients, ingredientListType) ?: emptyList(),
         steps = gson.fromJson(this.steps, stepListType) ?: emptyList(),
         ingredientsQuery = this.ingredientsQuery
