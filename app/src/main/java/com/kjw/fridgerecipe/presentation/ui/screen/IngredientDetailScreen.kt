@@ -55,6 +55,7 @@ import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.domain.model.UnitType
 import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_ID_DEFAULT
+import com.kjw.fridgerecipe.presentation.ui.common.OperationResult
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import java.time.LocalDate
 import java.time.ZoneId
@@ -73,7 +74,7 @@ fun IngredientDetailScreen(
 
     LaunchedEffect(ingredientId, isEditMode) {
         if (isEditMode) {
-            viewModel.loadIngredient(ingredientId)
+            viewModel.loadIngredientById(ingredientId)
         } else {
             viewModel.clearSelectedIngredient()
         }
@@ -100,11 +101,11 @@ fun IngredientDetailScreen(
     LaunchedEffect(Unit) {
         viewModel.operationResultEvent.collect { result ->
             when (result) {
-                is IngredientViewModel.OperationResult.Success -> {
+                is OperationResult.Success -> {
                     Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
                     onNavigateBack()
                 }
-                is IngredientViewModel.OperationResult.Failure -> {
+                is OperationResult.Failure -> {
                     Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
                 }
             }

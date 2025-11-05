@@ -9,5 +9,10 @@ interface RecipeRepository {
     fun getAllSavedRecipes(): Flow<List<Recipe>>
 
     suspend fun getSavedRecipeById(id: Long): Recipe?
+
     suspend fun findSavedRecipeByQuery(query: String): List<Recipe>
+
+    suspend fun updateRecipe(recipe: Recipe)
+
+    suspend fun deleteRecipe(recipe: Recipe)
 }

@@ -1,6 +1,7 @@
 package com.kjw.fridgerecipe.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -55,10 +56,17 @@ fun AppNavHost(
             })
         ) { backStackEntry ->
             val recipeId = backStackEntry.arguments?.getLong(RECIPE_ID_ARG)
-            RecipeDetailScreen(
-                onNavigateBack = { navController.popBackStack() },
-                recipeId = recipeId
-            )
+
+            if (recipeId != null) {
+                RecipeDetailScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    recipeId = recipeId
+                )
+            } else {
+                LaunchedEffect(Unit) {
+                    navController.popBackStack()
+                }
+            }
         }
     }
 }

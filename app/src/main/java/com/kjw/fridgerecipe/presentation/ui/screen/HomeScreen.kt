@@ -35,13 +35,13 @@ fun HomeScreen(
     recipeViewModel: RecipeViewModel = hiltViewModel()
 ) {
     val allIngredients by ingredientViewModel.ingredients.collectAsState()
-    val selectedIds by recipeViewModel.selectedIds.collectAsState()
+    val selectedIngredientIds by recipeViewModel.selectedIngredientIds.collectAsState()
 
     val categorizedIngredients = remember(allIngredients) {
         allIngredients.groupBy { it.storageLocation }
     }
 
-    val recipe by recipeViewModel.recipe.collectAsState()
+    val recommendedRecipe by recipeViewModel.recommendedRecipe.collectAsState()
     val isRecipeLoading by recipeViewModel.isRecipeLoading.collectAsState()
 
     Column(
@@ -58,7 +58,7 @@ fun HomeScreen(
                 items = items,
                 displayType = ListDisplayType.ROW,
                 modifier = Modifier.padding(vertical = 8.dp),
-                selectedIds = selectedIds,
+                selectedIngredientIds = selectedIngredientIds,
                 onIngredientClick = { ingredient ->
                     ingredient.id?.let { recipeViewModel.toggleIngredientSelection(it) }
                 }
@@ -76,18 +76,18 @@ fun HomeScreen(
 
             val buttonText = when {
                 isRecipeLoading -> "추천 받는 중..."
-                selectedIds.isEmpty() -> "재료를 먼저 선택해주세요"
-                recipe == null -> "선택 재료로 레시피 추천 받기"
+                selectedIngredientIds.isEmpty() -> "재료를 먼저 선택해주세요"
+                recommendedRecipe == null -> "선택 재료로 레시피 추천 받기"
                 else -> "다른 추천 받기"
             }
 
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    val selectedIngredients = allIngredients.filter { it.id in selectedIds }
-                    recipeViewModel.fetchRecipes(selectedIngredients)
+                    val selectedIngredients = allIngredients.filter { it.id in selectedIngredientIds }
+                    recipeViewModel.fetchRecommendedRecipe(selectedIngredients)
                 },
-                enabled = selectedIds.isNotEmpty() && !isRecipeLoading
+                enabled = selectedIngredientIds.isNotEmpty() && !isRecipeLoading
             ) {
                 Text(buttonText)
             }
@@ -96,11 +96,11 @@ fun HomeScreen(
 
             if (isRecipeLoading) {
                 CircularProgressIndicator()
-            } else if (recipe == null) {
+            } else if (recommendedRecipe == null) {
                 Text("추천 버튼을 눌러주세요.")
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    RecipeCard(recipe = recipe!!)
+                    RecipeCard(recipe = recommendedRecipe!!)
                 }
             }
         }

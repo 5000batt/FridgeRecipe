@@ -44,4 +44,12 @@ class TestRecipeRepository @Inject constructor() : RecipeRepository {
     override suspend fun findSavedRecipeByQuery(query: String): List<Recipe> {
         TODO("Not yet implemented")
     }
+
+    override suspend fun updateRecipe(recipe: Recipe) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteRecipe(recipe: Recipe) {
+        TODO("Not yet implemented")
+    }
 }

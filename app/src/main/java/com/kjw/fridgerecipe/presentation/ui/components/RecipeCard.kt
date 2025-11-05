@@ -75,7 +75,7 @@ fun RecipeCard(recipe: Recipe) {
 }
 
 @Composable
-private fun RecipeInfoRow(recipe: Recipe) {
+fun RecipeInfoRow(recipe: Recipe) {
     Row (
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceAround
@@ -87,7 +87,7 @@ private fun RecipeInfoRow(recipe: Recipe) {
 }
 
 @Composable
-private fun InfoItem(icon: ImageVector, text: String) {
+fun InfoItem(icon: ImageVector, text: String) {
     Column (horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
         Text(text = text, style = MaterialTheme.typography.bodyMedium)
@@ -95,7 +95,7 @@ private fun InfoItem(icon: ImageVector, text: String) {
 }
 
 @Composable
-private fun IngredientListItem(ingredient: RecipeIngredient) {
+fun IngredientListItem(ingredient: RecipeIngredient) {
     Row (
         modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
@@ -106,7 +106,7 @@ private fun IngredientListItem(ingredient: RecipeIngredient) {
 }
 
 @Composable
-private fun RecipeStepItem(step: RecipeStep) {
+fun RecipeStepItem(step: RecipeStep) {
     Row (
         modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
         verticalAlignment = Alignment.Top

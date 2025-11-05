@@ -73,4 +73,12 @@ class RecipeRepositoryImpl @Inject constructor(
     override suspend fun findSavedRecipeByQuery(query: String): List<Recipe> {
         return recipeDao.findRecipeByQuery(query).map { it.toDomainModel() }
     }
+
+    override suspend fun updateRecipe(recipe: Recipe) {
+        recipeDao.updateRecipe(recipe.toEntity())
+    }
+
+    override suspend fun deleteRecipe(recipe: Recipe) {
+        recipeDao.deleteRecipe(recipe.toEntity())
+    }
 }

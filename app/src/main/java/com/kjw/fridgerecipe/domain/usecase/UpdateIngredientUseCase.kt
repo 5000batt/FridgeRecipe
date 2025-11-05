@@ -19,6 +19,7 @@ class UpdateIngredientUseCase @Inject constructor(
         if (ingredient.name.isBlank()) {
             return false
         }
+
          if (ingredient.amount <= 0) {
              return false
          }

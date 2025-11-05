@@ -3,15 +3,12 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.domain.model.Ingredient
-import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.usecase.AddIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.DelIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
-import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
-import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipeByIdUseCase
-import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipesUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateIngredientUseCase
+import com.kjw.fridgerecipe.presentation.ui.common.OperationResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,11 +31,6 @@ class IngredientViewModel @Inject constructor(
     private val updateIngredientUseCase: UpdateIngredientUseCase
     ) : ViewModel() {
 
-    sealed class OperationResult {
-        data class Success(val message: String) : OperationResult()
-        data class Failure(val message: String) : OperationResult()
-    }
-
     private val _operationResultEvent = MutableSharedFlow<OperationResult>()
     val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
 
@@ -58,7 +50,7 @@ class IngredientViewModel @Inject constructor(
     private val _selectedIngredient = MutableStateFlow<Ingredient?>(null)
     val selectedIngredient: StateFlow<Ingredient?> = _selectedIngredient.asStateFlow()
 
-    fun loadIngredient(id: Long) {
+    fun loadIngredientById(id: Long) {
         viewModelScope.launch {
             _selectedIngredient.value = getIngredientByIdUseCase(id)
         }

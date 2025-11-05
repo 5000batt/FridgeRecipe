@@ -25,7 +25,7 @@ fun StorageSection(
     title: String,
     items: List<Ingredient>,
     displayType: ListDisplayType,
-    selectedIds: Set<Long>,
+    selectedIngredientIds: Set<Long>,
     modifier: Modifier = Modifier,
     onIngredientClick: (Ingredient) -> Unit
 ) {
@@ -59,7 +59,7 @@ fun StorageSection(
                         items(items) { ingredient ->
                             IngredientChip(
                                 ingredient = ingredient,
-                                isSelected = ingredient.id in selectedIds,
+                                isSelected = ingredient.id in selectedIngredientIds,
                                 onClick = { onIngredientClick(ingredient) }
                             )
                         }
@@ -74,7 +74,7 @@ fun StorageSection(
                             items(items) { ingredient ->
                                 IngredientChip(
                                     ingredient = ingredient,
-                                    isSelected = ingredient.id in selectedIds,
+                                    isSelected = ingredient.id in selectedIngredientIds,
                                     onClick = { onIngredientClick(ingredient) }
                                 )
                             }
@@ -91,7 +91,7 @@ fun StorageSection(
                             items(items) { ingredient ->
                                 IngredientChip(
                                     ingredient = ingredient,
-                                    isSelected = ingredient.id in selectedIds,
+                                    isSelected = ingredient.id in selectedIngredientIds,
                                     onClick = { onIngredientClick(ingredient) }
                                 )
                             }
