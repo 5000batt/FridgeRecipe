@@ -23,7 +23,7 @@ import java.time.LocalDate
 import javax.inject.Inject
 import kotlin.random.Random
 
-@Database(entities = [IngredientEntity::class, RecipeEntity::class], version = 3, exportSchema = false)
+@Database(entities = [IngredientEntity::class, RecipeEntity::class], version = 4, exportSchema = false)
 @TypeConverters(LocalDateConverter::class, RecipeTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun ingredientDao(): IngredientDao

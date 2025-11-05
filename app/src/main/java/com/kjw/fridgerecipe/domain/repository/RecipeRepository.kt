@@ -12,6 +12,8 @@ interface RecipeRepository {
 
     suspend fun findSavedRecipeByQuery(query: String): List<Recipe>
 
+    suspend fun insertRecipe(recipe: Recipe)
+
     suspend fun updateRecipe(recipe: Recipe)
 
     suspend fun deleteRecipe(recipe: Recipe)

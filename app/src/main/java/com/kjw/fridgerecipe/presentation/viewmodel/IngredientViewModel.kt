@@ -3,7 +3,7 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.domain.model.Ingredient
-import com.kjw.fridgerecipe.domain.usecase.AddIngredientUseCase
+import com.kjw.fridgerecipe.domain.usecase.InsertIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.DelIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class IngredientViewModel @Inject constructor(
-    private val addIngredientUseCase: AddIngredientUseCase,
+    private val insertIngredientUseCase: InsertIngredientUseCase,
     private val delIngredientUseCase: DelIngredientUseCase,
     getIngredientsUseCase: GetIngredientsUseCase,
     private val getIngredientByIdUseCase: GetIngredientByIdUseCase,
@@ -60,9 +60,9 @@ class IngredientViewModel @Inject constructor(
         _selectedIngredient.value = null
     }
 
-    fun addIngredient(ingredient: Ingredient) {
+    fun insertIngredient(ingredient: Ingredient) {
         viewModelScope.launch {
-            val success = addIngredientUseCase(ingredient)
+            val success = insertIngredientUseCase(ingredient)
             if (success) {
                 _operationResultEvent.emit(OperationResult.Success("저장되었습니다."))
             } else {

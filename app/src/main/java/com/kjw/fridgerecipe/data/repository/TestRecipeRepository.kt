@@ -45,6 +45,10 @@ class TestRecipeRepository @Inject constructor() : RecipeRepository {
         TODO("Not yet implemented")
     }
 
+    override suspend fun insertRecipe(recipe: Recipe) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun updateRecipe(recipe: Recipe) {
         TODO("Not yet implemented")
     }

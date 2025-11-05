@@ -12,6 +12,7 @@ import com.kjw.fridgerecipe.domain.model.RecipeStep
 
 fun RecipeDto.toDomainModel(): Recipe {
     return Recipe(
+        id = null,
         title = this.title ?: "제목 없음",
         servings = this.info?.servings ?: "-",
         time = this.info?.time ?: "-",

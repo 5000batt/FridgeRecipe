@@ -74,6 +74,10 @@ class RecipeRepositoryImpl @Inject constructor(
         return recipeDao.findRecipeByQuery(query).map { it.toDomainModel() }
     }
 
+    override suspend fun insertRecipe(recipe: Recipe) {
+        recipeDao.insertRecipe(recipe.toEntity())
+    }
+
     override suspend fun updateRecipe(recipe: Recipe) {
         recipeDao.updateRecipe(recipe.toEntity())
     }

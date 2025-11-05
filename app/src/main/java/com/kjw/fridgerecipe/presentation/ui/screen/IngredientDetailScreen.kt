@@ -353,7 +353,7 @@ fun IngredientDetailScreen(
                             emoticon = IngredientIcon.DEFAULT
                         )
 
-                        viewModel.addIngredient(newIngredient)
+                        viewModel.insertIngredient(newIngredient)
                     }
                 },
                 modifier = Modifier.fillMaxWidth()

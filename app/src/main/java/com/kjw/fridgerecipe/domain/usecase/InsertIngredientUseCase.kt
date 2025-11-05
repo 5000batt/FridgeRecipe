@@ -5,7 +5,7 @@ import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.repository.IngredientRepository
 import javax.inject.Inject
 
-class AddIngredientUseCase @Inject constructor(
+class InsertIngredientUseCase @Inject constructor(
     private val ingredientRepository: IngredientRepository
 ) {
     suspend operator fun invoke(ingredient: Ingredient): Boolean {

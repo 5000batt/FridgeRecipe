@@ -10,6 +10,11 @@ class UpdateRecipeUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(recipe: Recipe): Boolean {
 
+        if (recipe.id == null) {
+            Log.e("UpdateRecipeUseCase", "ID가 null인 레시피는 수정할 수 없습니다.")
+            return false
+        }
+
         return try {
             recipeRepository.updateRecipe(recipe)
             true

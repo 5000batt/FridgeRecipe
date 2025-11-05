@@ -50,7 +50,9 @@ fun RecipeScreen(
                 RecipeListItem(
                     recipe = recipe,
                     onClick = {
-                        onRecipeClick(recipe.id)
+                        recipe.id?.let { id ->
+                            onRecipeClick(id)
+                        }
                     }
                 )
             }

@@ -12,6 +12,7 @@ import com.kjw.fridgerecipe.presentation.ui.screen.IngredientDetailScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.IngredientListScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.HomeScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.RecipeDetailScreen
+import com.kjw.fridgerecipe.presentation.ui.screen.RecipeEditScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.RecipeScreen
 
 @Composable
@@ -19,7 +20,9 @@ fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     onNavigateToIngredientDetail: (Long) -> Unit,
-    onNavigateToRecipeDetail: (Long) -> Unit
+    onNavigateToRecipeDetail: (Long) -> Unit,
+    onNavigateToRecipeEdit: (Long) -> Unit,
+    onNavigateToList: () -> Unit
 ) {
     NavHost(
         navController = navController,
@@ -59,7 +62,7 @@ fun AppNavHost(
 
             if (recipeId != null) {
                 RecipeDetailScreen(
-                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToRecipeEdit = onNavigateToRecipeEdit,
                     recipeId = recipeId
                 )
             } else {
@@ -67,6 +70,21 @@ fun AppNavHost(
                     navController.popBackStack()
                 }
             }
+        }
+        composable(
+            route = RECIPE_EDIT_ROUTE_PATTERN,
+            arguments = listOf(navArgument(RECIPE_ID_ARG) {
+                type = NavType.LongType
+                defaultValue = RECIPE_ID_DEFAULT
+            })
+        ) { backStackEntry ->
+            val recipeId = backStackEntry.arguments?.getLong(RECIPE_ID_ARG) ?: RECIPE_ID_DEFAULT
+
+            RecipeEditScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToList = onNavigateToList,
+                recipeId = recipeId
+            )
         }
     }
 }

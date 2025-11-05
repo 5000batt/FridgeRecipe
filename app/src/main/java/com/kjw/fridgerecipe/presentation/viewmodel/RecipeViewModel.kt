@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.Recipe
+import com.kjw.fridgerecipe.domain.usecase.InsertRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.DelRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipeByIdUseCase
@@ -27,11 +28,15 @@ class RecipeViewModel @Inject constructor(
     private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase,
     getSavedRecipesUseCase: GetSavedRecipesUseCase,
     private val getSavedRecipeByIdUseCase: GetSavedRecipeByIdUseCase,
+    private val insertRecipeUseCase: InsertRecipeUseCase,
     private val updateRecipeUseCase: UpdateRecipeUseCase,
     private val delRecipeUseCase: DelRecipeUseCase
 ) : ViewModel() {
 
-    // UI 상태 (StateFlow)
+    sealed class NavigationEvent {
+        data object NavigateBack : NavigationEvent()
+        data object NavigateToList : NavigationEvent()
+    }
 
     // AI 추천 레시피 관련
     private val _recommendedRecipe = MutableStateFlow<Recipe?>(null)
@@ -59,6 +64,8 @@ class RecipeViewModel @Inject constructor(
     // 일회성 이벤트 (SharedFlow)
     private val _operationResultEvent = MutableSharedFlow<OperationResult>()
     val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
+    private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
+    val navigationEvent: SharedFlow<NavigationEvent> = _navigationEvent.asSharedFlow()
 
     // 기타 내부 관리 변수
     private val _seenRecipeIds = MutableStateFlow<Set<Long>>(emptySet())
@@ -111,11 +118,24 @@ class RecipeViewModel @Inject constructor(
         }
     }
 
+    fun insertRecipe(recipe: Recipe) {
+        viewModelScope.launch {
+            val success = insertRecipeUseCase(recipe)
+            if (success) {
+                _operationResultEvent.emit(OperationResult.Success("저장되었습니다."))
+                _navigationEvent.emit(NavigationEvent.NavigateBack)
+            } else {
+                _operationResultEvent.emit(OperationResult.Failure("저장에 실패했습니다."))
+            }
+        }
+    }
+
     fun updateRecipe(recipe: Recipe) {
         viewModelScope.launch {
             val success = updateRecipeUseCase(recipe)
             if (success) {
                 _operationResultEvent.emit(OperationResult.Success("수정되었습니다."))
+                _navigationEvent.emit(NavigationEvent.NavigateBack)
             } else {
                 _operationResultEvent.emit(OperationResult.Failure("수정에 실패했습니다."))
             }
@@ -127,6 +147,7 @@ class RecipeViewModel @Inject constructor(
             val success = delRecipeUseCase(recipe)
             if (success) {
                 _operationResultEvent.emit(OperationResult.Success("삭제되었습니다."))
+                _navigationEvent.emit(NavigationEvent.NavigateToList)
             } else {
                 _operationResultEvent.emit(OperationResult.Failure("삭제에 실패했습니다."))
             }
