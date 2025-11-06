@@ -80,11 +80,15 @@ fun RecipeEditScreen(
     var title by remember(selectedRecipe) { mutableStateOf(selectedRecipe?.title ?: "") }
     var titleError by remember { mutableStateOf<String?>(null) }
     var servingsState by remember(selectedRecipe) {
-        mutableStateOf(selectedRecipe?.servings?.filter { it.isDigit() } ?: "")
+        val servingString = selectedRecipe?.servings ?: ""
+        val extractedNumber = Regex("\\d").find(servingString)?.value ?: ""
+        mutableStateOf(extractedNumber)
     }
     var servingsError by remember { mutableStateOf<String?>(null) }
     var timeState by remember(selectedRecipe) {
-        mutableStateOf(selectedRecipe?.time?.filter { it.isDigit() } ?: "")
+        val timeString = selectedRecipe?.time ?: ""
+        val extractedNumber = Regex("\\d+").find(timeString)?.value ?: ""
+        mutableStateOf(extractedNumber)
     }
     var timeError by remember { mutableStateOf<String?>(null) }
     var level by remember(selectedRecipe) {
