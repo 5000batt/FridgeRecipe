@@ -80,6 +80,12 @@ fun MainAppScreen() {
                 }) {
                     Icon(Icons.Filled.Add, contentDescription = "재료 추가")
                 }
+            } else if (currentRoute == NavItem.Recipes.route) {
+                FloatingActionButton(onClick = {
+                    navController.navigate(RECIPE_EDIT_BASE_ROUTE)
+                }) {
+                    Icon(Icons.Filled.Add, contentDescription = "레시피 추가")
+                }
             }
         }
     ) { paddingValues ->
