@@ -52,6 +52,12 @@ import com.kjw.fridgerecipe.presentation.navigation.RECIPE_ID_DEFAULT
 import com.kjw.fridgerecipe.presentation.ui.common.OperationResult
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
 
+enum class ListErrorType {
+    NONE,
+    IS_EMPTY,
+    HAS_BLANK_ITEMS
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeEditScreen(
@@ -89,12 +95,32 @@ fun RecipeEditScreen(
     val ingredientsState = remember(selectedRecipe) {
         mutableStateListOf(*(selectedRecipe?.ingredients?.toTypedArray() ?: emptyArray()))
     }
+    var ingredientsError by remember { mutableStateOf<String?>(null) }
+    var ingredientsErrorType by remember { mutableStateOf(ListErrorType.NONE) }
     val stepsState = remember(selectedRecipe) {
         mutableStateListOf(*(selectedRecipe?.steps?.toTypedArray() ?: emptyArray()))
     }
+    var stepsError by remember { mutableStateOf<String?>(null) }
+    var stepsErrorType by remember { mutableStateOf(ListErrorType.NONE) }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    fun checkIngredientErrors() {
+        val hasEmptyItem = ingredientsState.any { it.name.isBlank() || it.quantity.isBlank() }
+        if (!hasEmptyItem) {
+            ingredientsError = null
+            ingredientsErrorType = ListErrorType.NONE
+        }
+    }
+
+    fun checkStepErrors() {
+        val hasEmptyItem = stepsState.any { it.description.isBlank() }
+        if (!hasEmptyItem) {
+            stepsError = null
+            stepsErrorType = ListErrorType.NONE
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.operationResultEvent.collect { result ->
@@ -247,7 +273,31 @@ fun RecipeEditScreen(
 
             Divider(modifier = Modifier.padding(vertical = 16.dp))
 
-            Text("재료", style = MaterialTheme.typography.titleMedium)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("재료", style = MaterialTheme.typography.titleLarge)
+                Button(onClick = {
+                    ingredientsState.add(RecipeIngredient(name = "", quantity = ""))
+                    if (ingredientsErrorType == ListErrorType.IS_EMPTY) {
+                        ingredientsError = null
+                        ingredientsErrorType = ListErrorType.NONE
+                    }
+                }) {
+                    Text("재료 추가")
+                }
+            }
+            Text(
+                text = ingredientsError ?: "",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 4.dp)
+                    .heightIn(min = 18.dp)
+            )
 
             ingredientsState.forEachIndexed { index, ingredient ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -255,9 +305,11 @@ fun RecipeEditScreen(
                         value = ingredient.name,
                         onValueChange = { newName ->
                             ingredientsState[index] = ingredient.copy(name = newName)
+                            checkIngredientErrors()
                         },
                         label = { Text("재료명") },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        singleLine = true
                     )
 
                     Spacer(Modifier.width(8.dp))
@@ -266,26 +318,54 @@ fun RecipeEditScreen(
                         value = ingredient.quantity,
                         onValueChange = { newQty ->
                             ingredientsState[index] = ingredient.copy(quantity = newQty)
+                            checkIngredientErrors()
                         },
                         label = { Text("용량") },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        singleLine = true
                     )
 
-                    IconButton(onClick = { ingredientsState.removeAt(index) }) {
+                    IconButton(onClick = {
+                        ingredientsState.removeAt(index)
+                        if (ingredientsState.isEmpty()) {
+                            ingredientsError = null
+                            ingredientsErrorType = ListErrorType.NONE
+                        } else {
+                            checkIngredientErrors()
+                        }
+                    }) {
                         Icon(Icons.Default.Delete, contentDescription = "재료 삭제")
                     }
                 }
             }
 
-            Button(onClick = {
-                ingredientsState.add(RecipeIngredient(name = "", quantity = ""))
-            }) {
-                Text("재료 추가")
-            }
-
             Divider(modifier = Modifier.padding(vertical = 16.dp))
 
-            Text("조리 순서", style = MaterialTheme.typography.titleMedium)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("조리 순서", style = MaterialTheme.typography.titleLarge)
+                Button(onClick = {
+                    stepsState.add(RecipeStep(number = stepsState.size + 1, description = ""))
+                    if (stepsErrorType == ListErrorType.IS_EMPTY) {
+                        stepsError = null
+                        stepsErrorType = ListErrorType.NONE
+                    }
+                }) {
+                    Text("순서 추가")
+                }
+            }
+            Text(
+                text = stepsError ?: "",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 4.dp)
+                    .heightIn(min = 18.dp)
+            )
 
             stepsState.forEachIndexed { index, step ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -293,20 +373,23 @@ fun RecipeEditScreen(
                         value = step.description,
                         onValueChange = { newDesc ->
                             stepsState[index] = step.copy(number = index + 1, description = newDesc)
+                            checkStepErrors()
                         },
                         label = { Text("${index + 1}. 순서") },
                         modifier = Modifier.weight(1f)
                     )
-                    IconButton(onClick = { stepsState.removeAt(index) }) {
+                    IconButton(onClick = {
+                        stepsState.removeAt(index)
+                        if (stepsState.isEmpty()) {
+                            stepsError = null
+                            stepsErrorType = ListErrorType.NONE
+                        } else {
+                            checkStepErrors()
+                        }
+                    }) {
                         Icon(Icons.Default.Delete, contentDescription = "순서 삭제")
                     }
                 }
-            }
-
-            Button(onClick = {
-                stepsState.add(RecipeStep(number = stepsState.size + 1, description = ""))
-            }) {
-                Text("순서 추가")
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -316,6 +399,10 @@ fun RecipeEditScreen(
             titleError = null
             servingsError = null
             timeError = null
+            ingredientsError = null
+            stepsError = null
+            ingredientsErrorType = ListErrorType.NONE
+            stepsErrorType = ListErrorType.NONE
 
             var isValid = true
 
@@ -329,6 +416,24 @@ fun RecipeEditScreen(
             }
             if (timeState.isBlank()) {
                 timeError = "조리 시간을 입력해주세요."
+                isValid = false
+            }
+            if (ingredientsState.isEmpty()) {
+                ingredientsError = "재료를 추가해주세요."
+                ingredientsErrorType = ListErrorType.IS_EMPTY
+                isValid = false
+            } else if (ingredientsState.any { it.name.isBlank() || it.quantity.isBlank()}) {
+                ingredientsError = "내용이 비어있는 재료가 있습니다."
+                ingredientsErrorType = ListErrorType.HAS_BLANK_ITEMS
+                isValid = false
+            }
+            if (stepsState.isEmpty()) {
+                stepsError = "조리 순서를 추가해주세요."
+                stepsErrorType = ListErrorType.IS_EMPTY
+                isValid = false
+            } else if (stepsState.any {  it.description.isBlank() }) {
+                stepsError = "내용이 비어있는 조리 순서가 있습니다."
+                stepsErrorType = ListErrorType.HAS_BLANK_ITEMS
                 isValid = false
             }
 
