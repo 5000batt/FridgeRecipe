@@ -80,15 +80,21 @@ fun RecipeListScreen(
                 Text(text = "저장된 레시피가 없습니다. 홈 화면에서 AI 추천을 받아보세요.")
             }
         } else {
-            items(filteredRecipes) { recipe ->
-                RecipeListItem(
-                    recipe = recipe,
-                    onClick = {
-                        recipe.id?.let { id ->
-                            onRecipeClick(id)
+            if (filteredRecipes.isEmpty()) {
+                item {
+                    Text(text = "'${searchQuery}'에 대한 검색 결과가 없습니다.")
+                }
+            } else {
+                items(filteredRecipes) { recipe ->
+                    RecipeListItem(
+                        recipe = recipe,
+                        onClick = {
+                            recipe.id?.let { id ->
+                                onRecipeClick(id)
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
         }
     }
