@@ -14,14 +14,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -30,23 +36,51 @@ import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
 
 @Composable
-fun RecipeScreen(
+fun RecipeListScreen(
     viewModel: RecipeViewModel = hiltViewModel(),
     onRecipeClick: (Long) -> Unit
 ) {
     val savedRecipes by viewModel.savedRecipes.collectAsState()
+    var searchQuery by remember { mutableStateOf("") }
+
+    val filteredRecipes = remember(searchQuery, savedRecipes) {
+        if (searchQuery.isBlank()) {
+            savedRecipes
+        } else {
+            savedRecipes.filter {
+                it.title.contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            end = 16.dp,
+            bottom = 80.dp
+        ),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        item {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("찾는 레시피를 입력하세요") },
+                singleLine = true,
+                trailingIcon = {
+                    Icon(Icons.Filled.Search, contentDescription = "검색 아이콘")
+                }
+            )
+        }
+
         if (savedRecipes.isEmpty()) {
             item {
                 Text(text = "저장된 레시피가 없습니다. 홈 화면에서 AI 추천을 받아보세요.")
             }
         } else {
-            items(savedRecipes) { recipe ->
+            items(filteredRecipes) { recipe ->
                 RecipeListItem(
                     recipe = recipe,
                     onClick = {

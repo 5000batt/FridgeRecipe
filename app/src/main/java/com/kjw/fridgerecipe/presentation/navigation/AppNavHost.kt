@@ -13,7 +13,7 @@ import com.kjw.fridgerecipe.presentation.ui.screen.IngredientListScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.HomeScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.RecipeDetailScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.RecipeEditScreen
-import com.kjw.fridgerecipe.presentation.ui.screen.RecipeScreen
+import com.kjw.fridgerecipe.presentation.ui.screen.RecipeListScreen
 
 @Composable
 fun AppNavHost(
@@ -50,7 +50,7 @@ fun AppNavHost(
             )
         }
         composable(NavItem.Recipes.route) {
-            RecipeScreen(onRecipeClick = onNavigateToRecipeDetail)
+            RecipeListScreen(onRecipeClick = onNavigateToRecipeDetail)
         }
         composable(
             route = RECIPE_DETAIL_ROUTE_PATTERN,
