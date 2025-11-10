@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -58,6 +59,17 @@ enum class ListErrorType {
     HAS_BLANK_ITEMS
 }
 
+private data class IngredientUiState(
+    val name: String,
+    val quantity: String,
+    val isEssential: Boolean
+)
+
+private data class StepUiState(
+    val number: Int,
+    val description: String
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeEditScreen(
@@ -84,7 +96,7 @@ fun RecipeEditScreen(
     // 조리 양
     var servingsState by remember(selectedRecipe) {
         val servingString = selectedRecipe?.servings ?: ""
-        val extractedNumber = Regex("\\d").find(servingString)?.value ?: ""
+        val extractedNumber = Regex("\\d+").find(servingString)?.value ?: ""
         mutableStateOf(extractedNumber)
     }
     var servingsError by remember { mutableStateOf<String?>(null) }
@@ -116,15 +128,36 @@ fun RecipeEditScreen(
 
     // 음식 재료
     val ingredientsState = remember(selectedRecipe) {
-        mutableStateListOf(*(selectedRecipe?.ingredients?.toTypedArray() ?: emptyArray()))
+        val essentialNames = selectedRecipe?.ingredientsQuery
+            ?.split(',')
+            ?.map { it.trim() }
+            ?.toSet() ?: emptySet()
+
+        val states = selectedRecipe?.ingredients?.map { recipeIngredient ->
+            val isChecked = essentialNames.any { it ->
+                recipeIngredient.name.contains(it)
+            }
+
+            IngredientUiState(
+                name = recipeIngredient.name,
+                quantity = recipeIngredient.quantity,
+                isEssential = isChecked
+            )
+        } ?: emptyList()
+
+        mutableStateListOf(*states.toTypedArray())
     }
     var ingredientsError by remember { mutableStateOf<String?>(null) }
     var ingredientsErrorType by remember { mutableStateOf(ListErrorType.NONE) }
-    val stepsState = remember(selectedRecipe) {
-        mutableStateListOf(*(selectedRecipe?.steps?.toTypedArray() ?: emptyArray()))
-    }
 
     // 조리 순서
+    val stepsState = remember(selectedRecipe) {
+        val states = selectedRecipe?.steps?.map {
+            StepUiState(it.number, it.description)
+        } ?: emptyList()
+
+        mutableStateListOf(*states.toTypedArray())
+    }
     var stepsError by remember { mutableStateOf<String?>(null) }
     var stepsErrorType by remember { mutableStateOf(ListErrorType.NONE) }
 
@@ -367,7 +400,7 @@ fun RecipeEditScreen(
             ) {
                 Text("재료", style = MaterialTheme.typography.titleLarge)
                 Button(onClick = {
-                    ingredientsState.add(RecipeIngredient(name = "", quantity = ""))
+                    ingredientsState.add(IngredientUiState(name = "", quantity = "", isEssential = false))
                     if (ingredientsErrorType == ListErrorType.IS_EMPTY) {
                         ingredientsError = null
                         ingredientsErrorType = ListErrorType.NONE
@@ -386,8 +419,23 @@ fun RecipeEditScreen(
                     .heightIn(min = 18.dp)
             )
 
+            if (ingredientsState.isNotEmpty()) {
+                Text(
+                    text = "홈 화면에서 '재료로 검색' 시 사용될 '필수 재료'를 체크하세요.",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+                )
+            }
+
             ingredientsState.forEachIndexed { index, ingredient ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = ingredient.isEssential,
+                        onCheckedChange = { isChecked ->
+                            ingredientsState[index] = ingredient.copy(isEssential = isChecked)
+                        }
+                    )
+
                     OutlinedTextField(
                         value = ingredient.name,
                         onValueChange = { newName ->
@@ -435,7 +483,7 @@ fun RecipeEditScreen(
             ) {
                 Text("조리 순서", style = MaterialTheme.typography.titleLarge)
                 Button(onClick = {
-                    stepsState.add(RecipeStep(number = stepsState.size + 1, description = ""))
+                    stepsState.add(StepUiState(number = stepsState.size + 1, description = ""))
                     if (stepsErrorType == ListErrorType.IS_EMPTY) {
                         stepsError = null
                         stepsErrorType = ListErrorType.NONE
@@ -541,14 +589,11 @@ fun RecipeEditScreen(
             }
 
             val recipeId = if (isEditMode) selectedRecipe?.id else null
-            val ingredientsQueryTag = if (isEditMode) {
-                selectedRecipe?.ingredientsQuery
-            } else {
-                ingredientsState
-                    .map { it.name }
-                    .sorted()
-                    .joinToString(",")
-            }
+            val ingredientsQueryTag = ingredientsState
+                .filter { it.isEssential }
+                .map { it.name }
+                .sorted()
+                .joinToString(",")
 
             return Recipe(
                 id = recipeId,
@@ -556,8 +601,8 @@ fun RecipeEditScreen(
                 servings = "${servingsState}인분",
                 time = "${timeState}분",
                 level = actualLevel,
-                ingredients = ingredientsState.toList(),
-                steps = stepsState.toList(),
+                ingredients = ingredientsState.map { RecipeIngredient(it.name, it.quantity) },
+                steps = stepsState.map { RecipeStep(it.number, it.description) },
                 // 검색 필터
                 ingredientsQuery = ingredientsQueryTag,
                 timeFilter = timeFilterTag,
