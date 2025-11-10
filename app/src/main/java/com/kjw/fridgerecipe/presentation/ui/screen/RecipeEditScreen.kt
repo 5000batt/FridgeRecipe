@@ -77,25 +77,44 @@ fun RecipeEditScreen(
         }
     }
 
+    // 레시피 제목
     var title by remember(selectedRecipe) { mutableStateOf(selectedRecipe?.title ?: "") }
     var titleError by remember { mutableStateOf<String?>(null) }
+
+    // 조리 양
     var servingsState by remember(selectedRecipe) {
         val servingString = selectedRecipe?.servings ?: ""
         val extractedNumber = Regex("\\d").find(servingString)?.value ?: ""
         mutableStateOf(extractedNumber)
     }
     var servingsError by remember { mutableStateOf<String?>(null) }
+
+    // 조리 시간
     var timeState by remember(selectedRecipe) {
         val timeString = selectedRecipe?.time ?: ""
         val extractedNumber = Regex("\\d+").find(timeString)?.value ?: ""
         mutableStateOf(extractedNumber)
     }
     var timeError by remember { mutableStateOf<String?>(null) }
+
+    // 난이도
     var level by remember(selectedRecipe) {
         mutableStateOf(selectedRecipe?.level ?: LevelType.ETC)
     }
     var levelMenuExpanded by remember { mutableStateOf(false) }
 
+    val categoryOptions = RecipeViewModel.CATEGORY_FILTER_OPTIONS
+    val utensilOptions = RecipeViewModel.UTENSIL_FILTER_OPTIONS
+
+    // 음식 종류
+    var categoryState by remember(selectedRecipe) { mutableStateOf(selectedRecipe?.categoryFilter ?: "상관없음") }
+    var categoryMenuExpanded by remember { mutableStateOf(false) }
+
+    // 조리 도구
+    var utensilState by remember(selectedRecipe) { mutableStateOf(selectedRecipe?.utensilFilter ?: "상관없음") }
+    var utensilMenuExpanded by remember { mutableStateOf(false) }
+
+    // 음식 재료
     val ingredientsState = remember(selectedRecipe) {
         mutableStateListOf(*(selectedRecipe?.ingredients?.toTypedArray() ?: emptyArray()))
     }
@@ -104,6 +123,8 @@ fun RecipeEditScreen(
     val stepsState = remember(selectedRecipe) {
         mutableStateListOf(*(selectedRecipe?.steps?.toTypedArray() ?: emptyArray()))
     }
+
+    // 조리 순서
     var stepsError by remember { mutableStateOf<String?>(null) }
     var stepsErrorType by remember { mutableStateOf(ListErrorType.NONE) }
 
@@ -269,6 +290,68 @@ fun RecipeEditScreen(
                             onClick = {
                                 level = levelType
                                 levelMenuExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            ExposedDropdownMenuBox(
+                expanded = categoryMenuExpanded,
+                onExpandedChange = { categoryMenuExpanded = !categoryMenuExpanded },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = categoryState,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("음식 종류") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryMenuExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = categoryMenuExpanded,
+                    onDismissRequest = { categoryMenuExpanded = false }
+                ) {
+                    categoryOptions.forEach { category ->
+                        DropdownMenuItem(
+                            text = { Text(category) },
+                            onClick = {
+                                categoryState = category
+                                categoryMenuExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            ExposedDropdownMenuBox(
+                expanded = utensilMenuExpanded,
+                onExpandedChange = { utensilMenuExpanded = !utensilMenuExpanded },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = utensilState,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("주요 조리 도구") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = utensilMenuExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = utensilMenuExpanded,
+                    onDismissRequest = { utensilMenuExpanded = false }
+                ) {
+                    utensilOptions.forEach { utensil ->
+                        DropdownMenuItem(
+                            text = { Text(utensil) },
+                            onClick = {
+                                utensilState = utensil
+                                utensilMenuExpanded = false
                             }
                         )
                     }
@@ -444,6 +527,46 @@ fun RecipeEditScreen(
             isValid
         }
 
+        fun buildRecipeFromState(): Recipe {
+            val actualTimeInt = timeState.toIntOrNull() ?: 0
+            val actualLevel = level
+            val actualCategory = if (categoryState == "상관없음") null else categoryState
+            val actualUtensil = if (utensilState == "상관없음") null else utensilState
+
+            val timeFilterTag = when {
+                actualTimeInt <= 15 -> "15분 이내"
+                actualTimeInt <= 30 -> "30분 이내"
+                actualTimeInt <= 60 -> "60분 이내"
+                else -> null
+            }
+
+            val recipeId = if (isEditMode) selectedRecipe?.id else null
+            val ingredientsQueryTag = if (isEditMode) {
+                selectedRecipe?.ingredientsQuery
+            } else {
+                ingredientsState
+                    .map { it.name }
+                    .sorted()
+                    .joinToString(",")
+            }
+
+            return Recipe(
+                id = recipeId,
+                title = title.trim(),
+                servings = "${servingsState}인분",
+                time = "${timeState}분",
+                level = actualLevel,
+                ingredients = ingredientsState.toList(),
+                steps = stepsState.toList(),
+                // 검색 필터
+                ingredientsQuery = ingredientsQueryTag,
+                timeFilter = timeFilterTag,
+                levelFilter = actualLevel,
+                categoryFilter = actualCategory,
+                utensilFilter = actualUtensil
+            )
+        }
+
         if (isEditMode) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -462,15 +585,7 @@ fun RecipeEditScreen(
                 Button(
                     onClick = {
                         if (validateInputs()) {
-                            val updatedRecipe = selectedRecipe!!.copy(
-                                title = title.trim(),
-                                servings = "${servingsState}인분",
-                                time = "${timeState}분",
-                                level = level,
-                                ingredients = ingredientsState.toList(),
-                                steps = stepsState.toList()
-                            )
-
+                            val updatedRecipe = buildRecipeFromState()
                             viewModel.updateRecipe(updatedRecipe)
                         }
                     },
@@ -483,16 +598,7 @@ fun RecipeEditScreen(
             Button(
                 onClick = {
                     if (validateInputs()) {
-                        val newRecipe = Recipe(
-                            id = null,
-                            title = title.trim(),
-                            servings = "${servingsState}인분",
-                            time = "${timeState}분",
-                            level = level,
-                            ingredients = ingredientsState.toList(),
-                            steps = stepsState.toList()
-                        )
-
+                        val newRecipe = buildRecipeFromState()
                         viewModel.insertRecipe(newRecipe)
                     }
                 },
