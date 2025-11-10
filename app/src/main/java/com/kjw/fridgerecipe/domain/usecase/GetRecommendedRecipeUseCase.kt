@@ -19,20 +19,18 @@ class GetRecommendedRecipeUseCase @Inject constructor(
         utensilFilter: String?
     ): Recipe? {
 
-        val ingredientsPart = ingredients
+        val ingredientsQuery = ingredients
             .map { it.name }
             .sorted()
             .joinToString(",")
 
-        val cacheKey = buildString {
-            append("ingredients=$ingredientsPart")
-            timeFilter?.let { append("&time=$it") }
-            levelFilter?.let { append("&level=${it.name}") }
-            categoryFilter?.let { append("&category=$it") }
-            utensilFilter?.let { append("&utensil=$it") }
-        }
-
-        val cashedList = recipeRepository.findSavedRecipeByQuery(cacheKey)
+        val cashedList = recipeRepository.findRecipesByFilters(
+            ingredientsQuery = ingredientsQuery,
+            timeFilter = timeFilter,
+            levelFilter = levelFilter,
+            categoryFilter = categoryFilter,
+            utensilFilter = utensilFilter
+        )
 
         if (cashedList.isNotEmpty()) {
             val availableCache = cashedList.filter { it.id !in seenIds }
@@ -45,14 +43,14 @@ class GetRecommendedRecipeUseCase @Inject constructor(
 
         Log.d("RecipeUseCase", "AI 호출 (캐시 없음 또는 모두 순회)")
 
-        val ingredientDetails = ingredients.joinToString(", ") { "${it.name} (${it.amount}${it.unit.label})" }
+        /*val ingredientDetails = ingredients.joinToString(", ") { "${it.name} (${it.amount}${it.unit.label})" }
         val constraints = buildList {
             add("필수 재료: [$ingredientDetails]")
             timeFilter?.let {
                 add("조리 시간: $it")
             }
             levelFilter?.let {
-                add("난이도: ${it.label}}")
+                add("난이도: ${it.label}")
             }
             categoryFilter?.let {
                 add("음식 종류: $it")
@@ -79,8 +77,15 @@ class GetRecommendedRecipeUseCase @Inject constructor(
         }
         """.trimIndent()
 
-        Log.d("RecipeUseCase", "프롬프트 내용 : $prompt")
+        Log.d("RecipeUseCase", "프롬프트 내용 : $prompt")*/
 
-        return recipeRepository.getAiRecipes(prompt, cacheKey)
+        return recipeRepository.getAiRecipes(
+            ingredients = ingredients,
+            ingredientsQuery = ingredientsQuery,
+            timeFilter = timeFilter,
+            levelFilter = levelFilter,
+            categoryFilter = categoryFilter,
+            utensilFilter = utensilFilter
+        )
     }
 }

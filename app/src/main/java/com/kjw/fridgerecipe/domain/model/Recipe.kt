@@ -31,5 +31,10 @@ data class Recipe(
     val level: LevelType,
     val ingredients: List<RecipeIngredient>,
     val steps: List<RecipeStep>,
-    val cacheKey: String = ""
+    // 검색 필터
+    val ingredientsQuery: String? = null,
+    val timeFilter: String? = null,
+    val levelFilter: LevelType? = null,
+    val categoryFilter: String? = null,
+    val utensilFilter: String? = null
 )

@@ -23,7 +23,7 @@ import java.time.LocalDate
 import javax.inject.Inject
 import kotlin.random.Random
 
-@Database(entities = [IngredientEntity::class, RecipeEntity::class], version = 5, exportSchema = false)
+@Database(entities = [IngredientEntity::class, RecipeEntity::class], version = 6, exportSchema = false)
 @TypeConverters(LocalDateConverter::class, RecipeTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun ingredientDao(): IngredientDao
@@ -50,15 +50,15 @@ abstract class AppDatabase : RoomDatabase() {
     }
 }
 
-/*val testDataList = listOf(
+val testDataList = listOf(
     Ingredient(id = 1L, name = "양파", amount = 3.0, unit = UnitType.COUNT, expirationDate = LocalDate.now().plusDays(0), storageLocation = StorageType.REFRIGERATED, category = CategoryType.VEGETABLE, emoticon = IngredientIcon.CARROT),
     Ingredient(id = 2L, name = "소고기", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(1), storageLocation = StorageType.REFRIGERATED, category = CategoryType.MEAT, emoticon = IngredientIcon.DEFAULT),
     Ingredient(id = 3L, name = "버섯", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(2), storageLocation = StorageType.REFRIGERATED, category = CategoryType.MEAT, emoticon = IngredientIcon.DEFAULT),
     Ingredient(id = 4L, name = "카레가루", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(10), storageLocation = StorageType.ROOM_TEMPERATURE, category = CategoryType.MEAT, emoticon = IngredientIcon.DEFAULT),
     Ingredient(id = 5L, name = "감자", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(-1), storageLocation = StorageType.ROOM_TEMPERATURE, category = CategoryType.MEAT, emoticon = IngredientIcon.DEFAULT),
-    Ingredient(id = 6L, name = "긴재료이름테스트", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(5), storageLocation = StorageType.FROZEN, category = CategoryType.MEAT, emoticon = IngredientIcon.DEFAULT)
-)*/
+)
 
+/*
 val testDataList: List<Ingredient> = buildList {
     val names = listOf("양파", "당근", "버섯", "계란", "소고기", "돼지고기", "우유", "치즈", "쌀", "파스타면")
 
@@ -99,4 +99,4 @@ val testDataList: List<Ingredient> = buildList {
             )
         )
     }
-}
+}*/

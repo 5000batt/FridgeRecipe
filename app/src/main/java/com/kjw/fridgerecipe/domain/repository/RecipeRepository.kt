@@ -1,16 +1,31 @@
 package com.kjw.fridgerecipe.domain.repository
 
+import com.kjw.fridgerecipe.domain.model.Ingredient
+import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import kotlinx.coroutines.flow.Flow
 
 interface RecipeRepository {
-    suspend fun getAiRecipes(prompt: String, ingredientsQuery: String): Recipe?
+    suspend fun getAiRecipes(
+        ingredients: List<Ingredient>,
+        ingredientsQuery: String,
+        timeFilter: String?,
+        levelFilter: LevelType?,
+        categoryFilter: String?,
+        utensilFilter: String?
+    ): Recipe?
 
     fun getAllSavedRecipes(): Flow<List<Recipe>>
 
     suspend fun getSavedRecipeById(id: Long): Recipe?
 
-    suspend fun findSavedRecipeByQuery(query: String): List<Recipe>
+    suspend fun findRecipesByFilters(
+        ingredientsQuery: String,
+        timeFilter: String?,
+        levelFilter: LevelType?,
+        categoryFilter: String?,
+        utensilFilter: String?
+    ): List<Recipe>
 
     suspend fun insertRecipe(recipe: Recipe)
 

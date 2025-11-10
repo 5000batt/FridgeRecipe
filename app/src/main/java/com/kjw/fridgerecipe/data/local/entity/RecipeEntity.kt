@@ -13,5 +13,10 @@ data class RecipeEntity(
     val level: String,
     val ingredients: String,
     val steps: String,
-    val cacheKey: String
+    // 검색 필터
+    val ingredientsQuery: String?,
+    val timeFilter: String?,
+    val levelFilter: String?,
+    val categoryFilter: String?,
+    val utensilFilter: String?
 )
