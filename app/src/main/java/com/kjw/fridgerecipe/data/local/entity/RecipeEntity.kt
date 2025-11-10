@@ -2,6 +2,8 @@ package com.kjw.fridgerecipe.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.kjw.fridgerecipe.domain.model.RecipeIngredient
+import com.kjw.fridgerecipe.domain.model.RecipeStep
 
 @Entity(tableName = "recipes")
 data class RecipeEntity(
@@ -11,8 +13,8 @@ data class RecipeEntity(
     val servings: String,
     val time: String,
     val level: String,
-    val ingredients: String,
-    val steps: String,
+    val ingredients: List<RecipeIngredient>,
+    val steps: List<RecipeStep>,
     // 검색 필터
     val ingredientsQuery: String?,
     val timeFilter: String?,

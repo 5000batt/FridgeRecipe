@@ -5,14 +5,26 @@ import java.time.LocalDate
 enum class UnitType(val label: String) {
     COUNT("개"),
     GRAM("g"),
-    MILLILITTER("ml"),
-    ETC("기타")
+    MILLILITER("ml"),
+    ETC("기타");
+
+    companion object {
+        fun fromString(label: String?): UnitType {
+            return UnitType.entries.find { it.label == label } ?: UnitType.ETC
+        }
+    }
 }
 
 enum class StorageType(val label: String) {
     REFRIGERATED("냉장"),
     FROZEN("냉동"),
-    ROOM_TEMPERATURE("실온")
+    ROOM_TEMPERATURE("실온");
+
+    companion object {
+        fun fromString(label: String?): StorageType {
+            return StorageType.entries.find { it.label == label } ?: StorageType.REFRIGERATED
+        }
+    }
 }
 
 enum class CategoryType(val label: String) {
@@ -20,7 +32,13 @@ enum class CategoryType(val label: String) {
     MEAT("육류"),
     SEAFOOD("해산물"),
     DAIRY("유제품"),
-    ETC("기타")
+    ETC("기타");
+
+    companion object {
+        fun fromString(label: String?): CategoryType {
+            return CategoryType.entries.find { it.label == label } ?: CategoryType.ETC
+        }
+    }
 }
 
 data class Ingredient (

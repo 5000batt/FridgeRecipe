@@ -7,7 +7,7 @@ import java.time.LocalDate
 @Entity(tableName = "ingredients")
 data class IngredientEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Long = 0L,
+    val id: Long? = null,
     val name: String,
     val amount: Double,
     val unitName: String,

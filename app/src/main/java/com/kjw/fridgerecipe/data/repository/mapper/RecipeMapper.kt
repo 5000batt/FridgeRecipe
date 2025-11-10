@@ -1,7 +1,5 @@
 package com.kjw.fridgerecipe.data.repository.mapper
 
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.kjw.fridgerecipe.data.local.entity.RecipeEntity
 import com.kjw.fridgerecipe.data.remote.RecipeDto
 import com.kjw.fridgerecipe.data.remote.RecipeIngredientDto
@@ -38,15 +36,14 @@ fun RecipeStepDto.toDomainModel(): RecipeStep {
 }
 
 fun Recipe.toEntity(): RecipeEntity {
-    val gson = Gson()
     return RecipeEntity(
         id = this.id,
         title = this.title,
         servings = this.servings,
         time = this.time,
         level = this.level.label,
-        ingredients = gson.toJson(this.ingredients),
-        steps = gson.toJson(this.steps),
+        ingredients = this.ingredients,
+        steps = this.steps,
         ingredientsQuery = this.ingredientsQuery,
         timeFilter = this.timeFilter,
         levelFilter = this.levelFilter?.label,
@@ -57,18 +54,14 @@ fun Recipe.toEntity(): RecipeEntity {
 }
 
 fun RecipeEntity.toDomainModel(): Recipe {
-    val gson = Gson()
-    val ingredientListType = object : TypeToken<List<RecipeIngredient>>() {}.type
-    val stepListType = object : TypeToken<List<RecipeStep>>() {}.type
-
     return Recipe(
         id = this.id,
         title = this.title,
         servings = this.servings,
         time = this.time,
         level = LevelType.fromString(this.level),
-        ingredients = gson.fromJson(this.ingredients, ingredientListType) ?: emptyList(),
-        steps = gson.fromJson(this.steps, stepListType) ?: emptyList(),
+        ingredients = this.ingredients,
+        steps = this.steps,
         ingredientsQuery = this.ingredientsQuery,
         timeFilter = this.timeFilter,
         levelFilter = this.levelFilter?.let { LevelType.fromString(it) },
