@@ -13,5 +13,5 @@ data class RecipeEntity(
     val level: String,
     val ingredients: String,
     val steps: String,
-    val ingredientsQuery: String
+    val cacheKey: String
 )

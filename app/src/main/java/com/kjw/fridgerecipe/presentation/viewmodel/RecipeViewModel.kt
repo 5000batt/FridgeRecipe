@@ -3,6 +3,7 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.domain.model.Ingredient
+import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.usecase.InsertRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.DelRecipeUseCase
@@ -38,6 +39,13 @@ class RecipeViewModel @Inject constructor(
         data object NavigateToList : NavigationEvent()
     }
 
+    companion object {
+        val TIME_FILTER_OPTIONS = listOf("상관없음", "15분 이내", "30분 이내", "60분 이내", "60분 초과")
+        val LEVEL_FILTER_OPTIONS = listOf(null) + LevelType.entries
+        val CATEGORY_FILTER_OPTIONS = listOf("상관없음", "한식", "일식", "중식", "양식", "기타")
+        val UTENSIL_FILTER_OPTIONS = listOf("상관없음", "에어프라이어", "전자레인지", "냄비", "후라이팬")
+    }
+
     // AI 추천 레시피 관련
     private val _recommendedRecipe = MutableStateFlow<Recipe?>(null)
     val recommendedRecipe: StateFlow<Recipe?> = _recommendedRecipe.asStateFlow()
@@ -60,6 +68,22 @@ class RecipeViewModel @Inject constructor(
     // 재료 선택 (HomeScreen)
     private val _selectedIngredientIds = MutableStateFlow<Set<Long>>(emptySet())
     val selectedIngredientIds: StateFlow<Set<Long>> = _selectedIngredientIds.asStateFlow()
+
+    // 시간 선택 (HomeScreen)
+    private val _selectedTimeFilter = MutableStateFlow<String?>("상관없음")
+    val selectedTimeFilter: StateFlow<String?> = _selectedTimeFilter.asStateFlow()
+
+    // 난이도 선택 (HomeScreen)
+    private val _selectedLevelFilter = MutableStateFlow<LevelType?>(null)
+    val selectedLevelFilter: StateFlow<LevelType?> = _selectedLevelFilter.asStateFlow()
+
+    // 요리 카테고리 선택 (HomeScreen)
+    private val _selectedCategoryFilter = MutableStateFlow<String?>("상관없음")
+    val selectedCategoryFilter: StateFlow<String?> = _selectedCategoryFilter.asStateFlow()
+
+    // 조리 도구 선택 (HomeScreen)
+    private val _selectedUtensilFilter = MutableStateFlow<String?>("상관없음")
+    val selectedUtensilFilter: StateFlow<String?> = _selectedUtensilFilter.asStateFlow()
 
     // 일회성 이벤트 (SharedFlow)
     private val _operationResultEvent = MutableSharedFlow<OperationResult>()
@@ -85,7 +109,14 @@ class RecipeViewModel @Inject constructor(
                     currentIngredientsQuery = ingredientsQuery
                 }
 
-                val newRecipe = getRecommendedRecipeUseCase(selectedIngredients, _seenRecipeIds.value)
+                val newRecipe = getRecommendedRecipeUseCase(
+                    ingredients = selectedIngredients,
+                    seenIds = _seenRecipeIds.value,
+                    timeFilter = _selectedTimeFilter.value,
+                    levelFilter = _selectedLevelFilter.value,
+                    categoryFilter = _selectedCategoryFilter.value,
+                    utensilFilter = _selectedUtensilFilter.value
+                )
 
                 _recommendedRecipe.value = newRecipe
 
@@ -116,6 +147,22 @@ class RecipeViewModel @Inject constructor(
         } else {
             _selectedIngredientIds.value = currentIds + id
         }
+    }
+
+    fun onTimeFilterChanged(time: String) {
+        _selectedTimeFilter.value = if (time == "상관없음") null else time
+    }
+
+    fun onLevelFilterChanged(level: LevelType?) {
+        _selectedLevelFilter.value = level
+    }
+
+    fun onCategoryFilterChanged(category: String) {
+        _selectedCategoryFilter.value = if (category == "상관없음") null else category
+    }
+
+    fun onUtensilFilterChanged(utensil: String) {
+        _selectedUtensilFilter.value = if (utensil == "상관없음") null else utensil
     }
 
     fun insertRecipe(recipe: Recipe) {

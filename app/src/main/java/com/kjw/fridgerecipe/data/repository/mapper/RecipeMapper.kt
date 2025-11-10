@@ -47,7 +47,7 @@ fun Recipe.toEntity(): RecipeEntity {
         level = this.level.label,
         ingredients = gson.toJson(this.ingredients),
         steps = gson.toJson(this.steps),
-        ingredientsQuery = this.ingredientsQuery
+        cacheKey = this.cacheKey
     )
 }
 
@@ -64,6 +64,6 @@ fun RecipeEntity.toDomainModel(): Recipe {
         level = LevelType.fromString(this.level),
         ingredients = gson.fromJson(this.ingredients, ingredientListType) ?: emptyList(),
         steps = gson.fromJson(this.steps, stepListType) ?: emptyList(),
-        ingredientsQuery = this.ingredientsQuery
+        cacheKey = this.cacheKey
     )
 }

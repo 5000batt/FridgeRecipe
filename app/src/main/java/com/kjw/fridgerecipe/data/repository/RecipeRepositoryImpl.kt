@@ -50,7 +50,7 @@ class RecipeRepositoryImpl @Inject constructor(
 
             val recipeResponse = gson.fromJson(aiResponseText, AiRecipeResponse::class.java)
             val domainRecipe = recipeResponse.recipe.toDomainModel()
-            val newId = recipeDao.insertRecipe(domainRecipe.copy(ingredientsQuery = ingredientsQuery).toEntity())
+            val newId = recipeDao.insertRecipe(domainRecipe.copy(cacheKey = ingredientsQuery).toEntity())
             domainRecipe.copy(id = newId)
 
         } catch (e: Exception) {

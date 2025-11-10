@@ -27,6 +27,6 @@ interface RecipeDao {
     @Query("SELECT * FROM recipes WHERE id = :id")
     suspend fun getRecipeById(id: Long): RecipeEntity?
 
-    @Query("SELECT * FROM recipes WHERE ingredientsQuery = :query")
+    @Query("SELECT * FROM recipes WHERE cacheKey = :query")
     suspend fun findRecipeByQuery(query: String): List<RecipeEntity>
 }

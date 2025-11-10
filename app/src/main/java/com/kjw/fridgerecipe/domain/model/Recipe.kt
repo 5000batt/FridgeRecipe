@@ -31,5 +31,5 @@ data class Recipe(
     val level: LevelType,
     val ingredients: List<RecipeIngredient>,
     val steps: List<RecipeStep>,
-    val ingredientsQuery: String = ""
+    val cacheKey: String = ""
 )
