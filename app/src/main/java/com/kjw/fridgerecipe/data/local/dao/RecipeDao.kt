@@ -34,13 +34,15 @@ interface RecipeDao {
             (:timeFilter IS NULL OR timeFilter = :timeFilter) AND
             (:levelFilter IS NULL OR levelFilter = :levelFilter) AND
             (:categoryFilter IS NULL OR categoryFilter = :categoryFilter) AND
-            (:utensilFilter IS NULL OR utensilFilter = :utensilFilter)
+            (:utensilFilter IS NULL OR utensilFilter = :utensilFilter) AND
+            (useOnlySelected = :useOnlySelected)
     """)
     suspend fun findRecipesByFilters(
         ingredientsQuery: String,
         timeFilter: String?,
         levelFilter: String?,
         categoryFilter: String?,
-        utensilFilter: String?
+        utensilFilter: String?,
+        useOnlySelected: Boolean
     ): List<RecipeEntity>
 }

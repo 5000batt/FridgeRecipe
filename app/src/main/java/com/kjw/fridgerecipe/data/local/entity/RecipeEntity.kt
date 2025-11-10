@@ -18,5 +18,6 @@ data class RecipeEntity(
     val timeFilter: String?,
     val levelFilter: String?,
     val categoryFilter: String?,
-    val utensilFilter: String?
+    val utensilFilter: String?,
+    val useOnlySelected: Boolean
 )

@@ -85,6 +85,10 @@ class RecipeViewModel @Inject constructor(
     private val _selectedUtensilFilter = MutableStateFlow<String?>("상관없음")
     val selectedUtensilFilter: StateFlow<String?> = _selectedUtensilFilter.asStateFlow()
 
+    // 재료 스위치 상태 (HomeScreen)
+    private val _useOnlySelectedIngredients = MutableStateFlow(false)
+    val useOnlySelectedIngredients: StateFlow<Boolean> = _useOnlySelectedIngredients.asStateFlow()
+
     // 일회성 이벤트 (SharedFlow)
     private val _operationResultEvent = MutableSharedFlow<OperationResult>()
     val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
@@ -115,7 +119,8 @@ class RecipeViewModel @Inject constructor(
                     timeFilter = _selectedTimeFilter.value,
                     levelFilter = _selectedLevelFilter.value,
                     categoryFilter = _selectedCategoryFilter.value,
-                    utensilFilter = _selectedUtensilFilter.value
+                    utensilFilter = _selectedUtensilFilter.value,
+                    useOnlySelected = _useOnlySelectedIngredients.value
                 )
 
                 _recommendedRecipe.value = newRecipe
@@ -138,6 +143,10 @@ class RecipeViewModel @Inject constructor(
 
     fun clearSelectedRecipe() {
         _selectedRecipe.value = null
+    }
+
+    fun clearSeenRecipeIds() {
+        _seenRecipeIds.value = emptySet()
     }
 
     fun toggleIngredientSelection(id: Long) {
@@ -163,6 +172,10 @@ class RecipeViewModel @Inject constructor(
 
     fun onUtensilFilterChanged(utensil: String) {
         _selectedUtensilFilter.value = if (utensil == "상관없음") null else utensil
+    }
+
+    fun onUseOnlySelectedIngredientsChanged(isChecked: Boolean) {
+        _useOnlySelectedIngredients.value = isChecked
     }
 
     fun insertRecipe(recipe: Recipe) {

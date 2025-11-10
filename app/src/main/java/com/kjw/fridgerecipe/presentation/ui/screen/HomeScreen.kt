@@ -18,13 +18,16 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,6 +44,12 @@ fun HomeScreen(
     ingredientViewModel: IngredientViewModel = hiltViewModel(),
     recipeViewModel: RecipeViewModel = hiltViewModel()
 ) {
+    DisposableEffect(Unit) {
+        onDispose {
+            recipeViewModel.clearSeenRecipeIds()
+        }
+    }
+
     val allIngredients by ingredientViewModel.ingredients.collectAsState()
     val selectedIngredientIds by recipeViewModel.selectedIngredientIds.collectAsState()
     val selectedTime by recipeViewModel.selectedTimeFilter.collectAsState()
@@ -64,6 +73,8 @@ fun HomeScreen(
 
     val recommendedRecipe by recipeViewModel.recommendedRecipe.collectAsState()
     val isRecipeLoading by recipeViewModel.isRecipeLoading.collectAsState()
+
+    val useOnlySelected by recipeViewModel.useOnlySelectedIngredients.collectAsState()
 
     Column(
         modifier = Modifier
@@ -178,7 +189,9 @@ fun HomeScreen(
                     readOnly = true,
                     label = { Text("음식 종류") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryMenuExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
                     expanded = categoryMenuExpanded,
@@ -207,7 +220,9 @@ fun HomeScreen(
                     readOnly = true,
                     label = { Text("조리 도구") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = utensilMenuExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
                     expanded = utensilMenuExpanded,
@@ -234,6 +249,23 @@ fun HomeScreen(
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "선택한 재료로만 (기본 양념 제외)",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Switch(
+                    checked = useOnlySelected,
+                    onCheckedChange = { recipeViewModel.onUseOnlySelectedIngredientsChanged(it) }
+                )
+            }
 
             val buttonText = when {
                 isRecipeLoading -> "추천 받는 중..."

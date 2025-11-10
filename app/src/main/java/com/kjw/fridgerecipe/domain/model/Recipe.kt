@@ -36,5 +36,6 @@ data class Recipe(
     val timeFilter: String? = null,
     val levelFilter: LevelType? = null,
     val categoryFilter: String? = null,
-    val utensilFilter: String? = null
+    val utensilFilter: String? = null,
+    val useOnlySelected: Boolean = false
 )

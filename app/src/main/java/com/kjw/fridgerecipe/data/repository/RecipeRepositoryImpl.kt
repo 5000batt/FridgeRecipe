@@ -29,23 +29,19 @@ class RecipeRepositoryImpl @Inject constructor(
         timeFilter: String?,
         levelFilter: LevelType?,
         categoryFilter: String?,
-        utensilFilter: String?
+        utensilFilter: String?,
+        useOnlySelected: Boolean
     ): Recipe? {
 
         val ingredientDetails = ingredients.joinToString(", ") { "${it.name} (${it.amount}${it.unit.label})" }
         val constraints = buildList {
             add("필수 재료: [$ingredientDetails]")
-            timeFilter?.let {
-                add("조리 시간: $it")
-            }
-            levelFilter?.let {
-                add("난이도: ${it.label}")
-            }
-            categoryFilter?.let {
-                add("음식 종류: $it")
-            }
-            utensilFilter?.let {
-                add("조리 도구: $it (필수 사용)")
+            timeFilter?.let { add("조리 시간: $it") }
+            levelFilter?.let { add("난이도: ${it.label}") }
+            categoryFilter?.let { add("음식 종류: $it") }
+            utensilFilter?.let { add("조리 도구: $it (필수 사용)") }
+            if (useOnlySelected) {
+                add("제약: 소금, 후추, 물 같은 기본 양념을 제외하고, 명시된 '필수 재료' 외에 다른 재료는 절대 사용하지 마.")
             }
         }.joinToString("\n")
 
@@ -101,7 +97,8 @@ class RecipeRepositoryImpl @Inject constructor(
                     timeFilter = timeFilter,
                     levelFilter = levelFilter,
                     categoryFilter = categoryFilter,
-                    utensilFilter = utensilFilter
+                    utensilFilter = utensilFilter,
+                    useOnlySelected = useOnlySelected
                 ).toEntity())
 
             return domainRecipe.copy(id = newId)
@@ -127,14 +124,16 @@ class RecipeRepositoryImpl @Inject constructor(
         timeFilter: String?,
         levelFilter: LevelType?,
         categoryFilter: String?,
-        utensilFilter: String?
+        utensilFilter: String?,
+        useOnlySelected: Boolean
     ): List<Recipe> {
         val entities = recipeDao.findRecipesByFilters(
             ingredientsQuery =  ingredientsQuery,
             timeFilter = timeFilter,
             levelFilter = levelFilter?.label,
             categoryFilter = categoryFilter,
-            utensilFilter = utensilFilter
+            utensilFilter = utensilFilter,
+            useOnlySelected = useOnlySelected
         )
         return entities.map { it.toDomainModel() }
     }

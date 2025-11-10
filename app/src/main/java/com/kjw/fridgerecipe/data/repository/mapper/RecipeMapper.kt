@@ -51,7 +51,8 @@ fun Recipe.toEntity(): RecipeEntity {
         timeFilter = this.timeFilter,
         levelFilter = this.levelFilter?.label,
         categoryFilter = this.categoryFilter,
-        utensilFilter = this.utensilFilter
+        utensilFilter = this.utensilFilter,
+        useOnlySelected = this.useOnlySelected
     )
 }
 
@@ -72,6 +73,7 @@ fun RecipeEntity.toDomainModel(): Recipe {
         timeFilter = this.timeFilter,
         levelFilter = this.levelFilter?.let { LevelType.fromString(it) },
         categoryFilter = this.categoryFilter,
-        utensilFilter = this.utensilFilter
+        utensilFilter = this.utensilFilter,
+        useOnlySelected = this.useOnlySelected
     )
 }

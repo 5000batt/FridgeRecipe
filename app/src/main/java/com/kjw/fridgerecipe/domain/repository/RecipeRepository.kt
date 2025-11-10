@@ -12,7 +12,8 @@ interface RecipeRepository {
         timeFilter: String?,
         levelFilter: LevelType?,
         categoryFilter: String?,
-        utensilFilter: String?
+        utensilFilter: String?,
+        useOnlySelected: Boolean
     ): Recipe?
 
     fun getAllSavedRecipes(): Flow<List<Recipe>>
@@ -24,7 +25,8 @@ interface RecipeRepository {
         timeFilter: String?,
         levelFilter: LevelType?,
         categoryFilter: String?,
-        utensilFilter: String?
+        utensilFilter: String?,
+        useOnlySelected: Boolean
     ): List<Recipe>
 
     suspend fun insertRecipe(recipe: Recipe)
