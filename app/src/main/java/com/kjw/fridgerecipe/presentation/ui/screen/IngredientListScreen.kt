@@ -19,7 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.kjw.fridgerecipe.domain.model.StorageType
+import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.presentation.ui.common.ListDisplayType
 import com.kjw.fridgerecipe.presentation.ui.components.StorageSection
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
@@ -43,7 +43,7 @@ fun IngredientListScreen(
     }
 
     val categorizedIngredients = remember(filteredIngredients) {
-        filteredIngredients.groupBy { it.storageLocation }
+        filteredIngredients.groupBy { it.category }
     }
 
     LazyColumn(
@@ -69,12 +69,12 @@ fun IngredientListScreen(
             )
         }
 
-        StorageType.entries.forEach { storageType ->
-            val items = categorizedIngredients[storageType] ?: emptyList()
+        CategoryType.entries.forEach { categoryType ->
+            val items = categorizedIngredients[categoryType] ?: emptyList()
 
             item {
                 StorageSection(
-                    title = storageType.label,
+                    title = categoryType.label,
                     items = items,
                     displayType = ListDisplayType.GRID,
                     selectedIngredientIds = emptySet(),
