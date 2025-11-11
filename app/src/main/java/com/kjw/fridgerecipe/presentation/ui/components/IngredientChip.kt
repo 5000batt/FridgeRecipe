@@ -92,7 +92,7 @@ fun IngredientIconImage(ingredient: Ingredient) {
 
     Image(
         painter = imagePainter,
-        contentDescription = ingredient.emoticon.description + " 아이콘",
+        contentDescription = ingredient.emoticon.label + " 아이콘",
         modifier = Modifier.size(48.dp),
         contentScale = ContentScale.Fit
     )
