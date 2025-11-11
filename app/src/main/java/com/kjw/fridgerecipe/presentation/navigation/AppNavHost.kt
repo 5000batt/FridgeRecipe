@@ -18,22 +18,20 @@ import com.kjw.fridgerecipe.presentation.ui.screen.RecipeListScreen
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    modifier: Modifier = Modifier,
-    onNavigateToIngredientDetail: (Long) -> Unit,
-    onNavigateToRecipeDetail: (Long) -> Unit,
-    onNavigateToRecipeEdit: (Long) -> Unit,
-    onNavigateToList: () -> Unit
+    modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
         startDestination = NavItem.Home.route,
         modifier = modifier
     ) {
-        composable(NavItem.Home.route) {
-            HomeScreen()
-        }
+        composable(NavItem.Home.route) { HomeScreen() }
         composable(NavItem.Ingredients.route) {
-            IngredientListScreen(onIngredientClick = onNavigateToIngredientDetail)
+            IngredientListScreen(
+                onIngredientClick = { ingredientId ->
+                    navController.navigate("$INGREDIENT_DETAIL_BASE_ROUTE?$INGREDIENT_ID_ARG=$ingredientId")
+                }
+            )
         }
         composable(
             route = INGREDIENT_DETAIL_ROUTE_PATTERN,
@@ -50,7 +48,11 @@ fun AppNavHost(
             )
         }
         composable(NavItem.Recipes.route) {
-            RecipeListScreen(onRecipeClick = onNavigateToRecipeDetail)
+            RecipeListScreen(
+                onRecipeClick = { recipeId ->
+                    navController.navigate("$RECIPE_DETAIL_BASE_ROUTE/$recipeId")
+                }
+            )
         }
         composable(
             route = RECIPE_DETAIL_ROUTE_PATTERN,
@@ -62,7 +64,9 @@ fun AppNavHost(
 
             if (recipeId != null) {
                 RecipeDetailScreen(
-                    onNavigateToRecipeEdit = onNavigateToRecipeEdit,
+                    onNavigateToRecipeEdit = { recipeId ->
+                        navController.navigate("$RECIPE_EDIT_BASE_ROUTE?$RECIPE_ID_ARG=$recipeId")
+                    },
                     recipeId = recipeId
                 )
             } else {
@@ -82,7 +86,12 @@ fun AppNavHost(
 
             RecipeEditScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToList = onNavigateToList,
+                onNavigateToList = {
+                    navController.popBackStack(
+                        route = NavItem.Recipes.route,
+                        inclusive = false
+                    )
+                },
                 recipeId = recipeId
             )
         }
