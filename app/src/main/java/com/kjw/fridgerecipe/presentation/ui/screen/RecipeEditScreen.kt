@@ -44,6 +44,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.presentation.navigation.RECIPE_ID_DEFAULT
 import com.kjw.fridgerecipe.presentation.ui.common.OperationResult
+import com.kjw.fridgerecipe.presentation.viewmodel.RecipeManageViewModel
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,7 +52,7 @@ import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
 fun RecipeEditScreen(
     onNavigateBack: () -> Unit,
     onNavigateToList: () -> Unit,
-    viewModel: RecipeViewModel = hiltViewModel(),
+    viewModel: RecipeManageViewModel = hiltViewModel(),
     recipeId: Long
 ) {
     val isEditMode = recipeId != RECIPE_ID_DEFAULT
@@ -82,10 +83,10 @@ fun RecipeEditScreen(
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collect { event ->
             when (event) {
-                is RecipeViewModel.NavigationEvent.NavigateBack -> {
+                is RecipeManageViewModel.NavigationEvent.NavigateBack -> {
                     onNavigateBack()
                 }
-                is RecipeViewModel.NavigationEvent.NavigateToList -> {
+                is RecipeManageViewModel.NavigationEvent.NavigateToList -> {
                     onNavigateToList()
                 }
             }

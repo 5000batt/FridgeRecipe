@@ -27,12 +27,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.presentation.ui.components.IngredientListItem
 import com.kjw.fridgerecipe.presentation.ui.components.RecipeInfoRow
 import com.kjw.fridgerecipe.presentation.ui.components.RecipeStepItem
-import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
+import com.kjw.fridgerecipe.presentation.viewmodel.RecipeManageViewModel
 
 @Composable
 fun RecipeDetailScreen(
     onNavigateToRecipeEdit: (Long) -> Unit,
-    viewModel: RecipeViewModel = hiltViewModel(),
+    viewModel: RecipeManageViewModel = hiltViewModel(),
     recipeId: Long
 ) {
     val selectedRecipe by viewModel.selectedRecipe.collectAsState()
