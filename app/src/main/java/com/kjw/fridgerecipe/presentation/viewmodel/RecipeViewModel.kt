@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -46,9 +47,28 @@ class RecipeViewModel @Inject constructor(
     val homeUiState: StateFlow<HomeUiState> = _homeUiState.asStateFlow()
     private val _seenRecipeIds = MutableStateFlow<Set<Long>>(emptySet())
 
-    // RecipeList States
-    val savedRecipes: StateFlow<List<Recipe>> = getSavedRecipesUseCase()
+    // RecipeListScreen States
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    private val _rawSavedRecipesFlow = getSavedRecipesUseCase()
         .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+    val rawSavedRecipes: StateFlow<List<Recipe>> = _rawSavedRecipesFlow
+
+    val savedRecipes: StateFlow<List<Recipe>> =
+        _searchQuery.combine(_rawSavedRecipesFlow) { query, recipes ->
+            if (query.isBlank()) {
+                recipes
+            } else {
+                recipes.filter {
+                    it.title.contains(query, ignoreCase = true)
+                }
+            }
+        }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
@@ -130,5 +150,10 @@ class RecipeViewModel @Inject constructor(
 
     fun onUseOnlySelectedIngredientsChanged(isChecked: Boolean) {
         _homeUiState.update { it.copy(useOnlySelectedIngredients = isChecked) }
+    }
+
+    // RecipeListScreen Function
+    fun onSearchQueryChanged(newQuery: String) {
+        _searchQuery.value = newQuery
     }
 }

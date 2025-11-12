@@ -25,9 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,18 +38,9 @@ fun RecipeListScreen(
     viewModel: RecipeViewModel = hiltViewModel(),
     onRecipeClick: (Long) -> Unit
 ) {
-    val savedRecipes by viewModel.savedRecipes.collectAsState()
-    var searchQuery by remember { mutableStateOf("") }
-
-    val filteredRecipes = remember(searchQuery, savedRecipes) {
-        if (searchQuery.isBlank()) {
-            savedRecipes
-        } else {
-            savedRecipes.filter {
-                it.title.contains(searchQuery, ignoreCase = true)
-            }
-        }
-    }
+    val filteredRecipes by viewModel.savedRecipes.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val rawSavedRecipes by viewModel.rawSavedRecipes.collectAsState()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -65,7 +54,7 @@ fun RecipeListScreen(
         item {
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = { searchQuery = it },
+                onValueChange = { viewModel.onSearchQueryChanged(it) },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("찾는 레시피를 입력하세요") },
                 singleLine = true,
@@ -75,7 +64,7 @@ fun RecipeListScreen(
             )
         }
 
-        if (savedRecipes.isEmpty()) {
+        if (rawSavedRecipes.isEmpty()) {
             item {
                 Text(text = "저장된 레시피가 없습니다. 홈 화면에서 AI 추천을 받아보세요.")
             }
