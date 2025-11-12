@@ -35,6 +35,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -58,6 +61,10 @@ fun RecipeEditScreen(
     val isEditMode = recipeId != RECIPE_ID_DEFAULT
     val uiState by viewModel.editUiState.collectAsState()
     val context = LocalContext.current
+
+    var levelMenuExpanded by remember { mutableStateOf(false) }
+    var categoryMenuExpanded by remember { mutableStateOf(false) }
+    var utensilMenuExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(recipeId, isEditMode) {
         if (isEditMode) {
@@ -174,8 +181,8 @@ fun RecipeEditScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             ExposedDropdownMenuBox(
-                expanded = uiState.levelMenuExpanded,
-                onExpandedChange = { viewModel.onLevelMenuExpandedChanged(it) },
+                expanded = levelMenuExpanded,
+                onExpandedChange = { levelMenuExpanded = !levelMenuExpanded },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
@@ -183,14 +190,14 @@ fun RecipeEditScreen(
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("난이도 *") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = uiState.levelMenuExpanded) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = levelMenuExpanded) },
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
-                    expanded = uiState.levelMenuExpanded,
-                    onDismissRequest = { viewModel.onLevelMenuExpandedChanged(false) }
+                    expanded = levelMenuExpanded,
+                    onDismissRequest = { levelMenuExpanded = false }
                 ) {
                     LevelType.entries.forEach { levelType ->
                         DropdownMenuItem(
@@ -204,8 +211,8 @@ fun RecipeEditScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             ExposedDropdownMenuBox(
-                expanded = uiState.categoryMenuExpanded,
-                onExpandedChange = { viewModel.onCategoryMenuExpandedChanged(it) },
+                expanded = categoryMenuExpanded,
+                onExpandedChange = { categoryMenuExpanded = !categoryMenuExpanded },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
@@ -213,12 +220,12 @@ fun RecipeEditScreen(
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("음식 종류") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = uiState.categoryMenuExpanded) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryMenuExpanded) },
                     modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
                 ExposedDropdownMenu(
-                    expanded = uiState.categoryMenuExpanded,
-                    onDismissRequest = { viewModel.onCategoryMenuExpandedChanged(false) }
+                    expanded = categoryMenuExpanded,
+                    onDismissRequest = { categoryMenuExpanded = false }
                 ) {
                     RecipeViewModel.CATEGORY_FILTER_OPTIONS.forEach { category ->
                         DropdownMenuItem(
@@ -232,8 +239,8 @@ fun RecipeEditScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             ExposedDropdownMenuBox(
-                expanded = uiState.utensilMenuExpanded,
-                onExpandedChange = { viewModel.onUtensilMenuExpandedChanged(it) },
+                expanded = utensilMenuExpanded,
+                onExpandedChange = { utensilMenuExpanded = !utensilMenuExpanded },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
@@ -241,12 +248,12 @@ fun RecipeEditScreen(
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("주요 조리 도구") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = uiState.utensilMenuExpanded) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = utensilMenuExpanded) },
                     modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
                 ExposedDropdownMenu(
-                    expanded = uiState.utensilMenuExpanded,
-                    onDismissRequest = { viewModel.onUtensilMenuExpandedChanged(false) }
+                    expanded = utensilMenuExpanded,
+                    onDismissRequest = { utensilMenuExpanded = false }
                 ) {
                     RecipeViewModel.UTENSIL_FILTER_OPTIONS.forEach { utensil ->
                         DropdownMenuItem(

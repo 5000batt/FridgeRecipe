@@ -46,11 +46,8 @@ data class RecipeEditUiState(
     val timeState: String = "",
     val timeError: String? = null,
     val level: LevelType = LevelType.ETC,
-    val levelMenuExpanded: Boolean = false,
     val categoryState: String = "상관없음",
-    val categoryMenuExpanded: Boolean = false,
     val utensilState: String = "상관없음",
-    val utensilMenuExpanded: Boolean = false,
     val ingredientsState: List<IngredientUiState> = emptyList(),
     val ingredientsError: String? = null,
     val ingredientsErrorType: ListErrorType = ListErrorType.NONE,
@@ -154,27 +151,15 @@ class RecipeManageViewModel @Inject constructor(
     }
 
     fun onLevelChanged(newLevel: LevelType) {
-        _editUiState.update { it.copy(level = newLevel, levelMenuExpanded = false) }
-    }
-
-    fun onLevelMenuExpandedChanged(isExpanded: Boolean) {
-        _editUiState.update { it.copy(levelMenuExpanded = isExpanded) }
+        _editUiState.update { it.copy(level = newLevel) }
     }
 
     fun onCategoryChanged(newCategory: String) {
-        _editUiState.update { it.copy(categoryState = newCategory, categoryMenuExpanded = false) }
-    }
-
-    fun onCategoryMenuExpandedChanged(isExpanded: Boolean) {
-        _editUiState.update { it.copy(categoryMenuExpanded = isExpanded) }
+        _editUiState.update { it.copy(categoryState = newCategory) }
     }
 
     fun onUtensilChanged(newUtensil: String) {
-        _editUiState.update { it.copy(utensilState = newUtensil, utensilMenuExpanded = false) }
-    }
-
-    fun onUtensilMenuExpandedChanged(isExpanded: Boolean) {
-        _editUiState.update { it.copy(utensilMenuExpanded = isExpanded) }
+        _editUiState.update { it.copy(utensilState = newUtensil) }
     }
 
     fun onAddIngredient() {

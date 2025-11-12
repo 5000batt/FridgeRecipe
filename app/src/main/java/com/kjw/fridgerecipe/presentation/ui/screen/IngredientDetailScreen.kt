@@ -38,6 +38,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -66,6 +69,10 @@ fun IngredientDetailScreen(
     val isEditMode = ingredientId != INGREDIENT_ID_DEFAULT
     val uiState by viewModel.detailUiState.collectAsState()
     val context = LocalContext.current
+
+    var unitExpanded by remember { mutableStateOf(false) }
+    var storageExpanded by remember { mutableStateOf(false) }
+    var categoryExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(ingredientId, isEditMode) {
         if (isEditMode) {
@@ -132,8 +139,8 @@ fun IngredientDetailScreen(
             )
             Spacer(modifier = Modifier.width(8.dp))
             ExposedDropdownMenuBox(
-                expanded = uiState.unitExpanded,
-                onExpandedChange = { viewModel.onUnitMenuExpandedChanged(it) },
+                expanded = unitExpanded,
+                onExpandedChange = { unitExpanded = !unitExpanded },
                 modifier = Modifier.weight(1f)
             ) {
                 OutlinedTextField(
@@ -141,12 +148,12 @@ fun IngredientDetailScreen(
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("단위") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = uiState.unitExpanded)},
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded)},
                     modifier = Modifier.menuAnchor()
                 )
                 ExposedDropdownMenu(
-                    expanded = uiState.unitExpanded,
-                    onDismissRequest = { viewModel.onUnitMenuExpandedChanged(false) }
+                    expanded = unitExpanded,
+                    onDismissRequest = { unitExpanded = false }
                 ) {
                     UnitType.entries.forEach { unit ->
                         DropdownMenuItem(
@@ -195,22 +202,22 @@ fun IngredientDetailScreen(
 
         // 보관 위치
         ExposedDropdownMenuBox(
-            expanded = uiState.storageExpanded,
-            onExpandedChange = { viewModel.onStorageMenuExpandedChanged(it) }
+            expanded = storageExpanded,
+            onExpandedChange = { storageExpanded = !storageExpanded }
         ) {
             OutlinedTextField(
                 value = uiState.selectedStorage.label,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("보관 위치") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = uiState.storageExpanded) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = storageExpanded) },
                 modifier = Modifier
                     .menuAnchor()
                     .fillMaxWidth()
             )
             ExposedDropdownMenu(
-                expanded = uiState.storageExpanded,
-                onDismissRequest = { viewModel.onStorageMenuExpandedChanged(false) }
+                expanded = storageExpanded,
+                onDismissRequest = { storageExpanded = false }
             ) {
                 StorageType.entries.forEach { storage ->
                     DropdownMenuItem(
@@ -225,22 +232,22 @@ fun IngredientDetailScreen(
 
         // 카테고리 선택
         ExposedDropdownMenuBox(
-            expanded = uiState.categoryExpanded,
-            onExpandedChange = { viewModel.onCategoryMenuExpandedChanged(it) }
+            expanded = categoryExpanded,
+            onExpandedChange = { categoryExpanded = !categoryExpanded }
         ) {
             OutlinedTextField(
                 value = uiState.selectedCategory.label,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("카테고리") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = uiState.categoryExpanded) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
                 modifier = Modifier
                     .menuAnchor()
                     .fillMaxWidth()
             )
             ExposedDropdownMenu(
-                expanded = uiState.categoryExpanded,
-                onDismissRequest = { viewModel.onCategoryMenuExpandedChanged(false) }
+                expanded = categoryExpanded,
+                onDismissRequest = { categoryExpanded = false }
             ) {
                 CategoryType.entries.forEach { category ->
                     DropdownMenuItem(

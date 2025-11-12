@@ -39,9 +39,6 @@ data class IngredientDetailUiState(
     val selectedDate: LocalDate = LocalDate.now(),
     val selectedStorage: StorageType = StorageType.REFRIGERATED,
     val selectedCategory: CategoryType = CategoryType.ETC,
-    val unitExpanded: Boolean = false,
-    val storageExpanded: Boolean = false,
-    val categoryExpanded: Boolean = false,
     val showDatePicker: Boolean = false,
     val showDeleteDialog: Boolean = false,
     val selectedIngredientName: String? = null
@@ -137,27 +134,15 @@ class IngredientViewModel @Inject constructor(
     }
 
     fun onUnitChanged(unit: UnitType) {
-        _detailUiState.update { it.copy(selectedUnit = unit, unitExpanded = false) }
-    }
-
-    fun onUnitMenuExpandedChanged(isExpanded: Boolean) {
-        _detailUiState.update { it.copy(unitExpanded = isExpanded) }
+        _detailUiState.update { it.copy(selectedUnit = unit) }
     }
 
     fun onStorageChanged(storage: StorageType) {
-        _detailUiState.update { it.copy(selectedStorage = storage, storageExpanded = false) }
-    }
-
-    fun onStorageMenuExpandedChanged(isExpanded: Boolean) {
-        _detailUiState.update { it.copy(storageExpanded = isExpanded) }
+        _detailUiState.update { it.copy(selectedStorage = storage) }
     }
 
     fun onCategoryChanged(category: CategoryType) {
-        _detailUiState.update { it.copy(selectedCategory = category, categoryExpanded = false) }
-    }
-
-    fun onCategoryMenuExpandedChanged(isExpanded: Boolean) {
-        _detailUiState.update { it.copy(categoryExpanded = isExpanded) }
+        _detailUiState.update { it.copy(selectedCategory = category) }
     }
 
     fun onDateSelected(date: LocalDate) {
