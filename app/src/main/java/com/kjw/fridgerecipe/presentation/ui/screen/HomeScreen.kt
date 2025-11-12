@@ -50,7 +50,7 @@ fun HomeScreen(
         }
     }
 
-    val allIngredients by ingredientViewModel.ingredients.collectAsState()
+    val allIngredients by ingredientViewModel.allIngredients.collectAsState()
     val selectedIngredientIds by recipeViewModel.selectedIngredientIds.collectAsState()
     val selectedTime by recipeViewModel.selectedTimeFilter.collectAsState()
     val selectedLevel by recipeViewModel.selectedLevelFilter.collectAsState()

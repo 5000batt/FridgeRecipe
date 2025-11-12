@@ -38,9 +38,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -50,17 +47,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.domain.model.CategoryType
-import com.kjw.fridgerecipe.domain.model.Ingredient
-import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.domain.model.UnitType
 import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_ID_DEFAULT
 import com.kjw.fridgerecipe.presentation.ui.common.OperationResult
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
-import java.time.LocalDate
+import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,7 +64,8 @@ fun IngredientDetailScreen(
     ingredientId: Long
 ) {
     val isEditMode = ingredientId != INGREDIENT_ID_DEFAULT
-    val selectedIngredient by viewModel.selectedIngredient.collectAsState()
+    val uiState by viewModel.detailUiState.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(ingredientId, isEditMode) {
         if (isEditMode) {
@@ -79,24 +74,6 @@ fun IngredientDetailScreen(
             viewModel.clearSelectedIngredient()
         }
     }
-
-    var name by remember(selectedIngredient) { mutableStateOf(selectedIngredient?.name ?: "") }
-    var nameError by remember { mutableStateOf<String?>(null) }
-    var amount by remember(selectedIngredient) { mutableStateOf(selectedIngredient?.amount?.toString() ?: "") }
-    var amountError by remember { mutableStateOf<String?>(null) }
-    var selectedUnit by remember(selectedIngredient) { mutableStateOf(selectedIngredient?.unit ?: UnitType.COUNT) }
-    var selectedDate by remember(selectedIngredient) { mutableStateOf(selectedIngredient?.expirationDate ?: LocalDate.now()) }
-    var selectedStorage by remember(selectedIngredient) { mutableStateOf(selectedIngredient?.storageLocation ?: StorageType.REFRIGERATED) }
-    var selectedCategory by remember(selectedIngredient) { mutableStateOf(selectedIngredient?.category ?: CategoryType.ETC) }
-
-    var unitExpanded by remember { mutableStateOf(false) }
-    var storageExpanded by remember { mutableStateOf(false) }
-    var categoryExpanded by remember { mutableStateOf(false) }
-
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showDeleteDialog by remember { mutableStateOf(false) }
-
-    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.operationResultEvent.collect { result ->
@@ -121,15 +98,15 @@ fun IngredientDetailScreen(
     ) {
         // 이름
         OutlinedTextField(
-            value = name,
-            onValueChange = { name = it; nameError = null },
+            value = uiState.name,
+            onValueChange = { viewModel.onNameChanged(it) },
             label = { Text("재료 이름 *")},
-            isError = nameError != null,
+            isError = uiState.nameError != null,
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
         Text(
-            text = nameError ?: "",
+            text = uiState.nameError ?: "",
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier
@@ -145,52 +122,43 @@ fun IngredientDetailScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
-                value = amount,
-                onValueChange = { newValue ->
-                    val regex = Regex("^\\d*\\.?\\d{0,2}\$")
-                    if (newValue.isEmpty() || newValue.matches(regex)) {
-                        amount = newValue
-                        amountError = null
-                    }
-                },
+                value = uiState.amount,
+                onValueChange = { viewModel.onAmountChanged(it)},
                 label = { Text("수량 *") },
-                isError = amountError != null,
+                isError = uiState.amountError != null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.weight(1f),
                 singleLine = true
             )
             Spacer(modifier = Modifier.width(8.dp))
             ExposedDropdownMenuBox(
-                expanded = unitExpanded,
-                onExpandedChange = { unitExpanded = !unitExpanded },
+                expanded = uiState.unitExpanded,
+                onExpandedChange = { viewModel.onUnitMenuExpandedChanged(it) },
                 modifier = Modifier.weight(1f)
             ) {
                 OutlinedTextField(
-                    value = selectedUnit.label,
+                    value = uiState.selectedUnit.label,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("단위") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded)},
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = uiState.unitExpanded)},
                     modifier = Modifier.menuAnchor()
                 )
                 ExposedDropdownMenu(
-                    expanded = unitExpanded,
-                    onDismissRequest = { unitExpanded = false }
+                    expanded = uiState.unitExpanded,
+                    onDismissRequest = { viewModel.onUnitMenuExpandedChanged(false) }
                 ) {
                     UnitType.entries.forEach { unit ->
                         DropdownMenuItem(
                             text = { Text(unit.label) },
-                            onClick = {
-                                selectedUnit = unit
-                                unitExpanded = false
-                            }
+                            onClick = { viewModel.onUnitChanged(unit) }
                         )
                     }
                 }
             }
         }
         Text(
-            text = amountError ?: "",
+            text = uiState.amountError ?: "",
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier
@@ -203,7 +171,7 @@ fun IngredientDetailScreen(
 
         // 소비 기한
         OutlinedTextField(
-            value = selectedDate.format(DateTimeFormatter.ISO_DATE),
+            value = uiState.selectedDate.format(DateTimeFormatter.ISO_DATE),
             onValueChange = {},
             readOnly = true,
             label = { Text("소비기한 *")},
@@ -212,12 +180,12 @@ fun IngredientDetailScreen(
                 .fillMaxWidth()
                 // https://developer.android.com/develop/ui/compose/components/datepickers#docked
                 // text fields에서는 Modifier.clickable이 작동하지 않으므로 대체해서 사용(위 공식문서 참고)
-                .pointerInput(selectedDate) {
+                .pointerInput(Unit) {
                     awaitEachGesture {
                         awaitFirstDown(pass = PointerEventPass.Initial)
                         val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
                         if (upEvent != null) {
-                            showDatePicker = true
+                            viewModel.onDatePickerDialogShow()
                         }
                     }
                 }
@@ -227,30 +195,27 @@ fun IngredientDetailScreen(
 
         // 보관 위치
         ExposedDropdownMenuBox(
-            expanded = storageExpanded,
-            onExpandedChange = { storageExpanded = !storageExpanded}
+            expanded = uiState.storageExpanded,
+            onExpandedChange = { viewModel.onStorageMenuExpandedChanged(it) }
         ) {
             OutlinedTextField(
-                value = selectedStorage.label,
+                value = uiState.selectedStorage.label,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("보관 위치") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = storageExpanded) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = uiState.storageExpanded) },
                 modifier = Modifier
                     .menuAnchor()
                     .fillMaxWidth()
             )
             ExposedDropdownMenu(
-                expanded = storageExpanded,
-                onDismissRequest = { storageExpanded = false }
+                expanded = uiState.storageExpanded,
+                onDismissRequest = { viewModel.onStorageMenuExpandedChanged(false) }
             ) {
                 StorageType.entries.forEach { storage ->
                     DropdownMenuItem(
                         text = { Text(storage.label) },
-                        onClick = {
-                            selectedStorage = storage
-                            storageExpanded = false
-                        }
+                        onClick = { viewModel.onStorageChanged(storage) }
                     )
                 }
             }
@@ -260,30 +225,27 @@ fun IngredientDetailScreen(
 
         // 카테고리 선택
         ExposedDropdownMenuBox(
-            expanded = categoryExpanded,
-            onExpandedChange = { categoryExpanded = !categoryExpanded}
+            expanded = uiState.categoryExpanded,
+            onExpandedChange = { viewModel.onCategoryMenuExpandedChanged(it) }
         ) {
             OutlinedTextField(
-                value = selectedCategory.label,
+                value = uiState.selectedCategory.label,
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("카테고리") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = uiState.categoryExpanded) },
                 modifier = Modifier
                     .menuAnchor()
                     .fillMaxWidth()
             )
             ExposedDropdownMenu(
-                expanded = categoryExpanded,
-                onDismissRequest = { categoryExpanded = false }
+                expanded = uiState.categoryExpanded,
+                onDismissRequest = { viewModel.onCategoryMenuExpandedChanged(false) }
             ) {
                 CategoryType.entries.forEach { category ->
                     DropdownMenuItem(
                         text = { Text( category.label) },
-                        onClick = {
-                            selectedCategory =  category
-                            categoryExpanded = false
-                        }
+                        onClick = { viewModel.onCategoryChanged(category) }
                     )
                 }
             }
@@ -297,9 +259,7 @@ fun IngredientDetailScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
-                    onClick = {
-                        showDeleteDialog = true
-                    },
+                    onClick = { viewModel.onDeleteDialogShow() },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
@@ -307,27 +267,7 @@ fun IngredientDetailScreen(
                 }
 
                 Button(
-                    onClick = {
-                        val amountDouble = amount.toDoubleOrNull()
-                        if (name.isBlank()) {
-                            nameError = "재료 이름을 입력해주세요."
-                        } else if (amountDouble == null || amountDouble <= 0) {
-                            amountError = if (amountDouble == null) "숫자만 입력해주세요." else "0보다 큰 값을 입력해주세요."
-                        } else {
-                            val newIngredient = Ingredient(
-                                id = ingredientId,
-                                name = name.trim(),
-                                amount = amountDouble,
-                                unit = selectedUnit,
-                                expirationDate = selectedDate,
-                                storageLocation = selectedStorage,
-                                category = selectedCategory,
-                                emoticon = IngredientIcon.DEFAULT
-                            )
-
-                            viewModel.updateIngredient(newIngredient)
-                        }
-                    },
+                    onClick = { viewModel.onSaveOrUpdateIngredient(isEditMode = true) },
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("수정")
@@ -335,27 +275,7 @@ fun IngredientDetailScreen(
             }
         } else {
             Button(
-                onClick = {
-                    val amountDouble = amount.toDoubleOrNull()
-                    if (name.isBlank()) {
-                        nameError = "재료 이름을 입력해주세요."
-                    } else if (amountDouble == null || amountDouble <= 0) {
-                        amountError = if (amountDouble == null) "숫자만 입력해주세요." else "0보다 큰 값을 입력해주세요."
-                    } else {
-                        val newIngredient = Ingredient(
-                            id = null,
-                            name = name.trim(),
-                            amount = amountDouble,
-                            unit = selectedUnit,
-                            expirationDate = selectedDate,
-                            storageLocation = selectedStorage,
-                            category = selectedCategory,
-                            emoticon = IngredientIcon.DEFAULT
-                        )
-
-                        viewModel.insertIngredient(newIngredient)
-                    }
-                },
+                onClick = { viewModel.onSaveOrUpdateIngredient(isEditMode = false) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("저장")
@@ -363,51 +283,46 @@ fun IngredientDetailScreen(
         }
     }
 
-    if (showDatePicker) {
+    if (uiState.showDatePicker) {
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = selectedDate.atStartOfDay(ZoneId.of("UTC")).toInstant().toEpochMilli()
+            initialSelectedDateMillis = uiState.selectedDate.atStartOfDay(ZoneId.of("UTC")).toInstant().toEpochMilli()
         )
 
         DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
+            onDismissRequest = { viewModel.onDatePickerDialogDismiss() },
             confirmButton = {
                 TextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            selectedDate = Instant.ofEpochMilli(millis).atZone(ZoneId.of("UTC")).toLocalDate()
+                            val date = Instant.ofEpochMilli(millis).atZone(ZoneId.of("UTC")).toLocalDate()
+                            viewModel.onDateSelected(date)
                         }
-                        showDatePicker = false
                     }
                 ) { Text("확인") }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("취소") }
+                TextButton(onClick = { viewModel.onDatePickerDialogDismiss() }) { Text("취소") }
             }
         ) {
             DatePicker(state = datePickerState)
         }
     }
 
-    if (showDeleteDialog) {
+    if (uiState.showDeleteDialog) {
         AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
+            onDismissRequest = { viewModel.onDeleteDialogDismiss() },
             title = { Text("재료 삭제") },
-            text = { Text("정말로 '${selectedIngredient?.name ?: "이 재료"}'를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.") },
+            text = { Text("정말로 '${uiState.selectedIngredientName ?: "이 재료"}'를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.") },
             confirmButton = {
                 TextButton(
-                    onClick = {
-                        selectedIngredient?.let {
-                            viewModel.delIngredient(it)
-                        }
-                        showDeleteDialog = false
-                    }
+                    onClick = { viewModel.onDeleteIngredient() }
                 ) {
                     Text("삭제", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showDeleteDialog = false }
+                    onClick = { viewModel.onDeleteDialogDismiss() }
                 ) {
                     Text("취소")
                 }

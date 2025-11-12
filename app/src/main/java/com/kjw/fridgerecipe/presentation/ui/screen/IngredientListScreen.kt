@@ -13,9 +13,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -29,22 +26,8 @@ fun IngredientListScreen(
     viewModel: IngredientViewModel = hiltViewModel(),
     onIngredientClick: (Long) -> Unit
 ) {
-    val allIngredients by viewModel.ingredients.collectAsState()
-    var searchQuery by remember { mutableStateOf("") }
-
-    val filteredIngredients = remember(searchQuery, allIngredients) {
-        if (searchQuery.isBlank()) {
-            allIngredients
-        } else {
-            allIngredients.filter {
-                it.name.contains(searchQuery, ignoreCase = true)
-            }
-        }
-    }
-
-    val categorizedIngredients = remember(filteredIngredients) {
-        filteredIngredients.groupBy { it.category }
-    }
+    val categorizedIngredients by viewModel.categorizedIngredients.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -59,7 +42,7 @@ fun IngredientListScreen(
         item {
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = { searchQuery = it },
+                onValueChange = { viewModel.onSearchQueryChanged(it) },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("찾는 재료를 입력하세요") },
                 singleLine = true,
