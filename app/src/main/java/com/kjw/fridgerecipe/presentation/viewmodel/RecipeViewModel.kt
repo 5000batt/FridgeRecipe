@@ -13,8 +13,20 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+data class HomeUiState(
+    val recommendedRecipe: Recipe? = null,
+    val isRecipeLoading: Boolean = false,
+    val selectedIngredientIds: Set<Long> = emptySet(),
+    val selectedTimeFilter: String? = "상관없음",
+    val selectedLevelFilter: LevelType? = null,
+    val selectedCategoryFilter: String? = "상관없음",
+    val selectedUtensilFilter: String? = "상관없음",
+    val useOnlySelectedIngredients: Boolean = false
+)
 
 @HiltViewModel
 class RecipeViewModel @Inject constructor(
@@ -30,22 +42,8 @@ class RecipeViewModel @Inject constructor(
     }
 
     // HomeScreen States
-    private val _recommendedRecipe = MutableStateFlow<Recipe?>(null)
-    val recommendedRecipe: StateFlow<Recipe?> = _recommendedRecipe.asStateFlow()
-    private val _isRecipeLoading = MutableStateFlow(false)
-    val isRecipeLoading: StateFlow<Boolean> = _isRecipeLoading.asStateFlow()
-    private val _selectedIngredientIds = MutableStateFlow<Set<Long>>(emptySet())
-    val selectedIngredientIds: StateFlow<Set<Long>> = _selectedIngredientIds.asStateFlow()
-    private val _selectedTimeFilter = MutableStateFlow<String?>("상관없음")
-    val selectedTimeFilter: StateFlow<String?> = _selectedTimeFilter.asStateFlow()
-    private val _selectedLevelFilter = MutableStateFlow<LevelType?>(null)
-    val selectedLevelFilter: StateFlow<LevelType?> = _selectedLevelFilter.asStateFlow()
-    private val _selectedCategoryFilter = MutableStateFlow<String?>("상관없음")
-    val selectedCategoryFilter: StateFlow<String?> = _selectedCategoryFilter.asStateFlow()
-    private val _selectedUtensilFilter = MutableStateFlow<String?>("상관없음")
-    val selectedUtensilFilter: StateFlow<String?> = _selectedUtensilFilter.asStateFlow()
-    private val _useOnlySelectedIngredients = MutableStateFlow(false)
-    val useOnlySelectedIngredients: StateFlow<Boolean> = _useOnlySelectedIngredients.asStateFlow()
+    private val _homeUiState = MutableStateFlow(HomeUiState())
+    val homeUiState: StateFlow<HomeUiState> = _homeUiState.asStateFlow()
     private val _seenRecipeIds = MutableStateFlow<Set<Long>>(emptySet())
 
     // RecipeList States
@@ -61,7 +59,7 @@ class RecipeViewModel @Inject constructor(
     // HomeScreen Functions
     fun fetchRecommendedRecipe(selectedIngredients: List<Ingredient>) {
         viewModelScope.launch {
-            _isRecipeLoading.value = true
+            _homeUiState.update { it.copy(isRecipeLoading = true) }
             try {
                 val ingredientsQuery = selectedIngredients
                     .map { it.name }
@@ -73,24 +71,25 @@ class RecipeViewModel @Inject constructor(
                     currentIngredientsQuery = ingredientsQuery
                 }
 
+                val currentState = _homeUiState.value
                 val newRecipe = getRecommendedRecipeUseCase(
                     ingredients = selectedIngredients,
                     seenIds = _seenRecipeIds.value,
-                    timeFilter = _selectedTimeFilter.value,
-                    levelFilter = _selectedLevelFilter.value,
-                    categoryFilter = _selectedCategoryFilter.value,
-                    utensilFilter = _selectedUtensilFilter.value,
-                    useOnlySelected = _useOnlySelectedIngredients.value
+                    timeFilter = currentState.selectedTimeFilter,
+                    levelFilter = currentState.selectedLevelFilter,
+                    categoryFilter = currentState.selectedCategoryFilter,
+                    utensilFilter = currentState.selectedUtensilFilter,
+                    useOnlySelected = currentState.useOnlySelectedIngredients
                 )
 
-                _recommendedRecipe.value = newRecipe
+                _homeUiState.update { it.copy(recommendedRecipe = newRecipe) }
 
                 newRecipe?.id?.let {
                     _seenRecipeIds.value = _seenRecipeIds.value + it
                 }
 
             } finally {
-                _isRecipeLoading.value = false
+                _homeUiState.update { it.copy(isRecipeLoading = false) }
             }
         }
     }
@@ -100,31 +99,36 @@ class RecipeViewModel @Inject constructor(
     }
 
     fun toggleIngredientSelection(id: Long) {
-        val currentIds = _selectedIngredientIds.value
-        if (id in currentIds) {
-            _selectedIngredientIds.value = currentIds - id
-        } else {
-            _selectedIngredientIds.value = currentIds + id
+        _homeUiState.update { currentState ->
+            val currentIds = currentState.selectedIngredientIds
+            val newIds = if (id in currentIds) currentIds - id else currentIds + id
+            currentState.copy(selectedIngredientIds = newIds)
         }
     }
 
     fun onTimeFilterChanged(time: String) {
-        _selectedTimeFilter.value = if (time == "상관없음") null else time
+        _homeUiState.update {
+            it.copy(selectedTimeFilter = if (time == "상관없음") null else time)
+        }
     }
 
     fun onLevelFilterChanged(level: LevelType?) {
-        _selectedLevelFilter.value = level
+        _homeUiState.update { it.copy(selectedLevelFilter = level) }
     }
 
     fun onCategoryFilterChanged(category: String) {
-        _selectedCategoryFilter.value = if (category == "상관없음") null else category
+        _homeUiState.update {
+            it.copy(selectedCategoryFilter = if (category == "상관없음") null else category)
+        }
     }
 
     fun onUtensilFilterChanged(utensil: String) {
-        _selectedUtensilFilter.value = if (utensil == "상관없음") null else utensil
+        _homeUiState.update {
+            it.copy(selectedUtensilFilter = if (utensil == "상관없음") null else utensil)
+        }
     }
 
     fun onUseOnlySelectedIngredientsChanged(isChecked: Boolean) {
-        _useOnlySelectedIngredients.value = isChecked
+        _homeUiState.update { it.copy(useOnlySelectedIngredients = isChecked) }
     }
 }

@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -95,6 +96,14 @@ class IngredientViewModel @Inject constructor(
 
     // HomeScreen States
     val allIngredients: StateFlow<List<Ingredient>> = _rawIngredientsFlow
+    val homeScreenIngredients: StateFlow<Map<StorageType, List<Ingredient>>> =
+        _rawIngredientsFlow.map { ingredients ->
+            ingredients.groupBy { it.storageLocation }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyMap()
+        )
 
     // IngredientDetailScreen States
     private val _selectedIngredient = MutableStateFlow<Ingredient?>(null)

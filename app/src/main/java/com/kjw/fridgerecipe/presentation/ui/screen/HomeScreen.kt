@@ -50,12 +50,8 @@ fun HomeScreen(
         }
     }
 
-    val allIngredients by ingredientViewModel.allIngredients.collectAsState()
-    val selectedIngredientIds by recipeViewModel.selectedIngredientIds.collectAsState()
-    val selectedTime by recipeViewModel.selectedTimeFilter.collectAsState()
-    val selectedLevel by recipeViewModel.selectedLevelFilter.collectAsState()
-    val selectedCategory by recipeViewModel.selectedCategoryFilter.collectAsState()
-    val selectedUtensil by recipeViewModel.selectedUtensilFilter.collectAsState()
+    val homeIngredients by ingredientViewModel.homeScreenIngredients.collectAsState()
+    val uiState by recipeViewModel.homeUiState.collectAsState()
 
     val timeFilterOptions = RecipeViewModel.TIME_FILTER_OPTIONS
     val levelFilterOptions = RecipeViewModel.LEVEL_FILTER_OPTIONS
@@ -67,15 +63,6 @@ fun HomeScreen(
     var categoryMenuExpanded by remember { mutableStateOf(false) }
     var utensilMenuExpanded by remember { mutableStateOf(false) }
 
-    val categorizedIngredients = remember(allIngredients) {
-        allIngredients.groupBy { it.storageLocation }
-    }
-
-    val recommendedRecipe by recipeViewModel.recommendedRecipe.collectAsState()
-    val isRecipeLoading by recipeViewModel.isRecipeLoading.collectAsState()
-
-    val useOnlySelected by recipeViewModel.useOnlySelectedIngredients.collectAsState()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -83,14 +70,14 @@ fun HomeScreen(
             .verticalScroll(rememberScrollState())
     ) {
         StorageType.entries.forEach { storageType ->
-            val items = categorizedIngredients[storageType] ?: emptyList()
+            val items = homeIngredients[storageType] ?: emptyList()
 
             StorageSection(
                 title = storageType.label,
                 items = items,
                 displayType = ListDisplayType.ROW,
                 modifier = Modifier.padding(vertical = 8.dp),
-                selectedIngredientIds = selectedIngredientIds,
+                selectedIngredientIds = uiState.selectedIngredientIds,
                 onIngredientClick = { ingredient ->
                     ingredient.id?.let { recipeViewModel.toggleIngredientSelection(it) }
                 }
@@ -115,7 +102,7 @@ fun HomeScreen(
                 modifier = Modifier.weight(1f)
             ) {
                 OutlinedTextField(
-                    value = selectedTime ?: "상관없음",
+                    value = uiState.selectedTimeFilter ?: "상관없음",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("조리 시간") },
@@ -146,7 +133,7 @@ fun HomeScreen(
                 modifier = Modifier.weight(1f)
             ) {
                 OutlinedTextField(
-                    value = selectedLevel?.label ?: "상관없음",
+                    value = uiState.selectedLevelFilter?.label ?: "상관없음",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("난이도") },
@@ -184,7 +171,7 @@ fun HomeScreen(
                 modifier = Modifier.weight(1f)
             ) {
                 OutlinedTextField(
-                    value = selectedCategory ?: "상관없음",
+                    value = uiState.selectedCategoryFilter ?: "상관없음",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("음식 종류") },
@@ -215,7 +202,7 @@ fun HomeScreen(
                 modifier = Modifier.weight(1f)
             ) {
                 OutlinedTextField(
-                    value = selectedUtensil ?: "상관없음",
+                    value = uiState.selectedUtensilFilter ?: "상관없음",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("조리 도구") },
@@ -262,38 +249,39 @@ fun HomeScreen(
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Switch(
-                    checked = useOnlySelected,
+                    checked = uiState.useOnlySelectedIngredients,
                     onCheckedChange = { recipeViewModel.onUseOnlySelectedIngredientsChanged(it) }
                 )
             }
 
             val buttonText = when {
-                isRecipeLoading -> "추천 받는 중..."
-                selectedIngredientIds.isEmpty() -> "재료를 먼저 선택해주세요"
-                recommendedRecipe == null -> "선택 재료로 레시피 추천 받기"
+                uiState.isRecipeLoading -> "추천 받는 중..."
+                uiState.selectedIngredientIds.isEmpty() -> "재료를 먼저 선택해주세요"
+                uiState.recommendedRecipe == null -> "선택 재료로 레시피 추천 받기"
                 else -> "다른 추천 받기"
             }
 
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    val selectedIngredients = allIngredients.filter { it.id in selectedIngredientIds }
+                    val allIngredients = ingredientViewModel.allIngredients.value
+                    val selectedIngredients = allIngredients.filter { it.id in uiState.selectedIngredientIds }
                     recipeViewModel.fetchRecommendedRecipe(selectedIngredients)
                 },
-                enabled = selectedIngredientIds.isNotEmpty() && !isRecipeLoading
+                enabled = uiState.selectedIngredientIds.isNotEmpty() && !uiState.isRecipeLoading
             ) {
                 Text(buttonText)
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (isRecipeLoading) {
+            if (uiState.isRecipeLoading) {
                 CircularProgressIndicator()
-            } else if (recommendedRecipe == null) {
+            } else if (uiState.recommendedRecipe == null) {
                 Text("추천 버튼을 눌러주세요.")
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    RecipeCard(recipe = recommendedRecipe!!)
+                    RecipeCard(recipe = uiState.recommendedRecipe!!)
                 }
             }
         }
