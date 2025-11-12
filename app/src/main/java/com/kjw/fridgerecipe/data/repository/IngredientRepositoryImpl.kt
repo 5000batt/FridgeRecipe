@@ -25,6 +25,10 @@ class IngredientRepositoryImpl @Inject constructor(private val dao: IngredientDa
         }
     }
 
+    override suspend fun getAllIngredientsSuspend(): List<Ingredient> {
+        return dao.getAllIngredientsSuspend().map { it.toDomain() }
+    }
+
     override suspend fun getIngredientById(id: Long): Ingredient? {
         return dao.getIngredientById(id)?.toDomain()
     }

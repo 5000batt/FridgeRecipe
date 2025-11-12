@@ -29,14 +29,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.presentation.ui.common.ListDisplayType
 import com.kjw.fridgerecipe.presentation.ui.components.RecipeCard
 import com.kjw.fridgerecipe.presentation.ui.components.StorageSection
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
+import com.kjw.fridgerecipe.worker.ExpirationCheckWorker
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,12 +67,21 @@ fun HomeScreen(
     var categoryMenuExpanded by remember { mutableStateOf(false) }
     var utensilMenuExpanded by remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {
+        Button(onClick = {
+            val testRequest = OneTimeWorkRequestBuilder<ExpirationCheckWorker>().build()
+            WorkManager.getInstance(context).enqueue(testRequest)
+        }) {
+            Text("수동 알림 테스트")
+        }
+
         StorageType.entries.forEach { storageType ->
             val items = homeIngredients[storageType] ?: emptyList()
 
