@@ -25,7 +25,13 @@ fun AppNavHost(
         startDestination = NavItem.Home.route,
         modifier = modifier
     ) {
-        composable(NavItem.Home.route) { HomeScreen() }
+        composable(NavItem.Home.route) {
+            HomeScreen(
+                onNavigateToRecipeDetail = { recipeId ->
+                    navController.navigate("$RECIPE_DETAIL_BASE_ROUTE/$recipeId")
+                }
+            )
+        }
         composable(NavItem.Ingredients.route) {
             IngredientListScreen(
                 onIngredientClick = { ingredientId ->

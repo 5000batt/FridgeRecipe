@@ -22,6 +22,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,7 +37,6 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.presentation.ui.common.ListDisplayType
-import com.kjw.fridgerecipe.presentation.ui.components.RecipeCard
 import com.kjw.fridgerecipe.presentation.ui.components.StorageSection
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
@@ -46,11 +46,25 @@ import com.kjw.fridgerecipe.worker.ExpirationCheckWorker
 @Composable
 fun HomeScreen(
     ingredientViewModel: IngredientViewModel = hiltViewModel(),
-    recipeViewModel: RecipeViewModel = hiltViewModel()
+    recipeViewModel: RecipeViewModel = hiltViewModel(),
+    onNavigateToRecipeDetail: (Long) -> Unit
 ) {
     DisposableEffect(Unit) {
         onDispose {
             recipeViewModel.clearSeenRecipeIds()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        recipeViewModel.navigationEvent.collect { event ->
+            when (event) {
+                is RecipeViewModel.HomeNavigationEvent.NavigateToRecipeDetail -> {
+                    onNavigateToRecipeDetail(event.recipeId)
+                }
+                is RecipeViewModel.HomeNavigationEvent.NavigateToError -> {
+
+                }
+            }
         }
     }
 
@@ -286,16 +300,9 @@ fun HomeScreen(
                 Text(buttonText)
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
             if (uiState.isRecipeLoading) {
+                Spacer(modifier = Modifier.height(16.dp))
                 CircularProgressIndicator()
-            } else if (uiState.recommendedRecipe == null) {
-                Text("추천 버튼을 눌러주세요.")
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    RecipeCard(recipe = uiState.recommendedRecipe!!)
-                }
             }
         }
     }

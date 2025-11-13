@@ -8,9 +8,12 @@ import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -41,6 +44,15 @@ class RecipeViewModel @Inject constructor(
         val CATEGORY_FILTER_OPTIONS = listOf("상관없음", "한식", "일식", "중식", "양식", "기타")
         val UTENSIL_FILTER_OPTIONS = listOf("상관없음", "에어프라이어", "전자레인지", "냄비", "후라이팬")
     }
+
+    sealed class HomeNavigationEvent {
+        data class NavigateToRecipeDetail(val recipeId: Long) : HomeNavigationEvent()
+        // 추후 에러 화면 설정
+        data object NavigateToError : HomeNavigationEvent()
+    }
+
+    private val _navigationEvent = MutableSharedFlow<HomeNavigationEvent>()
+    val navigationEvent: SharedFlow<HomeNavigationEvent> = _navigationEvent.asSharedFlow()
 
     // HomeScreen States
     private val _homeUiState = MutableStateFlow(HomeUiState())
@@ -104,8 +116,9 @@ class RecipeViewModel @Inject constructor(
 
                 _homeUiState.update { it.copy(recommendedRecipe = newRecipe) }
 
-                newRecipe?.id?.let {
-                    _seenRecipeIds.value = _seenRecipeIds.value + it
+                newRecipe?.id?.let { recipeId ->
+                    _seenRecipeIds.value = _seenRecipeIds.value + recipeId
+                    _navigationEvent.emit(HomeNavigationEvent.NavigateToRecipeDetail(recipeId))
                 }
 
             } finally {
