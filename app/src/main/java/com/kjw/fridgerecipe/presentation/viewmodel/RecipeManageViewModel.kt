@@ -2,13 +2,19 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 import com.kjw.fridgerecipe.domain.model.RecipeStep
+import com.kjw.fridgerecipe.domain.repository.IngredientRepository
+import com.kjw.fridgerecipe.domain.usecase.DelIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.DelRecipeUseCase
+import com.kjw.fridgerecipe.domain.usecase.GetIngredientByIdUseCase
+import com.kjw.fridgerecipe.domain.usecase.GetMatchingIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipeByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.InsertRecipeUseCase
+import com.kjw.fridgerecipe.domain.usecase.UpdateIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateRecipeUseCase
 import com.kjw.fridgerecipe.presentation.ui.common.OperationResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -58,12 +64,27 @@ data class RecipeEditUiState(
     val selectedRecipeTitle: String? = null
 )
 
+data class IngredientUsageState(
+    val ingredientId: Long,
+    val fridgeName: String,
+    val recipeName: String,
+    val currentAmount: Double,
+    val unit: String,
+    val amountToUse: String = "",
+    val isError: Boolean = false
+)
+
 @HiltViewModel
 class RecipeManageViewModel @Inject constructor(
     private val getSavedRecipeByIdUseCase: GetSavedRecipeByIdUseCase,
     private val insertRecipeUseCase: InsertRecipeUseCase,
     private val updateRecipeUseCase: UpdateRecipeUseCase,
-    private val delRecipeUseCase: DelRecipeUseCase
+    private val delRecipeUseCase: DelRecipeUseCase,
+    private val ingredientRepository: IngredientRepository,
+    private val getMatchingIngredientsUseCase: GetMatchingIngredientsUseCase,
+    private val getIngredientByIdUseCase: GetIngredientByIdUseCase,
+    private val updateIngredientUseCase: UpdateIngredientUseCase,
+    private val delIngredientUseCase: DelIngredientUseCase
 ) : ViewModel() {
 
     sealed class NavigationEvent {
@@ -80,6 +101,17 @@ class RecipeManageViewModel @Inject constructor(
     val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe.asStateFlow()
     private val _editUiState = MutableStateFlow(RecipeEditUiState())
     val editUiState: StateFlow<RecipeEditUiState> = _editUiState.asStateFlow()
+
+    // RecipeDetail State
+    private val _showUsageDialog = MutableStateFlow(false)
+    val showUsageDialog: StateFlow<Boolean> = _showUsageDialog.asStateFlow()
+    private val _usageListState = MutableStateFlow<List<IngredientUsageState>>(emptyList())
+    val usageListState: StateFlow<List<IngredientUsageState>> = _usageListState.asStateFlow()
+    private val _allFridgeIngredients = MutableStateFlow<List<Ingredient>>(emptyList())
+    private val _filteredFridgeIngredients = MutableStateFlow<List<Ingredient>>(emptyList())
+    val filteredFridgeIngredients: StateFlow<List<Ingredient>> = _filteredFridgeIngredients.asStateFlow()
+    private val _showMappingSheet = MutableStateFlow<Int?>(null)
+    val showMappingSheet: StateFlow<Int?> = _showMappingSheet.asStateFlow()
 
     fun loadRecipeById(id: Long) {
         viewModelScope.launch {
@@ -290,6 +322,117 @@ class RecipeManageViewModel @Inject constructor(
             Pair(null, ListErrorType.NONE)
         } else {
             Pair(_editUiState.value.stepsError, _editUiState.value.stepsErrorType)
+        }
+    }
+
+    // RecipeDetailScreen Function
+    fun onCookingCompleteClicked() {
+        val recipe = _selectedRecipe.value ?: return
+        viewModelScope.launch {
+            val fridgeIngredients = ingredientRepository.getAllIngredientsSuspend()
+            _allFridgeIngredients.value = fridgeIngredients
+            _filteredFridgeIngredients.value = fridgeIngredients
+
+            val matchedMap = getMatchingIngredientsUseCase(recipe)
+
+            if (matchedMap.isEmpty()) {
+                _operationResultEvent.emit(OperationResult.Failure("냉장고에서 일치하는 재료를 찾지 못했습니다."))
+                return@launch
+            }
+
+            _usageListState.value = matchedMap.map { (recipeName, ingredient) ->
+                IngredientUsageState(
+                    ingredientId = ingredient.id!!,
+                    fridgeName = ingredient.name,
+                    recipeName = recipeName,
+                    currentAmount = ingredient.amount,
+                    unit = ingredient.unit.label
+                )
+            }
+            _showUsageDialog.value = true
+        }
+    }
+
+    fun onUsageDialogDismiss() {
+        _showUsageDialog.value = false
+    }
+
+    fun onUsageAmountChanged(index: Int, newAmount: String) {
+        if (newAmount.isEmpty() || newAmount.matches(Regex("^\\d*\\.?\\d{0,2}\$"))) {
+            _usageListState.update { list ->
+                list.mapIndexed { i, item ->
+                    if (i == index) item.copy(amountToUse = newAmount, isError = false) else item
+                }
+            }
+        }
+    }
+
+    fun requestIngredientMapping(index: Int) {
+        _filteredFridgeIngredients.value = _allFridgeIngredients.value
+        _showMappingSheet.value = index
+    }
+
+    fun filterFridgeIngredients(query: String) {
+        if (query.isBlank()) {
+            _filteredFridgeIngredients.value = _allFridgeIngredients.value
+        } else {
+            _filteredFridgeIngredients.value = _allFridgeIngredients.value.filter {
+                it.name.contains(query, ignoreCase = true)
+            }
+        }
+    }
+
+    fun onUsageMappingChanged(index: Int, selectedIngredientId: Long?) {
+        val selectedIngredient = _allFridgeIngredients.value.find { it.id == selectedIngredientId }
+
+        _usageListState.update { list ->
+            list.mapIndexed { i, item ->
+                if (i == index) {
+                    item.copy(
+                        ingredientId = selectedIngredient?.id,
+                        fridgeName = selectedIngredient?.name,
+                        unit = selectedIngredient?.unit?.label,
+                        currentAmount = selectedIngredient?.amount ?: 0.0
+                    )
+                } else item
+            }
+        }
+        _showMappingSheet.value = null
+    }
+
+    fun onMappingSheetDismiss() {
+        _showMappingSheet.value = null
+    }
+
+    fun onConfirmUsage() {
+        viewModelScope.launch {
+            val usageList = _usageListState.value
+            var processedCount = 0
+
+            usageList.forEach { usage ->
+                val amountUsed = usage.amountToUse.toDoubleOrNull() ?: 0.0
+                if (amountUsed > 0) {
+                    val originIngredient = getIngredientByIdUseCase(usage.ingredientId)
+
+                    if (originIngredient != null) {
+                        val remaining = originIngredient.amount - amountUsed
+
+                        if (remaining <= 0) {
+                            delIngredientUseCase(originIngredient)
+                        } else {
+                            updateIngredientUseCase(originIngredient.copy(amount = remaining))
+                        }
+                        processedCount++
+                    }
+                }
+            }
+
+            _showUsageDialog.value = false
+            if (processedCount > 0) {
+                _operationResultEvent.emit(OperationResult.Success("${processedCount}개 재료를 냉장고에서 차감했습니다."))
+            } else {
+                _operationResultEvent.emit(OperationResult.Success("차감된 재료가 없습니다."))
+            }
         }
     }
 
