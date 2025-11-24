@@ -21,9 +21,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.kjw.fridgerecipe.presentation.ui.components.IngredientListItem
 import com.kjw.fridgerecipe.presentation.ui.components.RecipeInfoRow
 import com.kjw.fridgerecipe.presentation.ui.components.RecipeStepItem
@@ -68,6 +70,19 @@ fun RecipeDetailScreen(
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
             ) {
+                if (recipe.imageUri != null) {
+                    AsyncImage(
+                        model = recipe.imageUri,
+                        contentDescription = "레시피 완성 사진",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
                 Text(
                     text = recipe.title,
                     style = MaterialTheme.typography.headlineLarge,
