@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,14 +27,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,9 +39,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -89,11 +85,6 @@ fun HomeScreen(
     val categoryFilterOptions = RecipeViewModel.CATEGORY_FILTER_OPTIONS
     val utensilFilterOptions = RecipeViewModel.UTENSIL_FILTER_OPTIONS
 
-    var timeMenuExpanded by remember { mutableStateOf(false) }
-    var levelMenuExpanded by remember { mutableStateOf(false) }
-    var categoryMenuExpanded by remember { mutableStateOf(false) }
-    var utensilMenuExpanded by remember { mutableStateOf(false) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -119,8 +110,6 @@ fun HomeScreen(
             Spacer(modifier = Modifier.width(8.dp))
             StatusIndicator(color = MaterialTheme.colorScheme.tertiaryContainer, text = "임박")
         }
-
-//        Spacer(modifier = Modifier.height(200.dp))
 
         StorageType.entries.forEach { storageType ->
             val items = homeIngredients[storageType] ?: emptyList()
@@ -173,6 +162,7 @@ fun HomeScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Tune, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -181,54 +171,42 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    FilterDropdown(
-                        label = "시간",
-                        value = uiState.selectedTimeFilter ?: "상관없음",
-                        expanded = timeMenuExpanded,
-                        onExpandedChange = { timeMenuExpanded = it },
-                        options = timeFilterOptions,
-                        onOptionSelected = { recipeViewModel.onTimeFilterChanged(it) },
-                        modifier = Modifier.weight(1f)
-                    )
-                    FilterDropdown(
-                        label = "난이도",
-                        value = uiState.selectedLevelFilter?.label ?: "상관없음",
-                        expanded = levelMenuExpanded,
-                        onExpandedChange = { levelMenuExpanded = it },
-                        options = levelFilterOptions.map { it?.label ?: "상관없음" },
-                        onOptionSelected = { label ->
-                            val level = levelFilterOptions.find { (it?.label ?: "상관없음") == label }
-                            recipeViewModel.onLevelFilterChanged(level)
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                FilterSection(
+                    title = "조리 시간",
+                    options = timeFilterOptions,
+                    selectedOption = uiState.selectedTimeFilter ?: "상관없음",
+                    onOptionSelected = { recipeViewModel.onTimeFilterChanged(it) }
+                )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterDropdown(
-                        label = "종류",
-                        value = uiState.selectedCategoryFilter ?: "상관없음",
-                        expanded = categoryMenuExpanded,
-                        onExpandedChange = { categoryMenuExpanded = it },
-                        options = categoryFilterOptions,
-                        onOptionSelected = { recipeViewModel.onCategoryFilterChanged(it) },
-                        modifier = Modifier.weight(1f)
-                    )
-                    FilterDropdown(
-                        label = "도구",
-                        value = uiState.selectedUtensilFilter ?: "상관없음",
-                        expanded = utensilMenuExpanded,
-                        onExpandedChange = { utensilMenuExpanded = it },
-                        options = utensilFilterOptions,
-                        onOptionSelected = { recipeViewModel.onUtensilFilterChanged(it) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                FilterSection(
+                    title = "난이도",
+                    options = levelFilterOptions.map { it?.label ?: "상관없음" },
+                    selectedOption = uiState.selectedLevelFilter?.label ?: "상관없음",
+                    onOptionSelected = { label ->
+                        val level = levelFilterOptions.find { (it?.label ?: "상관없음") == label }
+                        recipeViewModel.onLevelFilterChanged(level)
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                FilterSection(
+                    title = "음식 종류",
+                    options = categoryFilterOptions,
+                    selectedOption = uiState.selectedCategoryFilter ?: "상관없음",
+                    onOptionSelected = { recipeViewModel.onCategoryFilterChanged(it) }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                FilterSection(
+                    title = "조리 도구",
+                    options = utensilFilterOptions,
+                    selectedOption = uiState.selectedUtensilFilter ?: "상관없음",
+                    onOptionSelected = { recipeViewModel.onUtensilFilterChanged(it) }
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Divider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -264,7 +242,7 @@ fun HomeScreen(
             uiState.isRecipeLoading -> "레시피 생성 중..."
             uiState.selectedIngredientIds.isEmpty() -> "재료를 먼저 선택해주세요"
             uiState.recommendedRecipe == null -> "AI 레시피 추천 받기"
-            else -> "🔄 다른 레시피 추천 받기"
+            else -> "다른 레시피 추천 받기"
         }
 
         Button(
@@ -308,53 +286,44 @@ fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FilterDropdown(
-    label: String,
-    value: String,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
+private fun FilterSection(
+    title: String,
     options: List<String>,
-    onOptionSelected: (String) -> Unit,
-    modifier: Modifier = Modifier
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit
 ) {
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = onExpandedChange,
-        modifier = modifier
-    ) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = {},
-            readOnly = true,
-            label = {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier.menuAnchor(),
-            textStyle = MaterialTheme.typography.bodyMedium,
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline
-            ),
-            shape = RoundedCornerShape(12.dp)
+    Column {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.Bold
         )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { onExpandedChange(false) }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option) },
-                    onClick = {
-                        onOptionSelected(option)
-                        onExpandedChange(false)
-                    }
+            items(options) { option ->
+                val isSelected = option == selectedOption
+                FilterChip(
+                    selected = isSelected,
+                    onClick = { onOptionSelected(option) },
+                    label = { Text(option) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        containerColor = Color.Transparent,
+                        labelColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = isSelected,
+                        borderColor = MaterialTheme.colorScheme.outline,
+                        selectedBorderColor = Color.Transparent
+                    )
                 )
             }
         }
