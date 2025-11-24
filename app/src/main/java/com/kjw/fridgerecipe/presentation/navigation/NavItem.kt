@@ -19,7 +19,7 @@ const val RECIPE_EDIT_BASE_ROUTE = "RECIPE_EDIT"
 const val RECIPE_EDIT_ROUTE_PATTERN = "$RECIPE_EDIT_BASE_ROUTE?$RECIPE_ID_ARG={$RECIPE_ID_ARG}"
 
 sealed class NavItem(val route: String, val icon: ImageVector?, val label: String, val title: String) {
-    data object Home : NavItem("HOME", Icons.Default.Home, "홈", "메인")
+    data object Home : NavItem("HOME", Icons.Default.Home, "홈", "Fridge Recipe")
     data object Ingredients : NavItem("INGREDIENTS", Icons.Default.List, "재료", "전체 재료 목록")
     data object Recipes : NavItem("RECIPES", Icons.Default.Menu, "레시피", "레시피")
     data object IngredientDetail : NavItem(INGREDIENT_DETAIL_BASE_ROUTE, null, "재료 상세화면", "재료 상세화면")

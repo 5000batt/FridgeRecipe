@@ -19,15 +19,30 @@ private val DarkColorScheme = darkColorScheme(
     primary = GreenPrimaryDark,
     onPrimary = GreenOnPrimaryDark,
     primaryContainer = GreenPrimaryContainerDark,
+    onPrimaryContainer = GreenOnPrimaryContainerDark,
+
     secondary = LimeSecondaryDark,
     onSecondary = LimeOnSecondaryDark,
     secondaryContainer = LimeSecondaryContainerDark,
+    onSecondaryContainer = LimeOnSecondaryContainerDark,
+
     background = BackgroundDark,
     surface = SurfaceDark,
     onSurface = OnSurfaceDark,
-    surfaceVariant = GreenSurfaceVariantLight,
-    onSurfaceVariant = GreenOnSurfaceVariantLight,
-    outline = GreenOutlineLight
+
+    surfaceVariant = GreenSurfaceVariantDark,
+    onSurfaceVariant = GreenOnSurfaceVariantDark,
+    outline = GreenOutlineDark,
+
+    error = StatusExpiredContentDark,
+    onError = StatusExpiredContainerDark,
+    errorContainer = StatusExpiredContainerDark,
+    onErrorContainer = StatusExpiredContentDark,
+
+    tertiary = StatusWarningContentDark,
+    onTertiary = StatusWarningContainerDark,
+    tertiaryContainer = StatusWarningContainerDark,
+    onTertiaryContainer = StatusWarningContentDark
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -35,16 +50,29 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = GreenOnPrimary,
     primaryContainer = GreenPrimaryContainer,
     onPrimaryContainer = GreenOnPrimaryContainer,
+
     secondary = LimeSecondary,
     onSecondary = LimeOnSecondary,
     secondaryContainer = LimeSecondaryContainer,
     onSecondaryContainer = LimeOnSecondaryContainer,
+
     background = BackgroundLight,
     surface = SurfaceLight,
     onSurface = OnSurfaceLight,
+
     surfaceVariant = GreenSurfaceVariantLight,
     onSurfaceVariant = GreenOnSurfaceVariantLight,
-    outline = GreenOutlineLight
+    outline = GreenOutlineLight,
+
+    error = StatusExpiredContentLight,
+    onError = StatusExpiredContainerLight,
+    errorContainer = StatusExpiredContainerLight,
+    onErrorContainer = StatusExpiredContentLight,
+
+    tertiary = StatusWarningContentLight,
+    onTertiary = StatusWarningContainerLight,
+    tertiaryContainer = StatusWarningContainerLight,
+    onTertiaryContainer = StatusWarningContentLight
 )
 
 @Composable

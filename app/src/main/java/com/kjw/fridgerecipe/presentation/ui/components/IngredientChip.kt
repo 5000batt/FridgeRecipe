@@ -36,11 +36,16 @@ fun IngredientChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val chipColor = when {
-        ingredient.expirationDate.isBefore(LocalDate.now()) -> Color.Red.copy(alpha = 0.4F)
-        ingredient.expirationDate.isBefore(LocalDate.now().plusDays(3)) -> Color.Yellow.copy(alpha = 0.4F)
-        else -> Color.LightGray
+    val containerColor = when {
+        ingredient.expirationDate.isBefore(LocalDate.now()) ->
+            MaterialTheme.colorScheme.errorContainer
+        ingredient.expirationDate.isBefore(LocalDate.now().plusDays(3)) ->
+            MaterialTheme.colorScheme.tertiaryContainer
+        else ->
+            MaterialTheme.colorScheme.primaryContainer
     }
+
+    val contentColor = MaterialTheme.colorScheme.onSurface
 
     Card(
         modifier = Modifier
@@ -51,7 +56,10 @@ fun IngredientChip(
                 onClick = onClick
             ),
         shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = chipColor),
+        colors = CardDefaults.cardColors(
+            containerColor = containerColor,
+            contentColor = contentColor
+        ),
         border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Column(
