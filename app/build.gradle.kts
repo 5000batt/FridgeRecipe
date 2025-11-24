@@ -94,4 +94,7 @@ dependencies {
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
+
+    // Coil
+    implementation(libs.coil.compose)
 }

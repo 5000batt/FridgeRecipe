@@ -31,6 +31,7 @@ data class Recipe(
     val level: LevelType,
     val ingredients: List<RecipeIngredient>,
     val steps: List<RecipeStep>,
+    val imageUri: String? = null,
     // 검색 필터
     val ingredientsQuery: String? = null,
     val timeFilter: String? = null,

@@ -1,5 +1,9 @@
 package com.kjw.fridgerecipe.presentation.viewmodel
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.domain.model.LevelType
@@ -12,6 +16,7 @@ import com.kjw.fridgerecipe.domain.usecase.InsertRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateRecipeUseCase
 import com.kjw.fridgerecipe.presentation.ui.common.OperationResult
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -20,7 +25,12 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
+import java.lang.Exception
+import java.util.UUID
 import javax.inject.Inject
+import androidx.core.graphics.scale
 
 enum class ListErrorType {
     NONE,
@@ -55,11 +65,13 @@ data class RecipeEditUiState(
     val stepsError: String? = null,
     val stepsErrorType: ListErrorType = ListErrorType.NONE,
     val showDeleteDialog: Boolean = false,
-    val selectedRecipeTitle: String? = null
+    val selectedRecipeTitle: String? = null,
+    val imageUri: String? = null
 )
 
 @HiltViewModel
 class RecipeManageViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val getSavedRecipeByIdUseCase: GetSavedRecipeByIdUseCase,
     private val insertRecipeUseCase: InsertRecipeUseCase,
     private val updateRecipeUseCase: UpdateRecipeUseCase,
@@ -277,6 +289,72 @@ class RecipeManageViewModel @Inject constructor(
         _editUiState.update { it.copy(showDeleteDialog = false) }
     }
 
+    fun onImageSelected(uri: Uri?) {
+        uri?.let {
+            val savedUri = saveImageToInternalStorage(it)
+            _editUiState.update { state -> state.copy(imageUri = savedUri) }
+        }
+    }
+
+    private fun saveImageToInternalStorage(uri: Uri): String? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+
+            val originalBitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream.close()
+
+            if (originalBitmap == null) return null
+
+            val scaledBitmap = scaleBitmapDown(originalBitmap, 1024)
+
+            val directory = File(context.filesDir, "recipe_images")
+            if (!directory.exists()) {
+                directory.mkdirs()
+            }
+
+            val fileName = "IMG_${UUID.randomUUID()}.jpg"
+            val file = File(directory, fileName)
+            val outputStream = FileOutputStream(file)
+            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)
+
+            outputStream.flush()
+            outputStream.close()
+
+            if (originalBitmap != scaledBitmap) {
+                originalBitmap.recycle()
+            }
+            scaledBitmap.recycle()
+
+            file.absolutePath
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun scaleBitmapDown(bitmap: Bitmap, maxDimension: Int): Bitmap {
+        val originalWidth = bitmap.width
+        val originalHeight = bitmap.height
+
+        if (originalWidth <= maxDimension && originalHeight <= maxDimension) {
+            return bitmap
+        }
+
+        val aspectRatio = originalWidth.toFloat() / originalHeight.toFloat()
+        var newWidth = 0
+        var newHeight = 0
+
+        if (originalWidth > originalHeight) {
+            newWidth = maxDimension
+            newHeight = (newWidth / aspectRatio).toInt()
+        } else {
+            newHeight = maxDimension
+            newWidth = (newHeight * aspectRatio).toInt()
+        }
+
+        return bitmap.scale(newWidth, newHeight)
+    }
+
     private fun checkIngredientErrors(list: List<IngredientUiState>): Pair<String?, ListErrorType> {
         return if (!list.any { it.name.isBlank() || it.quantity.isBlank() }) {
             Pair(null, ListErrorType.NONE)
@@ -377,7 +455,8 @@ class RecipeManageViewModel @Inject constructor(
             timeFilter = timeFilterTag,
             levelFilter = actualLevel,
             categoryFilter = actualCategory,
-            utensilFilter = actualUtensil
+            utensilFilter = actualUtensil,
+            imageUri = currentState.imageUri
         )
     }
 }
@@ -408,6 +487,7 @@ private fun Recipe.toEditUiState(): RecipeEditUiState {
                 isEssential = essentialNames.any { essentialName -> it.name.contains(essentialName) }
             )
         },
-        stepsState = this.steps.map { StepUiState(it.number, it.description) }
+        stepsState = this.steps.map { StepUiState(it.number, it.description) },
+        imageUri = this.imageUri
     )
 }
