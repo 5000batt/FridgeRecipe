@@ -8,8 +8,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 const val INGREDIENT_ID_ARG = "ingredientId"
 const val INGREDIENT_ID_DEFAULT = -1L
-const val INGREDIENT_DETAIL_BASE_ROUTE = "INGREDIENT_DETAIL"
-const val INGREDIENT_DETAIL_ROUTE_PATTERN = "$INGREDIENT_DETAIL_BASE_ROUTE?$INGREDIENT_ID_ARG={$INGREDIENT_ID_ARG}"
+const val INGREDIENT_EDIT_BASE_ROUTE = "INGREDIENT_EDIT"
+const val INGREDIENT_EDIT_ROUTE_PATTERN = "$INGREDIENT_EDIT_BASE_ROUTE?$INGREDIENT_ID_ARG={$INGREDIENT_ID_ARG}"
 
 const val RECIPE_ID_ARG = "recipeId"
 const val RECIPE_ID_DEFAULT = -1L
@@ -22,7 +22,7 @@ sealed class NavItem(val route: String, val icon: ImageVector?, val label: Strin
     data object Home : NavItem("HOME", Icons.Default.Home, "홈", "Fridge Recipe")
     data object Ingredients : NavItem("INGREDIENTS", Icons.Default.List, "재료", "전체 재료 목록")
     data object Recipes : NavItem("RECIPES", Icons.Default.Menu, "레시피", "레시피")
-    data object IngredientDetail : NavItem(INGREDIENT_DETAIL_BASE_ROUTE, null, "재료 상세화면", "재료 상세화면")
+    data object IngredientEdit : NavItem(INGREDIENT_EDIT_BASE_ROUTE, null, "재료 상세화면", "재료 상세화면")
     data object RecipeDetail : NavItem(RECIPE_DETAIL_BASE_ROUTE, null, "레시피 상세화면", "레시피 상세화면")
     data object RecipeEdit : NavItem(RECIPE_EDIT_BASE_ROUTE, null, "레시피 편집화면", "레시피 편집화면")
 }

@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
-data class IngredientDetailUiState(
+data class IngredientEditUiState(
     val name: String = "",
     val nameError: String? = null,
     val amount: String = "",
@@ -41,7 +41,9 @@ data class IngredientDetailUiState(
     val selectedCategory: CategoryType = CategoryType.ETC,
     val showDatePicker: Boolean = false,
     val showDeleteDialog: Boolean = false,
-    val selectedIngredientName: String? = null
+    val selectedIngredientName: String? = null,
+    val selectedIcon: IngredientIcon = IngredientIcon.DEFAULT,
+    val selectedIconCategory: CategoryType? = null,
 )
 
 @HiltViewModel
@@ -102,81 +104,92 @@ class IngredientViewModel @Inject constructor(
             initialValue = emptyMap()
         )
 
-    // IngredientDetailScreen States
+    // IngredientEditScreen States
     private val _selectedIngredient = MutableStateFlow<Ingredient?>(null)
     val selectedIngredient: StateFlow<Ingredient?> = _selectedIngredient.asStateFlow()
-    private val _detailUiState = MutableStateFlow(IngredientDetailUiState())
-    val detailUiState: StateFlow<IngredientDetailUiState> = _detailUiState.asStateFlow()
+    private val _editUiState = MutableStateFlow(IngredientEditUiState())
+    val editUiState: StateFlow<IngredientEditUiState> = _editUiState.asStateFlow()
 
-    // IngredientDetailScreen Functions
+    // IngredientEditScreen Functions
     fun loadIngredientById(id: Long) {
         viewModelScope.launch {
             val ingredient = getIngredientByIdUseCase(id)
             _selectedIngredient.value = ingredient
-            _detailUiState.value = ingredient?.toDetailUiState() ?: IngredientDetailUiState()
+            _editUiState.value = ingredient?.toEditUiState() ?: IngredientEditUiState()
         }
     }
 
     fun clearSelectedIngredient() {
         _selectedIngredient.value = null
-        _detailUiState.value = IngredientDetailUiState()
+        _editUiState.value = IngredientEditUiState()
+    }
+
+    fun onIconSelected(icon: IngredientIcon) {
+        _editUiState.update { it.copy(selectedIcon = icon) }
+    }
+
+    fun onIconCategorySelected(category: CategoryType) {
+        _editUiState.update {
+            val newCategory = if (it.selectedIconCategory == category) null else category
+            it.copy(selectedIconCategory = newCategory)
+        }
     }
 
     fun onNameChanged(newName: String) {
-        _detailUiState.update { it.copy(name = newName, nameError = null) }
+        _editUiState.update { it.copy(name = newName, nameError = null) }
     }
 
     fun onAmountChanged(newAmount: String) {
         val regex = Regex("^\\d*\\.?\\d{0,2}\$")
         if (newAmount.isEmpty() || newAmount.matches(regex)) {
-            _detailUiState.update { it.copy(amount = newAmount, amountError = null) }
+            _editUiState.update { it.copy(amount = newAmount, amountError = null) }
         }
     }
 
     fun onUnitChanged(unit: UnitType) {
-        _detailUiState.update { it.copy(selectedUnit = unit) }
+        _editUiState.update { it.copy(selectedUnit = unit) }
     }
 
     fun onStorageChanged(storage: StorageType) {
-        _detailUiState.update { it.copy(selectedStorage = storage) }
+        _editUiState.update { it.copy(selectedStorage = storage) }
     }
 
     fun onCategoryChanged(category: CategoryType) {
-        _detailUiState.update { it.copy(selectedCategory = category) }
+        _editUiState.update { it.copy(selectedCategory = category) }
     }
 
     fun onDateSelected(date: LocalDate) {
-        _detailUiState.update { it.copy(selectedDate = date, showDatePicker = false) }
+        _editUiState.update { it.copy(selectedDate = date, showDatePicker = false) }
     }
 
     fun onDatePickerDialogShow() {
-        _detailUiState.update { it.copy(showDatePicker = true) }
+        _editUiState.update { it.copy(showDatePicker = true) }
     }
 
     fun onDatePickerDialogDismiss() {
-        _detailUiState.update { it.copy(showDatePicker = false) }
+        _editUiState.update { it.copy(showDatePicker = false) }
     }
 
     fun onDeleteDialogShow() {
-        _detailUiState.update { it.copy(showDeleteDialog = true, selectedIngredientName = _selectedIngredient.value?.name) }
+        _editUiState.update { it.copy(showDeleteDialog = true, selectedIngredientName = _selectedIngredient.value?.name) }
     }
 
     fun onDeleteDialogDismiss() {
-        _detailUiState.update { it.copy(showDeleteDialog = false) }
+        _editUiState.update { it.copy(showDeleteDialog = false) }
     }
 
     private fun validateInputs(): Boolean {
-        val currentState = _detailUiState.value
+        val currentState = _editUiState.value
         val amountDouble = currentState.amount.toDoubleOrNull()
         var isValid = true
 
         if (currentState.name.isBlank()) {
-            _detailUiState.update { it.copy(nameError = "재료 이름을 입력해주세요.") }
+            _editUiState.update { it.copy(nameError = "재료 이름을 입력해주세요.") }
             isValid = false
         }
         if (amountDouble == null || amountDouble <= 0) {
             val errorMsg = if (amountDouble == null) "숫자만 입력해주세요." else "0보다 큰 값을 입력해주세요."
-            _detailUiState.update { it.copy(amountError = errorMsg) }
+            _editUiState.update { it.copy(amountError = errorMsg) }
             isValid = false
         }
 
@@ -184,16 +197,18 @@ class IngredientViewModel @Inject constructor(
     }
 
     private fun buildIngredientFromState(isEditMode: Boolean): Ingredient {
-        val currentState = _detailUiState.value
+        val currentState = _editUiState.value
+        val safeAmount = currentState.amount.toDoubleOrNull() ?: 0.0
+
         return Ingredient(
             id = if (isEditMode) _selectedIngredient.value?.id else null,
             name = currentState.name.trim(),
-            amount = currentState.amount.toDouble(),
+            amount = safeAmount,
             unit = currentState.selectedUnit,
             expirationDate = currentState.selectedDate,
             storageLocation = currentState.selectedStorage,
             category = currentState.selectedCategory,
-            emoticon = IngredientIcon.DEFAULT
+            emoticon = currentState.selectedIcon
         )
     }
 
@@ -231,18 +246,20 @@ class IngredientViewModel @Inject constructor(
                     _operationResultEvent.emit(OperationResult.Failure("삭제에 실패했습니다."))
                 }
             }
-            _detailUiState.update { it.copy(showDeleteDialog = false) }
+            _editUiState.update { it.copy(showDeleteDialog = false) }
         }
     }
 }
 
-private fun Ingredient.toDetailUiState(): IngredientDetailUiState {
-    return IngredientDetailUiState(
+private fun Ingredient.toEditUiState(): IngredientEditUiState {
+    return IngredientEditUiState(
         name = this.name,
         amount = this.amount.toString(),
         selectedUnit = this.unit,
         selectedDate = this.expirationDate,
         selectedStorage = this.storageLocation,
-        selectedCategory = this.category
+        selectedCategory = this.category,
+        selectedIcon = this.emoticon,
+        selectedIconCategory = this.emoticon.category
     )
 }

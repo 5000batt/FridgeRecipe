@@ -10,7 +10,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +33,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.presentation.navigation.AppNavHost
-import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_DETAIL_BASE_ROUTE
+import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_EDIT_BASE_ROUTE
 import com.kjw.fridgerecipe.presentation.navigation.NavItem
 import com.kjw.fridgerecipe.presentation.navigation.RECIPE_DETAIL_BASE_ROUTE
 import com.kjw.fridgerecipe.presentation.navigation.RECIPE_EDIT_BASE_ROUTE
@@ -54,13 +54,13 @@ private fun rememberMainAppScreenState(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val isIngredientDetailScreen = currentRoute?.startsWith(INGREDIENT_DETAIL_BASE_ROUTE) == true
+    val isIngredientEditScreen = currentRoute?.startsWith(INGREDIENT_EDIT_BASE_ROUTE) == true
     val isRecipeDetailScreen = currentRoute?.startsWith(RECIPE_DETAIL_BASE_ROUTE) == true
     val isRecipeEditScreen = currentRoute?.startsWith(RECIPE_EDIT_BASE_ROUTE) == true
-    val isDetailScreen = isIngredientDetailScreen || isRecipeDetailScreen || isRecipeEditScreen
+    val isDetailScreen = isIngredientEditScreen || isRecipeDetailScreen || isRecipeEditScreen
 
     val currentScreen = remember(currentRoute, isDetailScreen) {
-        if (isIngredientDetailScreen) NavItem.IngredientDetail
+        if (isIngredientEditScreen) NavItem.IngredientEdit
         else if (isRecipeDetailScreen) NavItem.RecipeDetail
         else if (isRecipeEditScreen) NavItem.RecipeEdit
         else listOf(NavItem.Home, NavItem.Ingredients, NavItem.Recipes).find { it.route == currentRoute }
@@ -149,17 +149,19 @@ fun MainAppScreen() {
         },
         floatingActionButton = {
             if (screenState.currentRoute == NavItem.Ingredients.route) {
-                FloatingActionButton(onClick = {
-                    screenState.navController.navigate(INGREDIENT_DETAIL_BASE_ROUTE)
-                }) {
-                    Icon(Icons.Filled.Add, contentDescription = "재료 추가")
-                }
+                ExtendedFloatingActionButton(
+                    onClick = { screenState.navController.navigate(INGREDIENT_EDIT_BASE_ROUTE) },
+                    icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                    text = { Text("재료 추가") },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             } else if (screenState.currentRoute == NavItem.Recipes.route) {
-                FloatingActionButton(onClick = {
-                    screenState.navController.navigate(RECIPE_EDIT_BASE_ROUTE)
-                }) {
-                    Icon(Icons.Filled.Add, contentDescription = "레시피 추가")
-                }
+                ExtendedFloatingActionButton(
+                    onClick = { screenState.navController.navigate(RECIPE_EDIT_BASE_ROUTE) },
+                    icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                    text = { Text("레시피 추가") }
+                )
             }
         }
     ) { paddingValues ->

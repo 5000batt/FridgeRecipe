@@ -29,9 +29,13 @@ enum class StorageType(val label: String) {
 
 enum class CategoryType(val label: String) {
     VEGETABLE("채소"),
+    FRUIT("과일"),
     MEAT("육류"),
     SEAFOOD("해산물"),
-    DAIRY("유제품"),
+    DAIRY("유제품/계란"),
+    GRAIN("곡물/면/빵"),
+    BEVERAGE("음료"),
+    SEASONING("양념/오일"),
     ETC("기타");
 
     companion object {

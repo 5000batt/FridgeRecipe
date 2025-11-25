@@ -8,7 +8,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.kjw.fridgerecipe.presentation.ui.screen.IngredientDetailScreen
+import com.kjw.fridgerecipe.presentation.ui.screen.IngredientEditScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.IngredientListScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.HomeScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.RecipeDetailScreen
@@ -35,12 +35,12 @@ fun AppNavHost(
         composable(NavItem.Ingredients.route) {
             IngredientListScreen(
                 onIngredientClick = { ingredientId ->
-                    navController.navigate("$INGREDIENT_DETAIL_BASE_ROUTE?$INGREDIENT_ID_ARG=$ingredientId")
+                    navController.navigate("$INGREDIENT_EDIT_BASE_ROUTE?$INGREDIENT_ID_ARG=$ingredientId")
                 }
             )
         }
         composable(
-            route = INGREDIENT_DETAIL_ROUTE_PATTERN,
+            route = INGREDIENT_EDIT_ROUTE_PATTERN,
             arguments = listOf(navArgument(INGREDIENT_ID_ARG) {
                 type = NavType.LongType
                 defaultValue = INGREDIENT_ID_DEFAULT
@@ -48,7 +48,7 @@ fun AppNavHost(
         ) { backStackEntry ->
             val ingredientId = backStackEntry.arguments?.getLong(INGREDIENT_ID_ARG) ?: INGREDIENT_ID_DEFAULT
 
-            IngredientDetailScreen(
+            IngredientEditScreen(
                 onNavigateBack = { navController.popBackStack() },
                 ingredientId = ingredientId
             )

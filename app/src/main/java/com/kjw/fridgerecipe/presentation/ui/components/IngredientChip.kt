@@ -21,12 +21,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.domain.model.Ingredient
+import com.kjw.fridgerecipe.presentation.util.getIconResId
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -96,7 +96,7 @@ fun IngredientChip(
 
 @Composable
 fun IngredientIconImage(ingredient: Ingredient) {
-    val imagePainter = painterResource(id = ingredient.emoticon.iconResId)
+    val imagePainter = painterResource(id = getIconResId(ingredient.emoticon))
 
     Image(
         painter = imagePainter,

@@ -108,8 +108,7 @@ fun RecipeListItem(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = LocalIndication.current,
                 onClick = onClick
-            ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            )
     ) {
         Row(
             modifier = Modifier
