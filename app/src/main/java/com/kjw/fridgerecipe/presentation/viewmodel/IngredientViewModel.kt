@@ -46,6 +46,10 @@ data class IngredientEditUiState(
     val selectedIconCategory: CategoryType? = null,
 )
 
+enum class ValidationField {
+    NAME, AMOUNT
+}
+
 @HiltViewModel
 class IngredientViewModel @Inject constructor(
     private val insertIngredientUseCase: InsertIngredientUseCase,
@@ -57,13 +61,6 @@ class IngredientViewModel @Inject constructor(
 
     private val _operationResultEvent = MutableSharedFlow<OperationResult>()
     val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
-
-    // IngredientListScreen States
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-    private val _isLoading = MutableStateFlow(true)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
     private val _rawIngredientsFlow = getIngredientsUseCase()
         .onEach { _isLoading.value = false }
         .stateIn(
@@ -71,6 +68,23 @@ class IngredientViewModel @Inject constructor(
             started = SharingStarted.Eagerly,
             initialValue = emptyList()
         )
+
+    // HomeScreen States
+    val allIngredients: StateFlow<List<Ingredient>> = _rawIngredientsFlow
+    val homeScreenIngredients: StateFlow<Map<StorageType, List<Ingredient>>> =
+        _rawIngredientsFlow.map { ingredients ->
+            ingredients.groupBy { it.storageLocation }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyMap()
+        )
+
+    // IngredientListScreen States
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     val categorizedIngredients: StateFlow<Map<CategoryType, List<Ingredient>>> =
         _searchQuery.combine(_rawIngredientsFlow) { query, ingredients ->
@@ -88,27 +102,19 @@ class IngredientViewModel @Inject constructor(
             initialValue = emptyMap()
         )
 
-    // IngredientListScreen Function
-    fun onSearchQueryChanged(newQuery: String) {
-        _searchQuery.value = newQuery
-    }
-
-    // HomeScreen States
-    val allIngredients: StateFlow<List<Ingredient>> = _rawIngredientsFlow
-    val homeScreenIngredients: StateFlow<Map<StorageType, List<Ingredient>>> =
-        _rawIngredientsFlow.map { ingredients ->
-            ingredients.groupBy { it.storageLocation }
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyMap()
-        )
-
     // IngredientEditScreen States
     private val _selectedIngredient = MutableStateFlow<Ingredient?>(null)
     val selectedIngredient: StateFlow<Ingredient?> = _selectedIngredient.asStateFlow()
     private val _editUiState = MutableStateFlow(IngredientEditUiState())
     val editUiState: StateFlow<IngredientEditUiState> = _editUiState.asStateFlow()
+
+    private val _validationEvent = MutableSharedFlow<ValidationField>()
+    val validationEvent: SharedFlow<ValidationField> = _validationEvent.asSharedFlow()
+
+    // IngredientListScreen Function
+    fun onSearchQueryChanged(newQuery: String) {
+        _searchQuery.value = newQuery
+    }
 
     // IngredientEditScreen Functions
     fun loadIngredientById(id: Long) {
@@ -125,7 +131,15 @@ class IngredientViewModel @Inject constructor(
     }
 
     fun onIconSelected(icon: IngredientIcon) {
-        _editUiState.update { it.copy(selectedIcon = icon) }
+        _editUiState.update { state ->
+            val newState = state.copy(selectedIcon = icon)
+
+            if (icon != IngredientIcon.DEFAULT) {
+                newState.copy(selectedCategory = icon.category)
+            } else {
+                newState
+            }
+        }
     }
 
     fun onIconCategorySelected(category: CategoryType) {
@@ -178,22 +192,23 @@ class IngredientViewModel @Inject constructor(
         _editUiState.update { it.copy(showDeleteDialog = false) }
     }
 
-    private fun validateInputs(): Boolean {
+    private suspend fun validateInputs(): Boolean {
         val currentState = _editUiState.value
         val amountDouble = currentState.amount.toDoubleOrNull()
-        var isValid = true
 
         if (currentState.name.isBlank()) {
             _editUiState.update { it.copy(nameError = "재료 이름을 입력해주세요.") }
-            isValid = false
+            _validationEvent.emit(ValidationField.NAME)
+            return false
         }
         if (amountDouble == null || amountDouble <= 0) {
             val errorMsg = if (amountDouble == null) "숫자만 입력해주세요." else "0보다 큰 값을 입력해주세요."
             _editUiState.update { it.copy(amountError = errorMsg) }
-            isValid = false
+            _validationEvent.emit(ValidationField.AMOUNT)
+            return false
         }
 
-        return isValid
+        return true
     }
 
     private fun buildIngredientFromState(isEditMode: Boolean): Ingredient {

@@ -60,6 +60,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -78,6 +80,7 @@ import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_ID_DEFAULT
 import com.kjw.fridgerecipe.presentation.ui.common.OperationResult
 import com.kjw.fridgerecipe.presentation.util.getIconResId
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
+import com.kjw.fridgerecipe.presentation.viewmodel.ValidationField
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -108,6 +111,9 @@ fun IngredientEditScreen(
     }
 
     var hasScrolledToInitialSelection by remember { mutableStateOf(false) }
+
+    val nameFocusRequester = remember { FocusRequester() }
+    val amountFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(ingredientId, isEditMode) {
         if (isEditMode) {
@@ -143,6 +149,15 @@ fun IngredientEditScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.validationEvent.collect { field ->
+            when (field) {
+                ValidationField.NAME -> nameFocusRequester.requestFocus()
+                ValidationField.AMOUNT -> amountFocusRequester.requestFocus()
+            }
+        }
+    }
+
     val textFieldColors = OutlinedTextFieldDefaults.colors(
         focusedContainerColor = Color.Transparent,
         unfocusedContainerColor = Color.Transparent,
@@ -162,14 +177,6 @@ fun IngredientEditScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
-            Text(
-                text = if (isEditMode) "✏️ 재료 수정" else "📝 새 재료 추가",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.fillMaxWidth()
-            )
 
             Column (
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -200,7 +207,7 @@ fun IngredientEditScreen(
                             border = FilterChipDefaults.filterChipBorder(
                                 enabled = true,
                                 selected = isSelected,
-                                borderColor = MaterialTheme.colorScheme.outlineVariant,
+                                borderColor = MaterialTheme.colorScheme.outline,
                                 selectedBorderColor = Color.Transparent
                             )
                         )
@@ -228,15 +235,20 @@ fun IngredientEditScreen(
                                 }
                                 .background(
                                     if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                                    else MaterialTheme.colorScheme.surfaceContainerHigh
+                                    else Color.Transparent
                                 )
-                                .then(if (isSelected) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp)) else Modifier)
-                                .padding(12.dp)
+                                .border(
+                                    width = if (isSelected) 2.dp else 1.dp,
+                                    color = if (isSelected) Color.Transparent
+                                    else MaterialTheme.colorScheme.outline,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .padding(8.dp)
                         ) {
                             Image(
                                 painter = painterResource(id = getIconResId(icon)),
                                 contentDescription = icon.label,
-                                modifier = Modifier.size(32.dp)
+                                modifier = Modifier.size(36.dp)
                             )
 
                             Spacer(modifier = Modifier.height(4.dp))
@@ -259,7 +271,9 @@ fun IngredientEditScreen(
                     onValueChange = { viewModel.onNameChanged(it) },
                     label = { Text("재료 이름 *") },
                     isError = uiState.nameError != null,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(nameFocusRequester),
                     singleLine = true,
                     colors = textFieldColors,
                     shape = shape,
@@ -292,7 +306,9 @@ fun IngredientEditScreen(
                             keyboardType = KeyboardType.Decimal,
                             imeAction = ImeAction.Done
                         ),
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .focusRequester(amountFocusRequester),
                         singleLine = true,
                         colors = textFieldColors,
                         shape = shape
@@ -403,11 +419,18 @@ fun IngredientEditScreen(
 
             // 소비 기한
             OutlinedTextField(
-                value = uiState.selectedDate.format(DateTimeFormatter.ISO_DATE),
+                value = uiState.selectedDate.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")),
                 onValueChange = {},
                 readOnly = true,
                 label = { Text("소비기한 *") },
-                trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = "날짜 선택") },
+                trailingIcon = {
+                    Icon(
+                        Icons.Default.DateRange,
+                        contentDescription = "날짜 선택",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .pointerInput(Unit) {

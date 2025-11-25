@@ -51,13 +51,6 @@ fun IngredientListScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = "전체 재료 목록",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(

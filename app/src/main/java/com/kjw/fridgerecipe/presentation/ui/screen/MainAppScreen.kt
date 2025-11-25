@@ -34,6 +34,7 @@ import androidx.work.WorkManager
 import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.presentation.navigation.AppNavHost
 import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_EDIT_BASE_ROUTE
+import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_ID_DEFAULT
 import com.kjw.fridgerecipe.presentation.navigation.NavItem
 import com.kjw.fridgerecipe.presentation.navigation.RECIPE_DETAIL_BASE_ROUTE
 import com.kjw.fridgerecipe.presentation.navigation.RECIPE_EDIT_BASE_ROUTE
@@ -54,19 +55,32 @@ private fun rememberMainAppScreenState(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    val currentIngredientId = navBackStackEntry?.arguments?.getLong("ingredientId") ?: INGREDIENT_ID_DEFAULT
+
     val isIngredientEditScreen = currentRoute?.startsWith(INGREDIENT_EDIT_BASE_ROUTE) == true
     val isRecipeDetailScreen = currentRoute?.startsWith(RECIPE_DETAIL_BASE_ROUTE) == true
     val isRecipeEditScreen = currentRoute?.startsWith(RECIPE_EDIT_BASE_ROUTE) == true
     val isDetailScreen = isIngredientEditScreen || isRecipeDetailScreen || isRecipeEditScreen
 
-    val currentScreen = remember(currentRoute, isDetailScreen) {
+    /*val currentScreen = remember(currentRoute, isDetailScreen) {
         if (isIngredientEditScreen) NavItem.IngredientEdit
         else if (isRecipeDetailScreen) NavItem.RecipeDetail
         else if (isRecipeEditScreen) NavItem.RecipeEdit
         else listOf(NavItem.Home, NavItem.Ingredients, NavItem.Recipes).find { it.route == currentRoute }
-    }
+    }*/
 
-    val currentTitle = currentScreen?.title ?: NavItem.Home.title
+    val currentTitle = remember(currentRoute, currentIngredientId) {
+        if (isIngredientEditScreen) {
+            if (currentIngredientId == INGREDIENT_ID_DEFAULT) "새 재료 추가" else "재료 수정"
+        } else if (isRecipeDetailScreen) {
+            "레시피 상세"
+        } else if (isRecipeEditScreen) {
+            "레시피 작성"
+        } else {
+            listOf(NavItem.Home, NavItem.Ingredients, NavItem.Recipes)
+                .find { it.route == currentRoute }?.title ?: NavItem.Home.title
+        }
+    }
 
     return remember(navController, currentRoute, isDetailScreen, currentTitle) {
         MainAppScreenState(
