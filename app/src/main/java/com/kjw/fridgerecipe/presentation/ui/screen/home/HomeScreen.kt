@@ -153,29 +153,29 @@ fun HomeScreen(
         Text(
             text = "🍳 AI 레시피 추천",
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Companion.Bold,
+            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        Spacer(modifier = Modifier.Companion.height(12.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Card(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
             ),
-            modifier = Modifier.Companion.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(modifier = Modifier.Companion.padding(16.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
 
-                Row(verticalAlignment = Alignment.Companion.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Default.Tune,
                         contentDescription = null,
-                        modifier = Modifier.Companion.size(18.dp),
+                        modifier = Modifier.size(18.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.Companion.width(8.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         "상세 조건 설정",
                         style = MaterialTheme.typography.titleSmall,
@@ -183,7 +183,7 @@ fun HomeScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.Companion.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 FilterSection(
                     title = "조리 시간",
@@ -192,7 +192,7 @@ fun HomeScreen(
                     onOptionSelected = { recipeViewModel.onTimeFilterChanged(it) }
                 )
 
-                Spacer(modifier = Modifier.Companion.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 FilterSection(
                     title = "난이도",
@@ -204,7 +204,7 @@ fun HomeScreen(
                     }
                 )
 
-                Spacer(modifier = Modifier.Companion.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 FilterSection(
                     title = "음식 종류",
@@ -213,7 +213,7 @@ fun HomeScreen(
                     onOptionSelected = { recipeViewModel.onCategoryFilterChanged(it) }
                 )
 
-                Spacer(modifier = Modifier.Companion.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 FilterSection(
                     title = "조리 도구",
@@ -222,16 +222,16 @@ fun HomeScreen(
                     onOptionSelected = { recipeViewModel.onUtensilFilterChanged(it) }
                 )
 
-                Spacer(modifier = Modifier.Companion.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 Divider(color = MaterialTheme.colorScheme.outlineVariant)
-                Spacer(modifier = Modifier.Companion.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
-                    modifier = Modifier.Companion.fillMaxWidth(),
-                    verticalAlignment = Alignment.Companion.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column(modifier = Modifier.Companion.weight(1f)) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "선택한 재료만 사용하기",
                             style = MaterialTheme.typography.titleSmall
@@ -250,7 +250,7 @@ fun HomeScreen(
             }
         }
 
-        Spacer(modifier = Modifier.Companion.height(24.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         val buttonText = when {
             uiState.isRecipeLoading -> "레시피 생성 중..."
@@ -267,10 +267,10 @@ fun HomeScreen(
                 recipeViewModel.fetchRecommendedRecipe(selectedIngredients)
             },
             enabled = uiState.selectedIngredientIds.isNotEmpty() && !uiState.isRecipeLoading,
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -279,22 +279,22 @@ fun HomeScreen(
             if (uiState.isRecipeLoading) {
                 CircularProgressIndicator(
                     color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.Companion.size(24.dp),
+                    modifier = Modifier.size(24.dp),
                     strokeWidth = 2.dp
                 )
-                Spacer(modifier = Modifier.Companion.width(12.dp))
+                Spacer(modifier = Modifier.width(12.dp))
             } else {
                 Icon(Icons.Default.AutoAwesome, contentDescription = null)
-                Spacer(modifier = Modifier.Companion.width(8.dp))
+                Spacer(modifier = Modifier.width(8.dp))
             }
             Text(
                 text = buttonText,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Companion.Bold
+                fontWeight = FontWeight.Bold
             )
         }
 
-        Spacer(modifier = Modifier.Companion.height(40.dp))
+        Spacer(modifier = Modifier.height(40.dp))
     }
 }
 
@@ -311,14 +311,14 @@ private fun FilterSection(
             text = title,
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Companion.Bold
+            fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.Companion.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.Companion.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         ) {
             items(options) { option ->
                 val isSelected = option == selectedOption
@@ -329,14 +329,14 @@ private fun FilterSection(
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                         selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        containerColor = Color.Companion.Transparent,
+                        containerColor = Color.Transparent,
                         labelColor = MaterialTheme.colorScheme.onSurface
                     ),
                     border = FilterChipDefaults.filterChipBorder(
                         enabled = true,
                         selected = isSelected,
                         borderColor = MaterialTheme.colorScheme.outline,
-                        selectedBorderColor = Color.Companion.Transparent
+                        selectedBorderColor = Color.Transparent
                     )
                 )
             }
@@ -346,13 +346,13 @@ private fun FilterSection(
 
 @Composable
 private fun StatusIndicator(color: Color, text: String) {
-    Row(verticalAlignment = Alignment.Companion.CenterVertically) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .size(8.dp)
                 .background(color, shape = CircleShape)
         )
-        Spacer(modifier = Modifier.Companion.width(4.dp))
+        Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = text,
             style = MaterialTheme.typography.labelSmall,

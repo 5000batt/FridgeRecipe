@@ -1,15 +1,21 @@
 package com.kjw.fridgerecipe.presentation.ui.components.recipe
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,55 +34,127 @@ import com.kjw.fridgerecipe.domain.model.RecipeStep
 fun RecipeInfoRow(recipe: Recipe) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceAround
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        InfoItem(icon = Icons.Default.Person, text = recipe.servings)
-        InfoItem(icon = Icons.Default.Favorite, text = recipe.time)
-        InfoItem(icon = Icons.Default.Star, text = recipe.level.label)
+        RecipeMetaInfo(
+            icon = Icons.Default.Person,
+            label = recipe.servings,
+            contentDescription = "인원"
+        )
+        RecipeMetaInfo(
+            icon = Icons.Default.AccessTime,
+            label = recipe.time,
+            contentDescription = "조리 시간"
+        )
+        RecipeMetaInfo(
+            icon = Icons.Default.SignalCellularAlt,
+            label = recipe.level.label,
+            contentDescription = "난이도"
+        )
     }
 }
 
 @Composable
-fun InfoItem(icon: ImageVector, text: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+private fun RecipeMetaInfo(
+    icon: ImageVector,
+    label: String,
+    contentDescription: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(8.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
         Icon(
             imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp)
         )
-        Text(text = text, style = MaterialTheme.typography.bodyMedium)
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
 @Composable
 fun IngredientListItem(ingredient: RecipeIngredient) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 6.dp)
     ) {
-        Text(ingredient.name, style = MaterialTheme.typography.bodyLarge)
-        Text(ingredient.quantity, style = MaterialTheme.typography.bodyLarge)
+        if (ingredient.isEssential) {
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = "필수 재료",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Default.FiberManualRecord,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.outlineVariant,
+                modifier = Modifier.size(12.dp).padding(2.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Text(
+            text = ingredient.name,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = if (ingredient.isEssential) FontWeight.Bold else FontWeight.Normal,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f)
+        )
+
+        Text(
+            text = ingredient.quantity,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.primary
+        )
     }
 }
 
 @Composable
-fun RecipeStepItem(step: RecipeStep) {
+fun RecipeStepItem(index: Int, step: RecipeStep) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
         verticalAlignment = Alignment.Top
     ) {
-        Text(
-            text = "${step.number}",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .background(MaterialTheme.colorScheme.primary, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = index.toString(),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(16.dp))
 
         Text(
-            text = "${step.description}",
-            style = MaterialTheme.typography.bodyLarge
+            text = step.description,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(top = 2.dp),
+            lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2
         )
     }
 }

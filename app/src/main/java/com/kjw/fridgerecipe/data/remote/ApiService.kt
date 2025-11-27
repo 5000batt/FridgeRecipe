@@ -8,7 +8,7 @@ data class AiRecipeResponse(
     val recipe: RecipeDto
 )
 
-data class RecipeIngredientDto(val name: String?, val quantity: String?)
+data class RecipeIngredientDto(val name: String?, val quantity: String?, val isEssential: Boolean?)
 data class RecipeStepDto(val number: Int?, val description: String?)
 data class RecipeInfoDto(val servings: String?, val time: String?, val level: String?)
 data class RecipeDto(

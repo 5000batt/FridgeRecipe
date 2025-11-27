@@ -141,7 +141,7 @@ fun RecipeListItem(
                 indication = LocalIndication.current,
                 onClick = onClick
             ),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
     ) {
@@ -158,14 +158,14 @@ fun RecipeListItem(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(100.dp)
-                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                 )
             } else {
                 Box(
                     modifier = Modifier
                         .size(100.dp)
-                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
@@ -181,34 +181,34 @@ fun RecipeListItem(
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .weight(1f)
                     .height(100.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = recipe.title,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Companion.Bold),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     maxLines = 2,
-                    overflow = TextOverflow.Companion.Ellipsis,
+                    overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.Companion.padding(top = 4.dp)
+                    modifier = Modifier.padding(top = 4.dp)
                 )
 
                 Row(
-                    verticalAlignment = Alignment.Companion.CenterVertically,
+                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Start
                 ) {
                     RecipeInfoChip(icon = Icons.Default.AccessTime, text = recipe.time)
 
-                    Spacer(modifier = Modifier.Companion.width(8.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     Box(
-                        modifier = Modifier.Companion.size(2.dp)
+                        modifier = Modifier.size(2.dp)
                             .background(MaterialTheme.colorScheme.outline, CircleShape)
                     )
 
-                    Spacer(modifier = Modifier.Companion.width(8.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     RecipeInfoChip(
                         icon = Icons.Default.SignalCellularAlt,
@@ -225,15 +225,15 @@ private fun RecipeInfoChip(
     icon: ImageVector,
     text: String
 ) {
-    Row(verticalAlignment = Alignment.Companion.CenterVertically) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.Companion.size(14.dp),
+            modifier = Modifier.size(14.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Spacer(modifier = Modifier.Companion.width(4.dp))
+        Spacer(modifier = Modifier.width(4.dp))
 
         Text(
             text = text,

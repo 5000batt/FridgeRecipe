@@ -446,8 +446,9 @@ class RecipeManageViewModel @Inject constructor(
             level = actualLevel,
             ingredients = currentState.ingredientsState.map {
                 RecipeIngredient(
-                    it.name,
-                    it.quantity
+                    name = it.name,
+                    quantity = it.quantity,
+                    isEssential = it.isEssential
                 )
             },
             steps = currentState.stepsState.map { RecipeStep(it.number, it.description) },
@@ -462,11 +463,6 @@ class RecipeManageViewModel @Inject constructor(
 }
 
 private fun Recipe.toEditUiState(): RecipeEditUiState {
-    val essentialNames = this.ingredientsQuery
-        ?.split(',')
-        ?.map { it.trim() }
-        ?.toSet() ?: emptySet()
-
     val servingsString = this.servings
     val servingsExtracted = Regex("\\d+").find(servingsString)?.value ?: ""
 
@@ -484,7 +480,7 @@ private fun Recipe.toEditUiState(): RecipeEditUiState {
             IngredientUiState(
                 name = it.name,
                 quantity = it.quantity,
-                isEssential = essentialNames.any { essentialName -> it.name.contains(essentialName) }
+                isEssential = it.isEssential
             )
         },
         stepsState = this.steps.map { StepUiState(it.number, it.description) },

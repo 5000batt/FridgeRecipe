@@ -15,7 +15,8 @@ enum class LevelType(val label: String) {
 
 data class RecipeIngredient(
     val name: String,
-    val quantity: String
+    val quantity: String,
+    val isEssential: Boolean
 )
 
 data class RecipeStep(

@@ -24,7 +24,8 @@ fun RecipeDto.toDomainModel(): Recipe {
 fun RecipeIngredientDto.toDomainModel(): RecipeIngredient {
     return RecipeIngredient(
         name = this.name ?: "재료",
-        quantity = this.quantity ?: "-"
+        quantity = this.quantity ?: "-",
+        isEssential = this.isEssential ?: false
     )
 }
 
