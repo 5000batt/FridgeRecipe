@@ -1,6 +1,5 @@
 package com.kjw.fridgerecipe.presentation.ui.screen
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -65,7 +64,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -78,6 +76,7 @@ import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.domain.model.UnitType
 import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_ID_DEFAULT
 import com.kjw.fridgerecipe.presentation.ui.common.OperationResult
+import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.presentation.util.getIconResId
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import com.kjw.fridgerecipe.presentation.viewmodel.ValidationField
@@ -90,11 +89,11 @@ import java.time.format.DateTimeFormatter
 fun IngredientEditScreen(
     onNavigateBack: () -> Unit,
     viewModel: IngredientViewModel = hiltViewModel(),
-    ingredientId: Long
+    ingredientId: Long,
+    onShowSnackbar: (String, SnackbarType) -> Unit
 ) {
     val isEditMode = ingredientId != INGREDIENT_ID_DEFAULT
     val uiState by viewModel.editUiState.collectAsState()
-    val context = LocalContext.current
 
     var unitExpanded by remember { mutableStateOf(false) }
     var storageExpanded by remember { mutableStateOf(false) }
@@ -127,11 +126,11 @@ fun IngredientEditScreen(
         viewModel.operationResultEvent.collect { result ->
             when (result) {
                 is OperationResult.Success -> {
-                    Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
+                    onShowSnackbar(result.message, SnackbarType.SUCCESS)
                     onNavigateBack()
                 }
                 is OperationResult.Failure -> {
-                    Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
+                    onShowSnackbar(result.message, SnackbarType.ERROR)
                 }
             }
         }

@@ -14,11 +14,13 @@ import com.kjw.fridgerecipe.presentation.ui.screen.HomeScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.RecipeDetailScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.RecipeEditScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.RecipeListScreen
+import com.kjw.fridgerecipe.presentation.util.SnackbarType
 
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onShowSnackbar: (String, SnackbarType) -> Unit
 ) {
     NavHost(
         navController = navController,
@@ -50,7 +52,8 @@ fun AppNavHost(
 
             IngredientEditScreen(
                 onNavigateBack = { navController.popBackStack() },
-                ingredientId = ingredientId
+                ingredientId = ingredientId,
+                onShowSnackbar = onShowSnackbar
             )
         }
         composable(NavItem.Recipes.route) {
