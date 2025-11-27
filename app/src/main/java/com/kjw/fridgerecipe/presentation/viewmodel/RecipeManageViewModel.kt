@@ -32,6 +32,10 @@ import java.util.UUID
 import javax.inject.Inject
 import androidx.core.graphics.scale
 
+enum class RecipeValidationField {
+    TITLE, SERVINGS, TIME, INGREDIENTS, STEPS
+}
+
 enum class ListErrorType {
     NONE,
     IS_EMPTY,
@@ -87,6 +91,8 @@ class RecipeManageViewModel @Inject constructor(
     val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
     private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
     val navigationEvent: SharedFlow<NavigationEvent> = _navigationEvent.asSharedFlow()
+    private val _validationEvent = MutableSharedFlow<RecipeValidationField>()
+    val validationEvent: SharedFlow<RecipeValidationField> = _validationEvent.asSharedFlow()
 
     private val _selectedRecipe = MutableStateFlow<Recipe?>(null)
     val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe.asStateFlow()
@@ -371,50 +377,48 @@ class RecipeManageViewModel @Inject constructor(
         }
     }
 
-    private fun validateInputs(): Boolean {
+    private suspend fun validateInputs(): Boolean {
         val currentState = _editUiState.value
-        var isValid = true
-        var newState = currentState.copy(
-            titleError = null,
-            servingsError = null,
-            timeError = null,
-            ingredientsError = null,
-            stepsError = null,
-            ingredientsErrorType = ListErrorType.NONE,
-            stepsErrorType = ListErrorType.NONE
-        )
 
         if (currentState.title.isBlank()) {
-            newState = newState.copy(titleError = "레시피 이름을 입력해주세요.")
-            isValid = false
-        }
-        if (currentState.servingsState.isBlank()) {
-            newState = newState.copy(servingsError = "조리 양을 입력해주세요.")
-            isValid = false
-        }
-        if (currentState.timeState.isBlank()) {
-            newState = newState.copy(timeError = "조리 시간을 입력해주세요.")
-            isValid = false
-        }
-        if (currentState.ingredientsState.isEmpty()) {
-            newState = newState.copy(ingredientsError = "재료를 추가해주세요.", ingredientsErrorType = ListErrorType.IS_EMPTY)
-            isValid = false
-        } else if (currentState.ingredientsState.any { it.name.isBlank() || it.quantity.isBlank()}) {
-            newState = newState.copy(ingredientsError = "내용이 비어있는 재료가 있습니다.", ingredientsErrorType = ListErrorType.HAS_BLANK_ITEMS)
-            isValid = false
-        }
-        if (currentState.stepsState.isEmpty()) {
-            newState = newState.copy(stepsError = "조리 순서를 추가해주세요.", stepsErrorType = ListErrorType.IS_EMPTY)
-            isValid = false
-        } else if (currentState.stepsState.any {  it.description.isBlank() }) {
-            newState = newState.copy(stepsError = "내용이 비어있는 조리 순서가 있습니다.", stepsErrorType = ListErrorType.HAS_BLANK_ITEMS)
-            isValid = false
+            _editUiState.update { it.copy(titleError = "레시피 이름을 입력해주세요.") }
+            _validationEvent.emit(RecipeValidationField.TITLE)
+            return false
         }
 
-        if (!isValid) {
-            _editUiState.value = newState
+        if (currentState.servingsState.isBlank()) {
+            _editUiState.update { it.copy(servingsError = "조리 양을 입력해주세요.") }
+            _validationEvent.emit(RecipeValidationField.SERVINGS)
+            return false
         }
-        return isValid
+
+        if (currentState.timeState.isBlank()) {
+            _editUiState.update { it.copy(timeError = "조리 시간을 입력해주세요.") }
+            _validationEvent.emit(RecipeValidationField.TIME)
+            return false
+        }
+
+        if (currentState.ingredientsState.isEmpty()) {
+            _editUiState.update { it.copy(ingredientsError = "재료를 추가해주세요.", ingredientsErrorType = ListErrorType.IS_EMPTY) }
+            _validationEvent.emit(RecipeValidationField.INGREDIENTS)
+            return false
+        } else if (currentState.ingredientsState.any { it.name.isBlank() || it.quantity.isBlank() }) {
+            _editUiState.update { it.copy(ingredientsError = "내용이 비어있는 재료가 있습니다.", ingredientsErrorType = ListErrorType.HAS_BLANK_ITEMS) }
+            _validationEvent.emit(RecipeValidationField.INGREDIENTS)
+            return false
+        }
+
+        if (currentState.stepsState.isEmpty()) {
+            _editUiState.update { it.copy(stepsError = "조리 순서를 추가해주세요.", stepsErrorType = ListErrorType.IS_EMPTY) }
+            _validationEvent.emit(RecipeValidationField.STEPS)
+            return false
+        } else if (currentState.stepsState.any { it.description.isBlank() }) {
+            _editUiState.update { it.copy(stepsError = "내용이 비어있는 조리 순서가 있습니다.", stepsErrorType = ListErrorType.HAS_BLANK_ITEMS) }
+            _validationEvent.emit(RecipeValidationField.STEPS)
+            return false
+        }
+
+        return true
     }
 
     private fun buildRecipeFromState(isEditMode: Boolean): Recipe {

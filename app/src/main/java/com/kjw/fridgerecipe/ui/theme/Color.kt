@@ -1,5 +1,7 @@
 package com.kjw.fridgerecipe.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 // Light Mode
@@ -50,3 +52,11 @@ val StatusExpiredContainerDark = Color(0xFF793432)
 val StatusExpiredContentDark = Color(0xFFFFDAD6)
 val StatusWarningContainerDark = Color(0xFF9A6B46)
 val StatusWarningContentDark = Color(0xFFFFDCC1)
+
+val ExpirationContainerColor: Color
+    @Composable
+    get() = if (isSystemInDarkTheme()) StatusExpiredContainerDark else StatusExpiredContainerLight
+
+val ExpirationContentColor: Color
+    @Composable
+    get() = if (isSystemInDarkTheme()) StatusExpiredContentDark else StatusExpiredContentLight

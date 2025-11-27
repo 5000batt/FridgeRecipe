@@ -101,7 +101,8 @@ fun AppNavHost(
                         inclusive = false
                     )
                 },
-                recipeId = recipeId
+                recipeId = recipeId,
+                onShowSnackbar = onShowSnackbar
             )
         }
     }

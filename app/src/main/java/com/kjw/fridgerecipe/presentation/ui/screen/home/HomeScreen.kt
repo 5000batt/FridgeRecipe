@@ -50,6 +50,7 @@ import com.kjw.fridgerecipe.presentation.ui.components.ingredient.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
+import com.kjw.fridgerecipe.ui.theme.ExpirationContainerColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,7 +108,7 @@ fun HomeScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.End
         ) {
-            StatusIndicator(color = MaterialTheme.colorScheme.errorContainer, text = "만료")
+            StatusIndicator(color = ExpirationContainerColor, text = "만료")
             Spacer(modifier = Modifier.width(8.dp))
             StatusIndicator(color = MaterialTheme.colorScheme.tertiaryContainer, text = "임박")
         }
