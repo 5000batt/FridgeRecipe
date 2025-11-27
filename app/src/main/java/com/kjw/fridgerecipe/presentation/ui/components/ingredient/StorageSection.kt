@@ -1,4 +1,4 @@
-package com.kjw.fridgerecipe.presentation.ui.components
+package com.kjw.fridgerecipe.presentation.ui.components.ingredient
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.domain.model.Ingredient
-import com.kjw.fridgerecipe.presentation.ui.common.ListDisplayType
+import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
 
 @Composable
 fun StorageSection(
@@ -65,6 +65,7 @@ fun StorageSection(
                         }
                     }
                 }
+
                 ListDisplayType.GRID -> {
                     if (items.size <= singleRowMaxItems) {
                         LazyRow(

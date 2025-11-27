@@ -51,7 +51,7 @@ import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_ID_DEFAULT
 import com.kjw.fridgerecipe.presentation.navigation.NavItem
 import com.kjw.fridgerecipe.presentation.navigation.RECIPE_DETAIL_BASE_ROUTE
 import com.kjw.fridgerecipe.presentation.navigation.RECIPE_EDIT_BASE_ROUTE
-import com.kjw.fridgerecipe.presentation.ui.components.AppBottomNavigationBar
+import com.kjw.fridgerecipe.presentation.ui.components.common.AppBottomNavigationBar
 import com.kjw.fridgerecipe.presentation.util.CustomSnackbarVisuals
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.worker.ExpirationCheckWorker

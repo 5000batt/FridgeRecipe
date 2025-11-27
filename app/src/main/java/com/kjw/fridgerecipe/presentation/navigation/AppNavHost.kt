@@ -8,12 +8,12 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.kjw.fridgerecipe.presentation.ui.screen.IngredientEditScreen
-import com.kjw.fridgerecipe.presentation.ui.screen.IngredientListScreen
-import com.kjw.fridgerecipe.presentation.ui.screen.HomeScreen
-import com.kjw.fridgerecipe.presentation.ui.screen.RecipeDetailScreen
-import com.kjw.fridgerecipe.presentation.ui.screen.RecipeEditScreen
-import com.kjw.fridgerecipe.presentation.ui.screen.RecipeListScreen
+import com.kjw.fridgerecipe.presentation.ui.screen.ingredient.IngredientEditScreen
+import com.kjw.fridgerecipe.presentation.ui.screen.ingredient.IngredientListScreen
+import com.kjw.fridgerecipe.presentation.ui.screen.home.HomeScreen
+import com.kjw.fridgerecipe.presentation.ui.screen.recipe.RecipeDetailScreen
+import com.kjw.fridgerecipe.presentation.ui.screen.recipe.RecipeEditScreen
+import com.kjw.fridgerecipe.presentation.ui.screen.recipe.RecipeListScreen
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 
 @Composable

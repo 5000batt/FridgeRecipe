@@ -12,7 +12,7 @@ import com.kjw.fridgerecipe.domain.usecase.DelIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateIngredientUseCase
-import com.kjw.fridgerecipe.presentation.ui.common.OperationResult
+import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

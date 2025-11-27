@@ -1,4 +1,4 @@
-package com.kjw.fridgerecipe.presentation.ui.components
+package com.kjw.fridgerecipe.presentation.ui.components.ingredient
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image

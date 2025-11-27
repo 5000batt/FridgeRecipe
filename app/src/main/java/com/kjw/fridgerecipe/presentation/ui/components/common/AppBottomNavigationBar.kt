@@ -1,4 +1,4 @@
-package com.kjw.fridgerecipe.presentation.ui.components
+package com.kjw.fridgerecipe.presentation.ui.components.common
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar

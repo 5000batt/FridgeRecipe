@@ -1,4 +1,4 @@
-package com.kjw.fridgerecipe.presentation.ui.screen
+package com.kjw.fridgerecipe.presentation.ui.screen.recipe
 
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -57,7 +57,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.presentation.navigation.RECIPE_ID_DEFAULT
-import com.kjw.fridgerecipe.presentation.ui.common.OperationResult
+import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeManageViewModel
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
 
@@ -96,6 +96,7 @@ fun RecipeEditScreen(
                 is OperationResult.Success -> {
                     Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
                 }
+
                 is OperationResult.Failure -> {
                     Toast.makeText(context, result.message, Toast.LENGTH_SHORT).show()
                 }
@@ -109,6 +110,7 @@ fun RecipeEditScreen(
                 is RecipeManageViewModel.NavigationEvent.NavigateBack -> {
                     onNavigateBack()
                 }
+
                 is RecipeManageViewModel.NavigationEvent.NavigateToList -> {
                     onNavigateToList()
                 }
@@ -149,7 +151,11 @@ fun RecipeEditScreen(
                     )
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(48.dp))
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp)
+                        )
                         Text("대표 사진 추가")
                     }
                 }
@@ -186,9 +192,9 @@ fun RecipeEditScreen(
                     onValueChange = { viewModel.onServingsChanged(it) },
                     label = { Text("조리 양 *") },
                     isError = uiState.servingsError != null,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Companion.Number),
                     suffix = { Text("인분") },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.Companion.weight(1f),
                     singleLine = true
                 )
 
@@ -197,19 +203,19 @@ fun RecipeEditScreen(
                     onValueChange = { viewModel.onTimeChanged(it) },
                     label = { Text("조리 시간 *") },
                     isError = uiState.timeError != null,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Companion.Number),
                     suffix = { Text("분") },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.Companion.weight(1f),
                     singleLine = true
                 )
             }
 
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row(modifier = Modifier.Companion.fillMaxWidth()) {
                 Text(
                     text = uiState.servingsError ?: "",
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier
+                    modifier = Modifier.Companion
                         .weight(1f)
                         .padding(start = 16.dp, top = 4.dp)
                         .heightIn(min = 18.dp)
@@ -218,19 +224,19 @@ fun RecipeEditScreen(
                     text = uiState.timeError ?: "",
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier
+                    modifier = Modifier.Companion
                         .weight(1f)
                         .padding(start = 16.dp, top = 4.dp)
                         .heightIn(min = 18.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.Companion.height(8.dp))
 
             ExposedDropdownMenuBox(
                 expanded = levelMenuExpanded,
                 onExpandedChange = { levelMenuExpanded = !levelMenuExpanded },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.Companion.fillMaxWidth()
             ) {
                 OutlinedTextField(
                     value = uiState.level.label,
@@ -238,7 +244,7 @@ fun RecipeEditScreen(
                     readOnly = true,
                     label = { Text("난이도 *") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = levelMenuExpanded) },
-                    modifier = Modifier
+                    modifier = Modifier.Companion
                         .menuAnchor()
                         .fillMaxWidth()
                 )
@@ -255,12 +261,12 @@ fun RecipeEditScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.Companion.height(8.dp))
 
             ExposedDropdownMenuBox(
                 expanded = categoryMenuExpanded,
                 onExpandedChange = { categoryMenuExpanded = !categoryMenuExpanded },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.Companion.fillMaxWidth()
             ) {
                 OutlinedTextField(
                     value = uiState.categoryState,
@@ -268,13 +274,13 @@ fun RecipeEditScreen(
                     readOnly = true,
                     label = { Text("음식 종류") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryMenuExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier.Companion.menuAnchor().fillMaxWidth()
                 )
                 ExposedDropdownMenu(
                     expanded = categoryMenuExpanded,
                     onDismissRequest = { categoryMenuExpanded = false }
                 ) {
-                    RecipeViewModel.CATEGORY_FILTER_OPTIONS.forEach { category ->
+                    RecipeViewModel.Companion.CATEGORY_FILTER_OPTIONS.forEach { category ->
                         DropdownMenuItem(
                             text = { Text(category) },
                             onClick = { viewModel.onCategoryChanged(category) }
@@ -283,12 +289,12 @@ fun RecipeEditScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.Companion.height(8.dp))
 
             ExposedDropdownMenuBox(
                 expanded = utensilMenuExpanded,
                 onExpandedChange = { utensilMenuExpanded = !utensilMenuExpanded },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.Companion.fillMaxWidth()
             ) {
                 OutlinedTextField(
                     value = uiState.utensilState,
@@ -296,13 +302,13 @@ fun RecipeEditScreen(
                     readOnly = true,
                     label = { Text("주요 조리 도구") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = utensilMenuExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier.Companion.menuAnchor().fillMaxWidth()
                 )
                 ExposedDropdownMenu(
                     expanded = utensilMenuExpanded,
                     onDismissRequest = { utensilMenuExpanded = false }
                 ) {
-                    RecipeViewModel.UTENSIL_FILTER_OPTIONS.forEach { utensil ->
+                    RecipeViewModel.Companion.UTENSIL_FILTER_OPTIONS.forEach { utensil ->
                         DropdownMenuItem(
                             text = { Text(utensil) },
                             onClick = { viewModel.onUtensilChanged(utensil) }
@@ -311,12 +317,12 @@ fun RecipeEditScreen(
                 }
             }
 
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
+            Divider(modifier = Modifier.Companion.padding(vertical = 16.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.Companion.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Companion.CenterVertically
             ) {
                 Text("재료", style = MaterialTheme.typography.titleLarge)
                 Button(onClick = { viewModel.onAddIngredient() }) {
@@ -328,7 +334,7 @@ fun RecipeEditScreen(
                 Text(
                     text = "홈 화면에서 '재료로 검색' 시 사용될 '필수 재료'를 체크하세요.",
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+                    modifier = Modifier.Companion.padding(start = 16.dp, bottom = 8.dp)
                 )
             }
 
@@ -336,14 +342,14 @@ fun RecipeEditScreen(
                 text = uiState.ingredientsError ?: "",
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .fillMaxWidth()
                     .padding(start = 16.dp, top = 4.dp)
                     .heightIn(min = 18.dp)
             )
 
             uiState.ingredientsState.forEachIndexed { index, ingredient ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.Companion.CenterVertically) {
                     Checkbox(
                         checked = ingredient.isEssential,
                         onCheckedChange = { isChecked ->
@@ -357,11 +363,11 @@ fun RecipeEditScreen(
                             viewModel.onIngredientNameChanged(index, newName)
                         },
                         label = { Text("재료명") },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.Companion.weight(1f),
                         singleLine = true
                     )
 
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.Companion.width(8.dp))
 
                     OutlinedTextField(
                         value = ingredient.quantity,
@@ -369,7 +375,7 @@ fun RecipeEditScreen(
                             viewModel.onIngredientQuantityChanged(index, newQty)
                         },
                         label = { Text("용량") },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.Companion.weight(1f),
                         singleLine = true
                     )
 
@@ -379,12 +385,12 @@ fun RecipeEditScreen(
                 }
             }
 
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
+            Divider(modifier = Modifier.Companion.padding(vertical = 16.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.Companion.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Companion.CenterVertically
             ) {
                 Text("조리 순서", style = MaterialTheme.typography.titleLarge)
                 Button(onClick = { viewModel.onAddStep() }) {
@@ -395,21 +401,21 @@ fun RecipeEditScreen(
                 text = uiState.stepsError ?: "",
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .fillMaxWidth()
                     .padding(start = 16.dp, top = 4.dp)
                     .heightIn(min = 18.dp)
             )
 
             uiState.stepsState.forEachIndexed { index, step ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.Companion.CenterVertically) {
                     OutlinedTextField(
                         value = step.description,
                         onValueChange = { newDesc ->
                             viewModel.onStepDescriptionChanged(index, newDesc)
                         },
                         label = { Text("${index + 1}. 순서") },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.Companion.weight(1f)
                     )
                     IconButton(onClick = { viewModel.onRemoveStep(index) }) {
                         Icon(Icons.Default.Delete, contentDescription = "순서 삭제")
@@ -417,17 +423,17 @@ fun RecipeEditScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.Companion.height(32.dp))
         }
 
         if (isEditMode) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.Companion.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
                     onClick = { viewModel.onDeleteDialogShow() },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.Companion.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
                     Text("삭제")
@@ -435,7 +441,7 @@ fun RecipeEditScreen(
 
                 Button(
                     onClick = { viewModel.onSaveOrUpdateRecipe(isEditMode = true) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.Companion.weight(1f)
                 ) {
                     Text("수정")
                 }
@@ -443,7 +449,7 @@ fun RecipeEditScreen(
         } else {
             Button(
                 onClick = { viewModel.onSaveOrUpdateRecipe(isEditMode = false) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.Companion.fillMaxWidth()
             ) {
                 Text("저장")
             }

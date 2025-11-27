@@ -1,4 +1,4 @@
-package com.kjw.fridgerecipe.presentation.ui.common
+package com.kjw.fridgerecipe.presentation.ui.model
 
 sealed class OperationResult {
     data class Success(val message: String) : OperationResult()

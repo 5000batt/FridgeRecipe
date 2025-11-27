@@ -14,7 +14,7 @@ import com.kjw.fridgerecipe.domain.usecase.DelRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipeByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.InsertRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateRecipeUseCase
-import com.kjw.fridgerecipe.presentation.ui.common.OperationResult
+import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow

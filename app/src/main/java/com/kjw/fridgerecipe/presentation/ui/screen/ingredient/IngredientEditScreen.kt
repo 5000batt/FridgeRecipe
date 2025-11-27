@@ -1,4 +1,4 @@
-package com.kjw.fridgerecipe.presentation.ui.screen
+package com.kjw.fridgerecipe.presentation.ui.screen.ingredient
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.LocalIndication
@@ -75,7 +75,7 @@ import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.domain.model.UnitType
 import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_ID_DEFAULT
-import com.kjw.fridgerecipe.presentation.ui.common.OperationResult
+import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.presentation.util.getIconResId
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
@@ -129,6 +129,7 @@ fun IngredientEditScreen(
                     onShowSnackbar(result.message, SnackbarType.SUCCESS)
                     onNavigateBack()
                 }
+
                 is OperationResult.Failure -> {
                     onShowSnackbar(result.message, SnackbarType.ERROR)
                 }
@@ -177,7 +178,7 @@ fun IngredientEditScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            Column (
+            Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
@@ -217,15 +218,15 @@ fun IngredientEditScreen(
                     state = iconListState,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     contentPadding = PaddingValues(vertical = 4.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.Companion.fillMaxWidth()
                 ) {
                     items(currentIcons) { icon ->
                         val isSelected = uiState.selectedIcon == icon
 
                         Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
+                            horizontalAlignment = Alignment.Companion.CenterHorizontally,
+                            modifier = Modifier.Companion
+                                .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
                                 .clickable(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = LocalIndication.current
@@ -234,23 +235,23 @@ fun IngredientEditScreen(
                                 }
                                 .background(
                                     if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                                    else Color.Transparent
+                                    else Color.Companion.Transparent
                                 )
                                 .border(
                                     width = if (isSelected) 2.dp else 1.dp,
-                                    color = if (isSelected) Color.Transparent
+                                    color = if (isSelected) Color.Companion.Transparent
                                     else MaterialTheme.colorScheme.outline,
-                                    shape = RoundedCornerShape(12.dp)
+                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
                                 )
                                 .padding(8.dp)
                         ) {
                             Image(
                                 painter = painterResource(id = getIconResId(icon)),
                                 contentDescription = icon.label,
-                                modifier = Modifier.size(36.dp)
+                                modifier = Modifier.Companion.size(36.dp)
                             )
 
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.Companion.height(4.dp))
 
                             Text(
                                 text = icon.label,
@@ -270,14 +271,14 @@ fun IngredientEditScreen(
                     onValueChange = { viewModel.onNameChanged(it) },
                     label = { Text("재료 이름 *") },
                     isError = uiState.nameError != null,
-                    modifier = Modifier
+                    modifier = Modifier.Companion
                         .fillMaxWidth()
                         .focusRequester(nameFocusRequester),
                     singleLine = true,
                     colors = textFieldColors,
                     shape = shape,
                     keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Next
+                        imeAction = ImeAction.Companion.Next
                     ),
                 )
                 if (uiState.nameError != null) {
@@ -285,7 +286,7 @@ fun IngredientEditScreen(
                         text = uiState.nameError ?: "",
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                        modifier = Modifier.Companion.padding(start = 8.dp, top = 4.dp)
                     )
                 }
             }
@@ -293,8 +294,8 @@ fun IngredientEditScreen(
             // 수량 & 단위
             Column {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.Companion.fillMaxWidth(),
+                    verticalAlignment = Alignment.Companion.CenterVertically
                 ) {
                     OutlinedTextField(
                         value = uiState.amount,
@@ -302,21 +303,21 @@ fun IngredientEditScreen(
                         label = { Text("수량 *") },
                         isError = uiState.amountError != null,
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Decimal,
-                            imeAction = ImeAction.Done
+                            keyboardType = KeyboardType.Companion.Decimal,
+                            imeAction = ImeAction.Companion.Done
                         ),
-                        modifier = Modifier
+                        modifier = Modifier.Companion
                             .weight(1f)
                             .focusRequester(amountFocusRequester),
                         singleLine = true,
                         colors = textFieldColors,
                         shape = shape
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.Companion.width(8.dp))
                     ExposedDropdownMenuBox(
                         expanded = unitExpanded,
                         onExpandedChange = { unitExpanded = !unitExpanded },
-                        modifier = Modifier.weight(0.8f)
+                        modifier = Modifier.Companion.weight(0.8f)
                     ) {
                         OutlinedTextField(
                             value = uiState.selectedUnit.label,
@@ -324,7 +325,7 @@ fun IngredientEditScreen(
                             readOnly = true,
                             label = { Text("단위") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
-                            modifier = Modifier.menuAnchor(),
+                            modifier = Modifier.Companion.menuAnchor(),
                             colors = textFieldColors,
                             shape = shape
                         )
@@ -349,7 +350,7 @@ fun IngredientEditScreen(
                         text = uiState.amountError ?: "",
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                        modifier = Modifier.Companion.padding(start = 8.dp, top = 4.dp)
                     )
                 }
             }
@@ -365,7 +366,7 @@ fun IngredientEditScreen(
                     readOnly = true,
                     label = { Text("카테고리") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    modifier = Modifier.Companion.menuAnchor().fillMaxWidth(),
                     colors = textFieldColors,
                     shape = shape
                 )
@@ -396,7 +397,7 @@ fun IngredientEditScreen(
                     readOnly = true,
                     label = { Text("보관 위치") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = storageExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    modifier = Modifier.Companion.menuAnchor().fillMaxWidth(),
                     colors = textFieldColors,
                     shape = shape
                 )
@@ -430,7 +431,7 @@ fun IngredientEditScreen(
                     )
                 },
                 singleLine = true,
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .fillMaxWidth()
                     .pointerInput(Unit) {
                         awaitEachGesture {
@@ -445,12 +446,12 @@ fun IngredientEditScreen(
                 shape = shape
             )
 
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.Companion.height(100.dp))
         }
 
         if (isEditMode) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.Companion.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
@@ -459,42 +460,51 @@ fun IngredientEditScreen(
                         containerColor = MaterialTheme.colorScheme.errorContainer,
                         contentColor = MaterialTheme.colorScheme.onErrorContainer
                     ),
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.height(56.dp)
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    modifier = Modifier.Companion.height(56.dp)
                 ) {
                     Icon(Icons.Default.Delete, contentDescription = "삭제")
                 }
 
                 Button(
                     onClick = { viewModel.onSaveOrUpdateIngredient(isEditMode = true) },
-                    modifier = Modifier.weight(1f).height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.Companion.weight(1f).height(56.dp),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
-                    Text("수정 완료", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(
+                        "수정 완료",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Companion.Bold
+                    )
                 }
             }
         } else {
             Button(
                 onClick = { viewModel.onSaveOrUpdateIngredient(isEditMode = false) },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.Companion.fillMaxWidth().height(56.dp),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
-                Text("재료 저장", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    "재료 저장",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Companion.Bold
+                )
             }
         }
     }
 
     if (uiState.showDatePicker) {
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = uiState.selectedDate.atStartOfDay(ZoneId.of("UTC")).toInstant().toEpochMilli()
+            initialSelectedDateMillis = uiState.selectedDate.atStartOfDay(ZoneId.of("UTC"))
+                .toInstant().toEpochMilli()
         )
         DatePickerDialog(
             onDismissRequest = { viewModel.onDatePickerDialogDismiss() },
@@ -505,7 +515,8 @@ fun IngredientEditScreen(
                 TextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            val date = Instant.ofEpochMilli(millis).atZone(ZoneId.of("UTC")).toLocalDate()
+                            val date =
+                                Instant.ofEpochMilli(millis).atZone(ZoneId.of("UTC")).toLocalDate()
                             viewModel.onDateSelected(date)
                         }
                     }

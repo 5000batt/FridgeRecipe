@@ -1,4 +1,4 @@
-package com.kjw.fridgerecipe.presentation.ui.screen
+package com.kjw.fridgerecipe.presentation.ui.screen.recipe
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,9 +26,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.kjw.fridgerecipe.presentation.ui.components.IngredientListItem
-import com.kjw.fridgerecipe.presentation.ui.components.RecipeInfoRow
-import com.kjw.fridgerecipe.presentation.ui.components.RecipeStepItem
+import com.kjw.fridgerecipe.presentation.ui.components.recipe.IngredientListItem
+import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeInfoRow
+import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeStepItem
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeManageViewModel
 
 @Composable
@@ -119,7 +119,7 @@ fun RecipeDetailScreen(
                     RecipeStepItem(step)
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.Companion.height(32.dp))
             }
 
             Button(
@@ -128,7 +128,7 @@ fun RecipeDetailScreen(
                         onNavigateToRecipeEdit(id)
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.Companion.fillMaxWidth()
             ) {
                 Text("수정")
             }

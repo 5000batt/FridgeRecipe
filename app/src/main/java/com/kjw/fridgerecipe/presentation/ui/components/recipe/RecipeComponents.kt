@@ -1,4 +1,4 @@
-package com.kjw.fridgerecipe.presentation.ui.components
+package com.kjw.fridgerecipe.presentation.ui.components.recipe
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,7 +26,7 @@ import com.kjw.fridgerecipe.domain.model.RecipeStep
 
 @Composable
 fun RecipeInfoRow(recipe: Recipe) {
-    Row (
+    Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceAround
     ) {
@@ -38,15 +38,19 @@ fun RecipeInfoRow(recipe: Recipe) {
 
 @Composable
 fun InfoItem(icon: ImageVector, text: String) {
-    Column (horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary
+        )
         Text(text = text, style = MaterialTheme.typography.bodyMedium)
     }
 }
 
 @Composable
 fun IngredientListItem(ingredient: RecipeIngredient) {
-    Row (
+    Row(
         modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -57,7 +61,7 @@ fun IngredientListItem(ingredient: RecipeIngredient) {
 
 @Composable
 fun RecipeStepItem(step: RecipeStep) {
-    Row (
+    Row(
         modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
         verticalAlignment = Alignment.Top
     ) {
