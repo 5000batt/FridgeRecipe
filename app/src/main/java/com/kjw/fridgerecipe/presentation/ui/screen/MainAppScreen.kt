@@ -168,7 +168,7 @@ fun MainAppScreen() {
                     }
 
                     if (!screenState.showBackButton) {
-                        IconButton(onClick = { screenState.navController.navigate(MainTab.SETTINGS.route)}) {
+                        IconButton(onClick = { screenState.navController.navigate(DetailDestination.Settings.createRoute())}) {
                             Icon(Icons.Default.Settings, contentDescription = "설정")
                         }
                     }

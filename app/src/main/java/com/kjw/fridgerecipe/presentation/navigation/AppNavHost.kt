@@ -50,11 +50,6 @@ fun AppNavHost(
                 }
             )
         }
-        composable(MainTab.SETTINGS.route) {
-            SettingsScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
 
         // --- Details ---
         composable(
@@ -103,6 +98,12 @@ fun AppNavHost(
                 },
                 recipeId = recipeId,
                 onShowSnackbar = onShowSnackbar
+            )
+        }
+
+        composable(DetailDestination.Settings.route) {
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

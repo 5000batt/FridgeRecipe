@@ -24,8 +24,7 @@ enum class MainTab(
 ) : Destination {
     HOME("home", "Fridge Recipe", Icons.Default.Home, "홈"),
     INGREDIENTS("ingredients", "전체 재료 목록", Icons.Default.Kitchen, "재료"),
-    RECIPES("recipes", "레시피", Icons.Default.RestaurantMenu, "레시피"),
-    SETTINGS("settings", "환경설정", Icons.Default.Settings, "환경설정");
+    RECIPES("recipes", "레시피", Icons.Default.RestaurantMenu, "레시피");
 
     override val isRoot: Boolean = true
 
@@ -82,10 +81,18 @@ sealed class DetailDestination(
         fun createRoute(recipeId: Long = DEFAULT_ID) = "recipe_edit?recipeId=$recipeId"
     }
 
+    data object Settings: DetailDestination(
+        route = "settings",
+        title = "환경설정"
+    ) {
+        fun createRoute() = "settings"
+    }
+
     companion object {
         fun getByRoute(route: String?): DetailDestination? {
             if(route == null) return null
             return when {
+                route == Settings.route -> Settings
                 route.startsWith("ingredient_edit") -> IngredientEdit
                 route.startsWith("recipe_detail") -> RecipeDetail
                 route.startsWith("recipe_edit") -> RecipeEdit
