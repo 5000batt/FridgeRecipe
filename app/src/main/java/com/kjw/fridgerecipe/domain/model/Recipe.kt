@@ -24,6 +24,15 @@ data class RecipeStep(
     val description: String
 )
 
+data class RecipeSearchMetadata(
+    val ingredientsQuery: String? = null,
+    val timeFilter: String? = null,
+    val levelFilter: LevelType? = null,
+    val categoryFilter: String? = null,
+    val utensilFilter: String? = null,
+    val useOnlySelected: Boolean = false
+)
+
 data class Recipe(
     val id: Long? = null,
     val title: String,
@@ -33,11 +42,7 @@ data class Recipe(
     val ingredients: List<RecipeIngredient>,
     val steps: List<RecipeStep>,
     val imageUri: String? = null,
-    // 검색 필터
-    val ingredientsQuery: String? = null,
-    val timeFilter: String? = null,
-    val levelFilter: LevelType? = null,
-    val categoryFilter: String? = null,
-    val utensilFilter: String? = null,
-    val useOnlySelected: Boolean = false
+
+    // 검색 조건 메타데이터
+    val searchMetadata: RecipeSearchMetadata? = null
 )

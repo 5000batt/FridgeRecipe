@@ -33,12 +33,12 @@ interface RecipeDao {
     @Query("""
         SELECT * FROM recipes
         WHERE
-            ingredientsQuery = :ingredientsQuery AND
-            (:timeFilter IS NULL OR timeFilter = :timeFilter) AND
-            (:levelFilter IS NULL OR levelFilter = :levelFilter) AND
-            (:categoryFilter IS NULL OR categoryFilter = :categoryFilter) AND
-            (:utensilFilter IS NULL OR utensilFilter = :utensilFilter) AND
-            (useOnlySelected = :useOnlySelected)
+            search_ingredientsQuery = :ingredientsQuery AND
+            (:timeFilter IS NULL OR search_timeFilter = :timeFilter) AND
+            (:levelFilter IS NULL OR search_levelFilter = :levelFilter) AND
+            (:categoryFilter IS NULL OR search_categoryFilter = :categoryFilter) AND
+            (:utensilFilter IS NULL OR search_utensilFilter = :utensilFilter) AND
+            (search_useOnlySelected = :useOnlySelected)
     """)
     suspend fun findRecipesByFilters(
         ingredientsQuery: String,
@@ -49,6 +49,6 @@ interface RecipeDao {
         useOnlySelected: Boolean
     ): List<RecipeEntity>
 
-    @Query("SELECT * FROM recipes WHERE title = :title AND ingredientsQuery = :ingredientsQuery LIMIT 1")
+    @Query("SELECT * FROM recipes WHERE title = :title AND search_ingredientsQuery = :ingredientsQuery LIMIT 1")
     suspend fun findExistingRecipe(title: String, ingredientsQuery: String): RecipeEntity?
 }

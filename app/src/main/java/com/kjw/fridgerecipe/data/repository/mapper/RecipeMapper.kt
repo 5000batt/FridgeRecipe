@@ -1,12 +1,14 @@
 package com.kjw.fridgerecipe.data.repository.mapper
 
 import com.kjw.fridgerecipe.data.local.entity.RecipeEntity
+import com.kjw.fridgerecipe.data.local.entity.RecipeSearchMetadataEntity
 import com.kjw.fridgerecipe.data.remote.RecipeDto
 import com.kjw.fridgerecipe.data.remote.RecipeIngredientDto
 import com.kjw.fridgerecipe.data.remote.RecipeStepDto
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
+import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
 import com.kjw.fridgerecipe.domain.model.RecipeStep
 
 fun RecipeDto.toDomainModel(): Recipe {
@@ -46,12 +48,13 @@ fun Recipe.toEntity(): RecipeEntity {
         ingredients = this.ingredients,
         steps = this.steps,
         imageUri = this.imageUri,
-        ingredientsQuery = this.ingredientsQuery,
+        searchMetadata = this.searchMetadata?.toEntity()
+        /*ingredientsQuery = this.ingredientsQuery,
         timeFilter = this.timeFilter,
         levelFilter = this.levelFilter?.label,
         categoryFilter = this.categoryFilter,
         utensilFilter = this.utensilFilter,
-        useOnlySelected = this.useOnlySelected
+        useOnlySelected = this.useOnlySelected*/
     )
 }
 
@@ -65,9 +68,32 @@ fun RecipeEntity.toDomainModel(): Recipe {
         ingredients = this.ingredients,
         steps = this.steps,
         imageUri = this.imageUri,
+        searchMetadata = this.searchMetadata?.toDomainModel()
+        /*ingredientsQuery = this.ingredientsQuery,
+        timeFilter = this.timeFilter,
+        levelFilter = this.levelFilter?.let { LevelType.fromString(it) },
+        categoryFilter = this.categoryFilter,
+        utensilFilter = this.utensilFilter,
+        useOnlySelected = this.useOnlySelected*/
+    )
+}
+
+fun RecipeSearchMetadataEntity.toDomainModel(): RecipeSearchMetadata {
+    return RecipeSearchMetadata(
         ingredientsQuery = this.ingredientsQuery,
         timeFilter = this.timeFilter,
         levelFilter = this.levelFilter?.let { LevelType.fromString(it) },
+        categoryFilter = this.categoryFilter,
+        utensilFilter = this.utensilFilter,
+        useOnlySelected = this.useOnlySelected
+    )
+}
+
+fun RecipeSearchMetadata.toEntity(): RecipeSearchMetadataEntity {
+    return RecipeSearchMetadataEntity(
+        ingredientsQuery = this.ingredientsQuery,
+        timeFilter = this.timeFilter,
+        levelFilter = this.levelFilter?.label,
         categoryFilter = this.categoryFilter,
         utensilFilter = this.utensilFilter,
         useOnlySelected = this.useOnlySelected

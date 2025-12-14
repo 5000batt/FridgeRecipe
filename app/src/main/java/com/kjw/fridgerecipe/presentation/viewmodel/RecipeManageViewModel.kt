@@ -31,6 +31,7 @@ import java.lang.Exception
 import java.util.UUID
 import javax.inject.Inject
 import androidx.core.graphics.scale
+import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
 
 enum class RecipeValidationField {
     TITLE, SERVINGS, TIME, INGREDIENTS, STEPS
@@ -442,6 +443,15 @@ class RecipeManageViewModel @Inject constructor(
             .sorted()
             .joinToString(",")
 
+        val metadata = RecipeSearchMetadata(
+            ingredientsQuery = ingredientsQueryTag,
+            timeFilter = timeFilterTag,
+            levelFilter = actualLevel,
+            categoryFilter = actualCategory,
+            utensilFilter = actualUtensil,
+            useOnlySelected = false
+        )
+
         return Recipe(
             id = recipeId,
             title = currentState.title.trim(),
@@ -456,11 +466,7 @@ class RecipeManageViewModel @Inject constructor(
                 )
             },
             steps = currentState.stepsState.map { RecipeStep(it.number, it.description) },
-            ingredientsQuery = ingredientsQueryTag,
-            timeFilter = timeFilterTag,
-            levelFilter = actualLevel,
-            categoryFilter = actualCategory,
-            utensilFilter = actualUtensil,
+            searchMetadata = metadata,
             imageUri = currentState.imageUri
         )
     }
@@ -478,8 +484,8 @@ private fun Recipe.toEditUiState(): RecipeEditUiState {
         servingsState = servingsExtracted,
         timeState = timeExtracted,
         level = this.level,
-        categoryState = this.categoryFilter ?: "상관없음",
-        utensilState = this.utensilFilter ?: "상관없음",
+        categoryState = this.searchMetadata?.categoryFilter ?: "상관없음",
+        utensilState = this.searchMetadata?.utensilFilter ?: "상관없음",
         ingredientsState = this.ingredients.map {
             IngredientUiState(
                 name = it.name,

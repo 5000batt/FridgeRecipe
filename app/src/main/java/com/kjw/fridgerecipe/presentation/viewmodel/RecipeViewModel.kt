@@ -23,15 +23,19 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+data class RecipeFilterState(
+    val timeLimit: String? = "상관없음",
+    val level: LevelType? = null,
+    val category: String? = "상관없음",
+    val utensil: String? = "상관없음",
+    val useOnlySelected: Boolean = false
+)
+
 data class HomeUiState(
     val recommendedRecipe: Recipe? = null,
     val isRecipeLoading: Boolean = false,
     val selectedIngredientIds: Set<Long> = emptySet(),
-    val selectedTimeFilter: String? = "상관없음",
-    val selectedLevelFilter: LevelType? = null,
-    val selectedCategoryFilter: String? = "상관없음",
-    val selectedUtensilFilter: String? = "상관없음",
-    val useOnlySelectedIngredients: Boolean = false,
+    val filterState: RecipeFilterState = RecipeFilterState(),
     val showConflictDialog: Boolean = false,
     val conflictIngredients: List<String> = emptyList()
 )
@@ -135,15 +139,16 @@ class RecipeViewModel @Inject constructor(
                 val selectedIngredientNames = selectedIngredients.map { it.name }.toSet()
                 val finalExcludedList = excludedList.filter { it !in selectedIngredientNames }
 
-                val currentState = _homeUiState.value
+                val currentFilters = _homeUiState.value.filterState
+
                 val newRecipe = getRecommendedRecipeUseCase(
                     ingredients = selectedIngredients,
                     seenIds = _seenRecipeIds.value,
-                    timeFilter = currentState.selectedTimeFilter,
-                    levelFilter = currentState.selectedLevelFilter,
-                    categoryFilter = currentState.selectedCategoryFilter,
-                    utensilFilter = currentState.selectedUtensilFilter,
-                    useOnlySelected = currentState.useOnlySelectedIngredients,
+                    timeFilter = currentFilters.timeLimit,
+                    levelFilter = currentFilters.level,
+                    categoryFilter = currentFilters.category,
+                    utensilFilter = currentFilters.utensil,
+                    useOnlySelected = currentFilters.useOnlySelected,
                     excludedIngredients = finalExcludedList
                 )
 
@@ -177,29 +182,39 @@ class RecipeViewModel @Inject constructor(
     }
 
     fun onTimeFilterChanged(time: String) {
-        _homeUiState.update {
-            it.copy(selectedTimeFilter = if (time == "상관없음") null else time)
+        _homeUiState.update { state ->
+            state.copy(filterState = state.filterState.copy(
+                timeLimit = if (time == "상관없음") null else time
+            ))
         }
     }
 
     fun onLevelFilterChanged(level: LevelType?) {
-        _homeUiState.update { it.copy(selectedLevelFilter = level) }
+        _homeUiState.update { state ->
+            state.copy(filterState = state.filterState.copy(level = level))
+        }
     }
 
     fun onCategoryFilterChanged(category: String) {
-        _homeUiState.update {
-            it.copy(selectedCategoryFilter = if (category == "상관없음") null else category)
+        _homeUiState.update { state ->
+            state.copy(filterState = state.filterState.copy(
+                category = if (category == "상관없음") null else category
+            ))
         }
     }
 
     fun onUtensilFilterChanged(utensil: String) {
-        _homeUiState.update {
-            it.copy(selectedUtensilFilter = if (utensil == "상관없음") null else utensil)
+        _homeUiState.update { state ->
+            state.copy(filterState = state.filterState.copy(
+                utensil = if (utensil == "상관없음") null else utensil
+            ))
         }
     }
 
     fun onUseOnlySelectedIngredientsChanged(isChecked: Boolean) {
-        _homeUiState.update { it.copy(useOnlySelectedIngredients = isChecked) }
+        _homeUiState.update { state ->
+            state.copy(filterState = state.filterState.copy(useOnlySelected = isChecked))
+        }
     }
 
     // RecipeListScreen Function

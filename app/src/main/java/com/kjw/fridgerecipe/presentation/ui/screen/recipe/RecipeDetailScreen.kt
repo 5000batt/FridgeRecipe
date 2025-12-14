@@ -112,10 +112,11 @@ fun RecipeDetailScreen(
                         .fillMaxWidth()
                         .padding(24.dp)
                 ) {
-                    val displayCategory = if (recipe.categoryFilter == "상관없음" || recipe.categoryFilter.isNullOrBlank()) {
+                    val categoryFilter = recipe.searchMetadata?.categoryFilter
+                    val displayCategory = if (categoryFilter == "상관없음" || categoryFilter.isNullOrBlank()) {
                         "추천 레시피"
                     } else {
-                        recipe.categoryFilter
+                        categoryFilter
                     }
 
                     Text(

@@ -1,9 +1,19 @@
 package com.kjw.fridgerecipe.data.local.entity
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 import com.kjw.fridgerecipe.domain.model.RecipeStep
+
+data class RecipeSearchMetadataEntity(
+    val ingredientsQuery: String?,
+    val timeFilter: String?,
+    val levelFilter: String?,
+    val categoryFilter: String?,
+    val utensilFilter: String?,
+    val useOnlySelected: Boolean
+)
 
 @Entity(tableName = "recipes")
 data class RecipeEntity(
@@ -16,11 +26,6 @@ data class RecipeEntity(
     val ingredients: List<RecipeIngredient>,
     val steps: List<RecipeStep>,
     val imageUri: String? = null,
-    // 검색 필터
-    val ingredientsQuery: String?,
-    val timeFilter: String?,
-    val levelFilter: String?,
-    val categoryFilter: String?,
-    val utensilFilter: String?,
-    val useOnlySelected: Boolean
+    @Embedded(prefix = "search_")
+    val searchMetadata: RecipeSearchMetadataEntity?
 )

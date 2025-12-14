@@ -12,6 +12,7 @@ import com.kjw.fridgerecipe.data.repository.mapper.toEntity
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
+import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
 import com.kjw.fridgerecipe.domain.repository.RecipeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -101,6 +102,15 @@ class RecipeRepositoryImpl @Inject constructor(
             val recipeResponse = gson.fromJson(aiResponseText, AiRecipeResponse::class.java)
             val domainRecipe = recipeResponse.recipe.toDomainModel()
 
+            val searchMetadata = RecipeSearchMetadata(
+                ingredientsQuery = ingredientsQuery,
+                timeFilter = timeFilter,
+                levelFilter = levelFilter,
+                categoryFilter = categoryFilter,
+                utensilFilter = utensilFilter,
+                useOnlySelected = useOnlySelected
+            )
+
             val existingEntity = recipeDao.findExistingRecipe(
                 title = domainRecipe.title,
                 ingredientsQuery = ingredientsQuery
@@ -108,23 +118,20 @@ class RecipeRepositoryImpl @Inject constructor(
 
             val savedId = if (existingEntity != null) {
                 Log.d("RecipeRepo", "기존 레시피 발견 (업데이트 안 함): ${domainRecipe.title} (ID: ${existingEntity.id})")
-
                 existingEntity.id
             } else {
                 Log.d("RecipeRepo", "새 레시피 삽입: ${domainRecipe.title}")
 
                 val newRecipe = domainRecipe.copy(
-                    ingredientsQuery = ingredientsQuery,
-                    timeFilter = timeFilter,
-                    levelFilter = levelFilter,
-                    categoryFilter = categoryFilter,
-                    utensilFilter = utensilFilter,
-                    useOnlySelected = useOnlySelected
+                    searchMetadata = searchMetadata
                 )
                 recipeDao.insertRecipe(newRecipe.toEntity())
             }
 
-            return domainRecipe.copy(id = savedId)
+            return domainRecipe.copy(
+                id = savedId,
+                searchMetadata = searchMetadata
+            )
         } catch (e: Exception) {
             Log.e("RecipeRepo", "AI 레시피 호출 실패", e)
             null

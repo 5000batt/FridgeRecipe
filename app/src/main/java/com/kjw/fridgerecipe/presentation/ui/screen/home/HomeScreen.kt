@@ -191,7 +191,7 @@ fun HomeScreen(
                 FilterSection(
                     title = "조리 시간",
                     options = timeFilterOptions,
-                    selectedOption = uiState.selectedTimeFilter ?: "상관없음",
+                    selectedOption = uiState.filterState.timeLimit ?: "상관없음",
                     onOptionSelected = { recipeViewModel.onTimeFilterChanged(it) }
                 )
 
@@ -200,7 +200,7 @@ fun HomeScreen(
                 FilterSection(
                     title = "난이도",
                     options = levelFilterOptions.map { it?.label ?: "상관없음" },
-                    selectedOption = uiState.selectedLevelFilter?.label ?: "상관없음",
+                    selectedOption = uiState.filterState.level?.label ?: "상관없음",
                     onOptionSelected = { label ->
                         val level = levelFilterOptions.find { (it?.label ?: "상관없음") == label }
                         recipeViewModel.onLevelFilterChanged(level)
@@ -212,7 +212,7 @@ fun HomeScreen(
                 FilterSection(
                     title = "음식 종류",
                     options = categoryFilterOptions,
-                    selectedOption = uiState.selectedCategoryFilter ?: "상관없음",
+                    selectedOption = uiState.filterState.category ?: "상관없음",
                     onOptionSelected = { recipeViewModel.onCategoryFilterChanged(it) }
                 )
 
@@ -221,7 +221,7 @@ fun HomeScreen(
                 FilterSection(
                     title = "조리 도구",
                     options = utensilFilterOptions,
-                    selectedOption = uiState.selectedUtensilFilter ?: "상관없음",
+                    selectedOption = uiState.filterState.utensil ?: "상관없음",
                     onOptionSelected = { recipeViewModel.onUtensilFilterChanged(it) }
                 )
 
@@ -246,7 +246,7 @@ fun HomeScreen(
                         )
                     }
                     Switch(
-                        checked = uiState.useOnlySelectedIngredients,
+                        checked = uiState.filterState.useOnlySelected,
                         onCheckedChange = { recipeViewModel.onUseOnlySelectedIngredientsChanged(it) }
                     )
                 }
