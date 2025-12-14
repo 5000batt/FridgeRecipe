@@ -48,4 +48,7 @@ interface RecipeDao {
         utensilFilter: String?,
         useOnlySelected: Boolean
     ): List<RecipeEntity>
+
+    @Query("SELECT * FROM recipes WHERE title = :title AND ingredientsQuery = :ingredientsQuery LIMIT 1")
+    suspend fun findExistingRecipe(title: String, ingredientsQuery: String): RecipeEntity?
 }

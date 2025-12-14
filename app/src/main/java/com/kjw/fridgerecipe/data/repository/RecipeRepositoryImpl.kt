@@ -100,17 +100,31 @@ class RecipeRepositoryImpl @Inject constructor(
 
             val recipeResponse = gson.fromJson(aiResponseText, AiRecipeResponse::class.java)
             val domainRecipe = recipeResponse.recipe.toDomainModel()
-            val newId = recipeDao.insertRecipe(
-                domainRecipe.copy(
+
+            val existingEntity = recipeDao.findExistingRecipe(
+                title = domainRecipe.title,
+                ingredientsQuery = ingredientsQuery
+            )
+
+            val savedId = if (existingEntity != null) {
+                Log.d("RecipeRepo", "기존 레시피 발견 (업데이트 안 함): ${domainRecipe.title} (ID: ${existingEntity.id})")
+
+                existingEntity.id
+            } else {
+                Log.d("RecipeRepo", "새 레시피 삽입: ${domainRecipe.title}")
+
+                val newRecipe = domainRecipe.copy(
                     ingredientsQuery = ingredientsQuery,
                     timeFilter = timeFilter,
                     levelFilter = levelFilter,
                     categoryFilter = categoryFilter,
                     utensilFilter = utensilFilter,
                     useOnlySelected = useOnlySelected
-                ).toEntity())
+                )
+                recipeDao.insertRecipe(newRecipe.toEntity())
+            }
 
-            return domainRecipe.copy(id = newId)
+            return domainRecipe.copy(id = savedId)
         } catch (e: Exception) {
             Log.e("RecipeRepo", "AI 레시피 호출 실패", e)
             null

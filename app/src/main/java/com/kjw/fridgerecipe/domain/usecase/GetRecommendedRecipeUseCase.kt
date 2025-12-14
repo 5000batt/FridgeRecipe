@@ -36,7 +36,21 @@ class GetRecommendedRecipeUseCase @Inject constructor(
         )
 
         if (cashedList.isNotEmpty()) {
-            val availableCache = cashedList.filter { it.id !in seenIds }
+            val availableCache = cashedList.filter { recipe ->
+                val isSeen = recipe.id in seenIds
+
+                val hasExcludedIngredient = if (excludedIngredients.isNotEmpty()) {
+                    recipe.ingredients.any { ingredient ->
+                        excludedIngredients.any { excluded ->
+                            ingredient.name.contains(excluded, ignoreCase = true)
+                        }
+                    }
+                } else {
+                    false
+                }
+
+                !isSeen && !hasExcludedIngredient
+            }
 
             if (availableCache.isNotEmpty()) {
                 Log.d("RecipeUseCase", "캐시된 목록 (다른 레시피) 반환")

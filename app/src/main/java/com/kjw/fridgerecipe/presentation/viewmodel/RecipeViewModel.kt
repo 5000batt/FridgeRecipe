@@ -31,7 +31,9 @@ data class HomeUiState(
     val selectedLevelFilter: LevelType? = null,
     val selectedCategoryFilter: String? = "상관없음",
     val selectedUtensilFilter: String? = "상관없음",
-    val useOnlySelectedIngredients: Boolean = false
+    val useOnlySelectedIngredients: Boolean = false,
+    val showConflictDialog: Boolean = false,
+    val conflictIngredients: List<String> = emptyList()
 )
 
 @HiltViewModel
@@ -92,7 +94,30 @@ class RecipeViewModel @Inject constructor(
     private var currentIngredientsQuery: String = ""
 
     // HomeScreen Functions
+    fun checkIngredientConflicts(selectedIngredients: List<Ingredient>) {
+        viewModelScope.launch {
+            val excludedList = settingsRepository.excludedIngredients.first().toSet()
+
+            val conflicts = selectedIngredients
+                .map { it.name }
+                .filter { it in excludedList }
+
+            if (conflicts.isNotEmpty()) {
+                _homeUiState.update {
+                    it.copy(
+                        showConflictDialog = true,
+                        conflictIngredients = conflicts
+                    )
+                }
+            } else {
+                fetchRecommendedRecipe(selectedIngredients)
+            }
+        }
+    }
+
     fun fetchRecommendedRecipe(selectedIngredients: List<Ingredient>) {
+        _homeUiState.update { it.copy(showConflictDialog = false, conflictIngredients = emptyList()) }
+
         viewModelScope.launch {
             _homeUiState.update { it.copy(isRecipeLoading = true) }
             try {
@@ -107,6 +132,8 @@ class RecipeViewModel @Inject constructor(
                 }
 
                 val excludedList = settingsRepository.excludedIngredients.first().toList()
+                val selectedIngredientNames = selectedIngredients.map { it.name }.toSet()
+                val finalExcludedList = excludedList.filter { it !in selectedIngredientNames }
 
                 val currentState = _homeUiState.value
                 val newRecipe = getRecommendedRecipeUseCase(
@@ -117,7 +144,7 @@ class RecipeViewModel @Inject constructor(
                     categoryFilter = currentState.selectedCategoryFilter,
                     utensilFilter = currentState.selectedUtensilFilter,
                     useOnlySelected = currentState.useOnlySelectedIngredients,
-                    excludedIngredients = excludedList
+                    excludedIngredients = finalExcludedList
                 )
 
                 _homeUiState.update { it.copy(recommendedRecipe = newRecipe) }
@@ -133,9 +160,13 @@ class RecipeViewModel @Inject constructor(
         }
     }
 
-    fun clearSeenRecipeIds() {
-        _seenRecipeIds.value = emptySet()
+    fun dismissConflictDialog() {
+        _homeUiState.update { it.copy(showConflictDialog = false, conflictIngredients = emptyList()) }
     }
+
+    /*fun clearSeenRecipeIds() {
+        _seenRecipeIds.value = emptySet()
+    }*/
 
     fun toggleIngredientSelection(id: Long) {
         _homeUiState.update { currentState ->

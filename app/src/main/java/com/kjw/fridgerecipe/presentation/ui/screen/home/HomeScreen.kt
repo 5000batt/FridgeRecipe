@@ -21,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -34,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -59,11 +61,11 @@ fun HomeScreen(
     recipeViewModel: RecipeViewModel = hiltViewModel(),
     onNavigateToRecipeDetail: (Long) -> Unit
 ) {
-    DisposableEffect(Unit) {
+    /*DisposableEffect(Unit) {
         onDispose {
             recipeViewModel.clearSeenRecipeIds()
         }
-    }
+    }*/
 
     LaunchedEffect(Unit) {
         recipeViewModel.navigationEvent.collect { event ->
@@ -265,7 +267,7 @@ fun HomeScreen(
                 val allIngredients = ingredientViewModel.allIngredients.value
                 val selectedIngredients =
                     allIngredients.filter { it.id in uiState.selectedIngredientIds }
-                recipeViewModel.fetchRecommendedRecipe(selectedIngredients)
+                recipeViewModel.checkIngredientConflicts(selectedIngredients)
             },
             enabled = uiState.selectedIngredientIds.isNotEmpty() && !uiState.isRecipeLoading,
             modifier = Modifier
@@ -296,6 +298,41 @@ fun HomeScreen(
         }
 
         Spacer(modifier = Modifier.height(40.dp))
+    }
+
+    if (uiState.showConflictDialog) {
+        val conflictNames = uiState.conflictIngredients.joinToString(", ")
+
+        AlertDialog(
+            onDismissRequest = { recipeViewModel.dismissConflictDialog() },
+            title = { Text(text = "제외 재료 포함 알림") },
+            text = {
+                Text(
+                    text = "선택하신 재료 중 '$conflictNames'은(는)\n" +
+                            "설정에서 '제외할 재료'로 지정되어 있습니다.\n\n" +
+                            "그래도 해당 재료를 포함하여 레시피를 추천받으시겠습니까?",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val allIngredients = ingredientViewModel.allIngredients.value
+                        val selectedIngredients = allIngredients.filter { it.id in uiState.selectedIngredientIds }
+                        recipeViewModel.fetchRecommendedRecipe(selectedIngredients)
+                    }
+                ) {
+                    Text("네, 포함할게요", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { recipeViewModel.dismissConflictDialog() }) {
+                    Text("아니요")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(16.dp)
+        )
     }
 }
 
