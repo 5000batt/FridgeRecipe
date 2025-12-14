@@ -6,17 +6,17 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
-import com.kjw.fridgerecipe.presentation.navigation.NavItem
+import com.kjw.fridgerecipe.presentation.navigation.MainTab
 
 @Composable
 fun AppBottomNavigationBar(navController: NavController, currentRoute: String?) {
-    val items = listOf(NavItem.Home, NavItem.Ingredients, NavItem.Recipes)
+    val items = listOf(MainTab.HOME, MainTab.INGREDIENTS, MainTab.RECIPES)
 
     NavigationBar {
         items.forEach { screen ->
             val selected = currentRoute == screen.route
             NavigationBarItem(
-                icon = { screen.icon?.let { Icon(it, contentDescription = screen.label) } },
+                icon = { Icon(screen.icon, contentDescription = screen.label) },
                 label = { Text(screen.label) },
                 selected = selected,
                 onClick = {

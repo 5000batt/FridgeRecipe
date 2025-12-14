@@ -25,31 +25,44 @@ fun AppNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = NavItem.Home.route,
+        startDestination = MainTab.HOME.route,
         modifier = modifier
     ) {
-        composable(NavItem.Home.route) {
+        // --- Main Tabs ---
+        composable(MainTab.HOME.route) {
             HomeScreen(
                 onNavigateToRecipeDetail = { recipeId ->
-                    navController.navigate("$RECIPE_DETAIL_BASE_ROUTE/$recipeId")
+                    navController.navigate(DetailDestination.RecipeDetail.createRoute(recipeId))
                 }
             )
         }
-        composable(NavItem.Ingredients.route) {
+        composable(MainTab.INGREDIENTS.route) {
             IngredientListScreen(
                 onIngredientClick = { ingredientId ->
-                    navController.navigate("$INGREDIENT_EDIT_BASE_ROUTE?$INGREDIENT_ID_ARG=$ingredientId")
+                    navController.navigate(DetailDestination.IngredientEdit.createRoute(ingredientId))
                 }
             )
         }
+        composable(MainTab.RECIPES.route) {
+            RecipeListScreen(
+                onRecipeClick = { recipeId ->
+                    navController.navigate(DetailDestination.RecipeDetail.createRoute(recipeId))
+                }
+            )
+        }
+        composable(MainTab.SETTINGS.route) {
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // --- Details ---
         composable(
-            route = INGREDIENT_EDIT_ROUTE_PATTERN,
-            arguments = listOf(navArgument(INGREDIENT_ID_ARG) {
-                type = NavType.LongType
-                defaultValue = INGREDIENT_ID_DEFAULT
-            })
+            route = DetailDestination.IngredientEdit.route,
+            arguments = DetailDestination.IngredientEdit.arguments
         ) { backStackEntry ->
-            val ingredientId = backStackEntry.arguments?.getLong(INGREDIENT_ID_ARG) ?: INGREDIENT_ID_DEFAULT
+            val ingredientId = backStackEntry.arguments?.getLong(DetailDestination.IngredientEdit.ARG_ID)
+                ?: DetailDestination.IngredientEdit.DEFAULT_ID
 
             IngredientEditScreen(
                 onNavigateBack = { navController.popBackStack() },
@@ -57,60 +70,39 @@ fun AppNavHost(
                 onShowSnackbar = onShowSnackbar
             )
         }
-        composable(NavItem.Recipes.route) {
-            RecipeListScreen(
-                onRecipeClick = { recipeId ->
-                    navController.navigate("$RECIPE_DETAIL_BASE_ROUTE/$recipeId")
-                }
-            )
-        }
+
         composable(
-            route = RECIPE_DETAIL_ROUTE_PATTERN,
-            arguments = listOf(navArgument(RECIPE_ID_ARG) {
-                type = NavType.LongType
-            })
+            route = DetailDestination.RecipeDetail.route,
+            arguments = DetailDestination.RecipeDetail.arguments
         ) { backStackEntry ->
-            val recipeId = backStackEntry.arguments?.getLong(RECIPE_ID_ARG)
+            val recipeId = backStackEntry.arguments?.getLong(DetailDestination.RecipeDetail.ARG_ID)
 
             if (recipeId != null) {
                 RecipeDetailScreen(
-                    onNavigateToRecipeEdit = { recipeId ->
-                        navController.navigate("$RECIPE_EDIT_BASE_ROUTE?$RECIPE_ID_ARG=$recipeId")
+                    onNavigateToRecipeEdit = { id ->
+                        navController.navigate(DetailDestination.RecipeEdit.createRoute(id))
                     },
                     recipeId = recipeId
                 )
             } else {
-                LaunchedEffect(Unit) {
-                    navController.popBackStack()
-                }
+                LaunchedEffect(Unit) { navController.popBackStack() }
             }
         }
+
         composable(
-            route = RECIPE_EDIT_ROUTE_PATTERN,
-            arguments = listOf(navArgument(RECIPE_ID_ARG) {
-                type = NavType.LongType
-                defaultValue = RECIPE_ID_DEFAULT
-            })
+            route = DetailDestination.RecipeEdit.route,
+            arguments = DetailDestination.RecipeEdit.arguments
         ) { backStackEntry ->
-            val recipeId = backStackEntry.arguments?.getLong(RECIPE_ID_ARG) ?: RECIPE_ID_DEFAULT
+            val recipeId = backStackEntry.arguments?.getLong(DetailDestination.RecipeEdit.ARG_ID)
+                ?: DetailDestination.RecipeEdit.DEFAULT_ID
 
             RecipeEditScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToList = {
-                    navController.popBackStack(
-                        route = NavItem.Recipes.route,
-                        inclusive = false
-                    )
+                    navController.popBackStack(route = MainTab.RECIPES.route, inclusive = false)
                 },
                 recipeId = recipeId,
                 onShowSnackbar = onShowSnackbar
-            )
-        }
-        composable(
-            route = NavItem.Settings.route
-        ) {
-            SettingsScreen(
-                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

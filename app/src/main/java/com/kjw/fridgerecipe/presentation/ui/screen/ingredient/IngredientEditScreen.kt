@@ -74,7 +74,7 @@ import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.domain.model.UnitType
-import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_ID_DEFAULT
+import com.kjw.fridgerecipe.presentation.navigation.DetailDestination
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.presentation.util.getIconResId
@@ -92,7 +92,7 @@ fun IngredientEditScreen(
     ingredientId: Long,
     onShowSnackbar: (String, SnackbarType) -> Unit
 ) {
-    val isEditMode = ingredientId != INGREDIENT_ID_DEFAULT
+    val isEditMode = ingredientId != DetailDestination.IngredientEdit.DEFAULT_ID
     val uiState by viewModel.editUiState.collectAsState()
 
     var unitExpanded by remember { mutableStateOf(false) }

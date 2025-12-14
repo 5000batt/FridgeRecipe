@@ -46,11 +46,9 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.presentation.navigation.AppNavHost
-import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_EDIT_BASE_ROUTE
-import com.kjw.fridgerecipe.presentation.navigation.INGREDIENT_ID_DEFAULT
-import com.kjw.fridgerecipe.presentation.navigation.NavItem
-import com.kjw.fridgerecipe.presentation.navigation.RECIPE_DETAIL_BASE_ROUTE
-import com.kjw.fridgerecipe.presentation.navigation.RECIPE_EDIT_BASE_ROUTE
+import com.kjw.fridgerecipe.presentation.navigation.Destination
+import com.kjw.fridgerecipe.presentation.navigation.DetailDestination
+import com.kjw.fridgerecipe.presentation.navigation.MainTab
 import com.kjw.fridgerecipe.presentation.ui.components.common.AppBottomNavigationBar
 import com.kjw.fridgerecipe.presentation.util.CustomSnackbarVisuals
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
@@ -59,10 +57,15 @@ import kotlinx.coroutines.launch
 
 private data class MainAppScreenState(
     val navController: NavHostController,
-    val currentRoute: String?,
-    val isDetailScreen: Boolean,
+    val currentDestination: Destination?,
     val currentTitle: String
-)
+) {
+    val showBottomBar: Boolean
+        get() = currentDestination is MainTab
+
+    val showBackButton: Boolean
+        get() = currentDestination is DetailDestination
+}
 
 @Composable
 private fun rememberMainAppScreenState(
@@ -71,36 +74,25 @@ private fun rememberMainAppScreenState(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val currentIngredientId = navBackStackEntry?.arguments?.getLong("ingredientId") ?: INGREDIENT_ID_DEFAULT
+    val currentDestination: Destination? = remember(currentRoute) {
+        MainTab.getByRoute(currentRoute) ?: DetailDestination.getByRoute(currentRoute)
+    }
 
-    val isIngredientEditScreen = currentRoute?.startsWith(INGREDIENT_EDIT_BASE_ROUTE) == true
-    val isRecipeDetailScreen = currentRoute?.startsWith(RECIPE_DETAIL_BASE_ROUTE) == true
-    val isRecipeEditScreen = currentRoute?.startsWith(RECIPE_EDIT_BASE_ROUTE) == true
-    val isSettingsScreen = currentRoute == NavItem.Settings.route
-    val isDetailScreen = isIngredientEditScreen || isRecipeDetailScreen || isRecipeEditScreen || isSettingsScreen
-
-    val currentTitle = remember(currentRoute, currentIngredientId) {
-        if (isIngredientEditScreen) {
-            if (currentIngredientId == INGREDIENT_ID_DEFAULT) "새 재료 추가" else "재료 수정"
-        } else if (isRecipeDetailScreen) {
-            "레시피 상세"
-        } else if (isRecipeEditScreen) {
-            "레시피 작성"
-        } else if (isSettingsScreen) {
-            "환경 설정"
-        } else {
-            listOf(NavItem.Home, NavItem.Ingredients, NavItem.Recipes)
-                .find { it.route == currentRoute }?.title ?: NavItem.Home.title
+    val currentTitle = remember(currentDestination, navBackStackEntry) {
+        when(currentDestination) {
+            is MainTab -> currentDestination.title
+            is DetailDestination.IngredientEdit -> {
+                val id = navBackStackEntry?.arguments?.getLong(DetailDestination.IngredientEdit.ARG_ID)
+                    ?: DetailDestination.IngredientEdit.DEFAULT_ID
+                currentDestination.getTitle(id == DetailDestination.IngredientEdit.DEFAULT_ID)
+            }
+            is DetailDestination -> currentDestination.title
+            else -> ""
         }
     }
 
-    return remember(navController, currentRoute, isDetailScreen, currentTitle) {
-        MainAppScreenState(
-            navController = navController,
-            currentRoute = currentRoute,
-            isDetailScreen = isDetailScreen,
-            currentTitle = currentTitle
-        )
+    return remember(navController, currentDestination, currentTitle) {
+        MainAppScreenState(navController, currentDestination, currentTitle)
     }
 }
 
@@ -128,7 +120,7 @@ fun MainAppScreen() {
     val context = LocalContext.current
     val activity = (context as? Activity)
 
-    BackHandler(enabled = screenState.currentRoute == NavItem.Home.route) {
+    BackHandler(enabled = screenState.currentDestination?.route == MainTab.HOME.route) {
         val currentTime = System.currentTimeMillis()
         if (currentTime - backPressedTime > 2000L) {
             backPressedTime = currentTime
@@ -155,7 +147,7 @@ fun MainAppScreen() {
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
                 navigationIcon = {
-                    if (screenState.isDetailScreen) {
+                    if (screenState.showBackButton) {
                         IconButton(onClick = { screenState.navController.popBackStack() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -165,7 +157,7 @@ fun MainAppScreen() {
                     }
                 },
                 actions = {
-                    if (BuildConfig.DEBUG && screenState.currentRoute == NavItem.Home.route) {
+                    if (BuildConfig.DEBUG && screenState.currentDestination?.route == MainTab.HOME.route) {
                         IconButton(onClick = {
                             val testRequest = OneTimeWorkRequestBuilder<ExpirationCheckWorker>().build()
                             WorkManager.getInstance(context).enqueue(testRequest)
@@ -175,8 +167,8 @@ fun MainAppScreen() {
                         }
                     }
 
-                    if (!screenState.isDetailScreen) {
-                        IconButton(onClick = { screenState.navController.navigate(NavItem.Settings.route)}) {
+                    if (!screenState.showBackButton) {
+                        IconButton(onClick = { screenState.navController.navigate(MainTab.SETTINGS.route)}) {
                             Icon(Icons.Default.Settings, contentDescription = "설정")
                         }
                     }
@@ -184,8 +176,8 @@ fun MainAppScreen() {
             )
         },
         bottomBar = {
-            if (!screenState.isDetailScreen) {
-                AppBottomNavigationBar(navController = screenState.navController, currentRoute = screenState.currentRoute)
+            if (screenState.showBottomBar) {
+                AppBottomNavigationBar(navController = screenState.navController, currentRoute = screenState.currentDestination?.route)
             }
         },
         snackbarHost = {
@@ -226,20 +218,24 @@ fun MainAppScreen() {
             }
         },
         floatingActionButton = {
-            if (screenState.currentRoute == NavItem.Ingredients.route) {
-                ExtendedFloatingActionButton(
-                    onClick = { screenState.navController.navigate(INGREDIENT_EDIT_BASE_ROUTE) },
-                    icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                    text = { Text("재료 추가") },
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            } else if (screenState.currentRoute == NavItem.Recipes.route) {
-                ExtendedFloatingActionButton(
-                    onClick = { screenState.navController.navigate(RECIPE_EDIT_BASE_ROUTE) },
-                    icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                    text = { Text("레시피 추가") }
-                )
+            when (screenState.currentDestination) {
+                MainTab.INGREDIENTS -> {
+                    ExtendedFloatingActionButton(
+                        onClick = { screenState.navController.navigate(DetailDestination.IngredientEdit.createRoute()) },
+                        icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                        text = { Text("재료 추가") },
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+                MainTab.RECIPES -> {
+                    ExtendedFloatingActionButton(
+                        onClick = { screenState.navController.navigate(DetailDestination.RecipeEdit.createRoute()) },
+                        icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                        text = { Text("레시피 추가") }
+                    )
+                }
+                else -> {}
             }
         }
     ) { paddingValues ->

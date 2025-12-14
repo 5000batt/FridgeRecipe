@@ -3,30 +3,94 @@ package com.kjw.fridgerecipe.presentation.navigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Kitchen
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NamedNavArgument
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
-const val INGREDIENT_ID_ARG = "ingredientId"
-const val INGREDIENT_ID_DEFAULT = -1L
-const val INGREDIENT_EDIT_BASE_ROUTE = "INGREDIENT_EDIT"
-const val INGREDIENT_EDIT_ROUTE_PATTERN = "$INGREDIENT_EDIT_BASE_ROUTE?$INGREDIENT_ID_ARG={$INGREDIENT_ID_ARG}"
+sealed interface Destination {
+    val route: String
+    val title: String
+    val isRoot: Boolean
+}
 
-const val RECIPE_ID_ARG = "recipeId"
-const val RECIPE_ID_DEFAULT = -1L
-const val RECIPE_DETAIL_BASE_ROUTE = "RECIPE_DETAIL"
-const val RECIPE_DETAIL_ROUTE_PATTERN = "$RECIPE_DETAIL_BASE_ROUTE/{$RECIPE_ID_ARG}"
-const val RECIPE_EDIT_BASE_ROUTE = "RECIPE_EDIT"
-const val RECIPE_EDIT_ROUTE_PATTERN = "$RECIPE_EDIT_BASE_ROUTE?$RECIPE_ID_ARG={$RECIPE_ID_ARG}"
+enum class MainTab(
+    override val route: String,
+    override val title: String,
+    val icon: ImageVector,
+    val label: String
+) : Destination {
+    HOME("home", "Fridge Recipe", Icons.Default.Home, "홈"),
+    INGREDIENTS("ingredients", "전체 재료 목록", Icons.Default.Kitchen, "재료"),
+    RECIPES("recipes", "레시피", Icons.Default.RestaurantMenu, "레시피"),
+    SETTINGS("settings", "환경설정", Icons.Default.Settings, "환경설정");
 
-sealed class NavItem(val route: String, val icon: ImageVector?, val label: String, val title: String) {
-    data object Home : NavItem("HOME", Icons.Default.Home, "홈", "Fridge Recipe")
-    data object Ingredients : NavItem("INGREDIENTS", Icons.Default.Kitchen, "재료", "전체 재료 목록")
-    data object Recipes : NavItem("RECIPES", Icons.Default.RestaurantMenu, "레시피", "레시피")
-    data object Settings : NavItem("SETTINGS", Icons.Default.Settings, "환경설정", "환경설정")
-    data object IngredientEdit : NavItem(INGREDIENT_EDIT_BASE_ROUTE, null, "재료 상세화면", "재료 상세화면")
-    data object RecipeDetail : NavItem(RECIPE_DETAIL_BASE_ROUTE, null, "레시피 상세화면", "레시피 상세화면")
-    data object RecipeEdit : NavItem(RECIPE_EDIT_BASE_ROUTE, null, "레시피 편집화면", "레시피 편집화면")
+    override val isRoot: Boolean = true
+
+    companion object {
+        fun getByRoute(route: String?): MainTab? = entries.find { it.route == route }
+    }
+}
+
+sealed class DetailDestination(
+    override val route: String,
+    override val title: String
+) : Destination {
+    override val isRoot: Boolean = false
+
+    data object IngredientEdit : DetailDestination(
+        route = "ingredient_edit?ingredientId={ingredientId}",
+        title = "재료 상세"
+    ) {
+        const val ARG_ID = "ingredientId"
+        const val DEFAULT_ID = -1L
+
+        val arguments: List<NamedNavArgument> = listOf(
+            navArgument(ARG_ID) { type = NavType.LongType; defaultValue = DEFAULT_ID}
+        )
+
+        fun createRoute(ingredientId: Long = DEFAULT_ID) = "ingredient_edit?ingredientId=$ingredientId"
+        fun getTitle(isNew: Boolean) = if (isNew) "새 재료 추가" else "재료 수정"
+    }
+
+    data object RecipeDetail : DetailDestination(
+        route = "recipe_detail/{recipeId}",
+        title = "레시피 상세"
+    ) {
+        const val ARG_ID = "recipeId"
+
+        val arguments: List<NamedNavArgument> = listOf(
+            navArgument(ARG_ID) { type = NavType.LongType }
+        )
+
+        fun createRoute(recipeId: Long) = "recipe_detail/$recipeId"
+    }
+
+    data object RecipeEdit : DetailDestination(
+        route = "recipe_edit?recipeId={recipeId}",
+        title = "레시피 작성"
+    ) {
+        const val ARG_ID = "recipeId"
+        const val DEFAULT_ID = -1L
+
+        val arguments: List<NamedNavArgument> = listOf(
+            navArgument(ARG_ID) { type = NavType.LongType }
+        )
+
+        fun createRoute(recipeId: Long = DEFAULT_ID) = "recipe_edit?recipeId=$recipeId"
+    }
+
+    companion object {
+        fun getByRoute(route: String?): DetailDestination? {
+            if(route == null) return null
+            return when {
+                route.startsWith("ingredient_edit") -> IngredientEdit
+                route.startsWith("recipe_detail") -> RecipeDetail
+                route.startsWith("recipe_edit") -> RecipeEdit
+                else -> null
+            }
+        }
+    }
 }

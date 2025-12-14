@@ -66,7 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kjw.fridgerecipe.domain.model.LevelType
-import com.kjw.fridgerecipe.presentation.navigation.RECIPE_ID_DEFAULT
+import com.kjw.fridgerecipe.presentation.navigation.DetailDestination
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeManageViewModel
@@ -82,7 +82,7 @@ fun RecipeEditScreen(
     recipeId: Long,
     onShowSnackbar: (String, SnackbarType) -> Unit
 ) {
-    val isEditMode = recipeId != RECIPE_ID_DEFAULT
+    val isEditMode = recipeId != DetailDestination.RecipeEdit.DEFAULT_ID
     val uiState by viewModel.editUiState.collectAsState()
 
     var levelMenuExpanded by remember { mutableStateOf(false) }
