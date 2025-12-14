@@ -9,31 +9,35 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class IngredientRepositoryImpl @Inject constructor(private val dao: IngredientDao): IngredientRepository {
+class IngredientRepositoryImpl @Inject constructor(private val ingredientDao: IngredientDao): IngredientRepository {
 
     override suspend fun insertIngredient(ingredient: Ingredient) {
-        dao.insertIngredient(ingredient.toEntity())
+        ingredientDao.insertIngredient(ingredient.toEntity())
     }
 
     override suspend fun deleteIngredient(ingredient: Ingredient) {
-        dao.deleteIngredient(ingredient.toEntity())
+        ingredientDao.deleteIngredient(ingredient.toEntity())
     }
 
     override fun getAllIngredients(): Flow<List<Ingredient>> {
-        return dao.getAllIngredients().map { entities ->
+        return ingredientDao.getAllIngredients().map { entities ->
             entities.map { it.toDomain() }
         }
     }
 
     override suspend fun getAllIngredientsSuspend(): List<Ingredient> {
-        return dao.getAllIngredientsSuspend().map { it.toDomain() }
+        return ingredientDao.getAllIngredientsSuspend().map { it.toDomain() }
     }
 
     override suspend fun getIngredientById(id: Long): Ingredient? {
-        return dao.getIngredientById(id)?.toDomain()
+        return ingredientDao.getIngredientById(id)?.toDomain()
     }
 
     override suspend fun updateIngredient(ingredient: Ingredient) {
-        dao.updateIngredient(ingredient.toEntity())
+        ingredientDao.updateIngredient(ingredient.toEntity())
+    }
+
+    override suspend fun deleteAllIngredients() {
+        ingredientDao.deleteAllIngredients()
     }
 }

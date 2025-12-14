@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
+import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -35,7 +37,8 @@ data class HomeUiState(
 @HiltViewModel
 class RecipeViewModel @Inject constructor(
     private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase,
-    getSavedRecipesUseCase: GetSavedRecipesUseCase
+    getSavedRecipesUseCase: GetSavedRecipesUseCase,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     companion object {
@@ -103,6 +106,8 @@ class RecipeViewModel @Inject constructor(
                     currentIngredientsQuery = ingredientsQuery
                 }
 
+                val excludedList = settingsRepository.excludedIngredients.first().toList()
+
                 val currentState = _homeUiState.value
                 val newRecipe = getRecommendedRecipeUseCase(
                     ingredients = selectedIngredients,
@@ -111,7 +116,8 @@ class RecipeViewModel @Inject constructor(
                     levelFilter = currentState.selectedLevelFilter,
                     categoryFilter = currentState.selectedCategoryFilter,
                     utensilFilter = currentState.selectedUtensilFilter,
-                    useOnlySelected = currentState.useOnlySelectedIngredients
+                    useOnlySelected = currentState.useOnlySelectedIngredients,
+                    excludedIngredients = excludedList
                 )
 
                 _homeUiState.update { it.copy(recommendedRecipe = newRecipe) }

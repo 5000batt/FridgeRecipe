@@ -13,7 +13,8 @@ interface RecipeRepository {
         levelFilter: LevelType?,
         categoryFilter: String?,
         utensilFilter: String?,
-        useOnlySelected: Boolean
+        useOnlySelected: Boolean,
+        excludedIngredients: List<String> = emptyList()
     ): Recipe?
 
     fun getAllSavedRecipes(): Flow<List<Recipe>>
@@ -34,4 +35,6 @@ interface RecipeRepository {
     suspend fun updateRecipe(recipe: Recipe)
 
     suspend fun deleteRecipe(recipe: Recipe)
+
+    suspend fun deleteAllRecipes()
 }

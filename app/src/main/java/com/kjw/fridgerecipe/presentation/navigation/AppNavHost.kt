@@ -14,6 +14,7 @@ import com.kjw.fridgerecipe.presentation.ui.screen.home.HomeScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.recipe.RecipeDetailScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.recipe.RecipeEditScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.recipe.RecipeListScreen
+import com.kjw.fridgerecipe.presentation.ui.screen.settings.SettingsScreen
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 
 @Composable
@@ -103,6 +104,13 @@ fun AppNavHost(
                 },
                 recipeId = recipeId,
                 onShowSnackbar = onShowSnackbar
+            )
+        }
+        composable(
+            route = NavItem.Settings.route
+        ) {
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

@@ -17,7 +17,8 @@ class GetRecommendedRecipeUseCase @Inject constructor(
         levelFilter: LevelType?,
         categoryFilter: String?,
         utensilFilter: String?,
-        useOnlySelected: Boolean
+        useOnlySelected: Boolean,
+        excludedIngredients: List<String> = emptyList()
     ): Recipe? {
 
         val ingredientsQuery = ingredients
@@ -52,7 +53,8 @@ class GetRecommendedRecipeUseCase @Inject constructor(
             levelFilter = levelFilter,
             categoryFilter = categoryFilter,
             utensilFilter = utensilFilter,
-            useOnlySelected = useOnlySelected
+            useOnlySelected = useOnlySelected,
+            excludedIngredients = excludedIngredients
         )
     }
 }

@@ -1,0 +1,122 @@
+package com.kjw.fridgerecipe.presentation.viewmodel
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.kjw.fridgerecipe.domain.repository.IngredientRepository
+import com.kjw.fridgerecipe.domain.repository.RecipeRepository
+import com.kjw.fridgerecipe.domain.repository.SettingsRepository
+import com.kjw.fridgerecipe.presentation.ui.model.SettingsUiState
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class SettingsViewModel @Inject constructor(
+    private val recipeRepository: RecipeRepository,
+    private val ingredientRepository: IngredientRepository,
+    private val settingsRepository: SettingsRepository
+) : ViewModel() {
+
+    private val _internalState = MutableStateFlow(SettingsUiState())
+    val uiState: StateFlow<SettingsUiState> = combine(
+        _internalState,
+        settingsRepository.themeMode,
+        settingsRepository.isNotificationEnabled,
+        settingsRepository.excludedIngredients
+    ) { state, themeModeInt, isNotiEnabled, excludedSet ->
+
+        val isDarkMode = when (themeModeInt) {
+            1 -> false
+            2 -> true
+            else -> null
+        }
+
+        state.copy(
+            isDarkMode = isDarkMode,
+            isNotificationEnabled = isNotiEnabled,
+            excludedIngredients = excludedSet.toList().sorted()
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = SettingsUiState()
+    )
+
+    fun toggleNotification(isEnabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setNotificationEnabled(isEnabled)
+        }
+    }
+
+    fun setTheme(isDark: Boolean?) {
+        viewModelScope.launch {
+            val mode = when (isDark) {
+                false -> 1
+                true -> 2
+                null -> 0
+            }
+            settingsRepository.setThemeMode(mode)
+        }
+    }
+
+    fun onNewExcludedIngredientChanged(text: String) {
+        _internalState.update { it.copy(newExcludedIngredient = text) }
+    }
+
+    fun addExcludedIngredient() {
+        val newItem = _internalState.value.newExcludedIngredient.trim()
+        val currentList = uiState.value.excludedIngredients
+
+        if (newItem.isNotBlank() && newItem !in currentList) {
+            viewModelScope.launch {
+                val newSet = currentList.toSet() + newItem
+                settingsRepository.setExcludedIngredients(newSet)
+                _internalState.update { it.copy(newExcludedIngredient = "") }
+            }
+        }
+    }
+
+    fun removeExcludedIngredient(item: String) {
+        viewModelScope.launch {
+            val currentList = uiState.value.excludedIngredients
+            val newSet = currentList.toSet() - item
+            settingsRepository.setExcludedIngredients(newSet)
+        }
+    }
+
+    fun showResetIngredientsDialog() {
+        _internalState.update { it.copy(showResetIngredientsDialog = true) }
+    }
+
+    fun dismissResetIngredientsDialog() {
+        _internalState.update { it.copy(showResetIngredientsDialog = false) }
+    }
+
+    fun resetIngredients() {
+        viewModelScope.launch {
+             ingredientRepository.deleteAllIngredients()
+            _internalState.update { it.copy(showResetIngredientsDialog = false) }
+        }
+    }
+
+    fun showResetRecipesDialog() {
+        _internalState.update { it.copy(showResetRecipesDialog = true) }
+    }
+
+    fun dismissResetRecipesDialog() {
+        _internalState.update { it.copy(showResetRecipesDialog = false) }
+    }
+
+    fun resetRecipes() {
+        viewModelScope.launch {
+             recipeRepository.deleteAllRecipes()
+            _internalState.update { it.copy(showResetRecipesDialog = false) }
+        }
+    }
+}

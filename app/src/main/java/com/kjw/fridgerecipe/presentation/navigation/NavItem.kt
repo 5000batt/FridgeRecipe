@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.RestaurantMenu
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
 const val INGREDIENT_ID_ARG = "ingredientId"
@@ -24,6 +25,7 @@ sealed class NavItem(val route: String, val icon: ImageVector?, val label: Strin
     data object Home : NavItem("HOME", Icons.Default.Home, "홈", "Fridge Recipe")
     data object Ingredients : NavItem("INGREDIENTS", Icons.Default.Kitchen, "재료", "전체 재료 목록")
     data object Recipes : NavItem("RECIPES", Icons.Default.RestaurantMenu, "레시피", "레시피")
+    data object Settings : NavItem("SETTINGS", Icons.Default.Settings, "환경설정", "환경설정")
     data object IngredientEdit : NavItem(INGREDIENT_EDIT_BASE_ROUTE, null, "재료 상세화면", "재료 상세화면")
     data object RecipeDetail : NavItem(RECIPE_DETAIL_BASE_ROUTE, null, "레시피 상세화면", "레시피 상세화면")
     data object RecipeEdit : NavItem(RECIPE_EDIT_BASE_ROUTE, null, "레시피 편집화면", "레시피 편집화면")

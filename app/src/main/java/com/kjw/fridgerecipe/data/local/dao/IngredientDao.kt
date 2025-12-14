@@ -24,4 +24,7 @@ interface IngredientDao {
 
     @Update
     suspend fun updateIngredient(entity: IngredientEntity)
+
+    @Query("DELETE FROM ingredients")
+    suspend fun deleteAllIngredients()
 }

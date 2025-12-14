@@ -76,7 +76,8 @@ private fun rememberMainAppScreenState(
     val isIngredientEditScreen = currentRoute?.startsWith(INGREDIENT_EDIT_BASE_ROUTE) == true
     val isRecipeDetailScreen = currentRoute?.startsWith(RECIPE_DETAIL_BASE_ROUTE) == true
     val isRecipeEditScreen = currentRoute?.startsWith(RECIPE_EDIT_BASE_ROUTE) == true
-    val isDetailScreen = isIngredientEditScreen || isRecipeDetailScreen || isRecipeEditScreen
+    val isSettingsScreen = currentRoute == NavItem.Settings.route
+    val isDetailScreen = isIngredientEditScreen || isRecipeDetailScreen || isRecipeEditScreen || isSettingsScreen
 
     val currentTitle = remember(currentRoute, currentIngredientId) {
         if (isIngredientEditScreen) {
@@ -85,6 +86,8 @@ private fun rememberMainAppScreenState(
             "레시피 상세"
         } else if (isRecipeEditScreen) {
             "레시피 작성"
+        } else if (isSettingsScreen) {
+            "환경 설정"
         } else {
             listOf(NavItem.Home, NavItem.Ingredients, NavItem.Recipes)
                 .find { it.route == currentRoute }?.title ?: NavItem.Home.title
@@ -172,10 +175,10 @@ fun MainAppScreen() {
                         }
                     }
 
-                    IconButton(onClick = {
-                        Toast.makeText(context, "설정 기능 준비 중입니다.", Toast.LENGTH_SHORT).show()
-                    }) {
-                        Icon(Icons.Default.Settings, contentDescription = "설정")
+                    if (!screenState.isDetailScreen) {
+                        IconButton(onClick = { screenState.navController.navigate(NavItem.Settings.route)}) {
+                            Icon(Icons.Default.Settings, contentDescription = "설정")
+                        }
                     }
                 }
             )

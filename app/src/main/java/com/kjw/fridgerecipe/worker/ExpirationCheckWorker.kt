@@ -12,37 +12,51 @@ import androidx.work.WorkerParameters
 import com.kjw.fridgerecipe.MainActivity
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.repository.IngredientRepository
+import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 
 @HiltWorker
 class ExpirationCheckWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val ingredientRepository: IngredientRepository
+    private val ingredientRepository: IngredientRepository,
+    private val settingsRepository: SettingsRepository
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
         try {
-            val allIngredients = ingredientRepository.getAllIngredientsSuspend()
-            val today = LocalDate.now()
-
-            val expiringSoon = allIngredients.filter {
-                !it.expirationDate.isBefore(today) &&
-                it.expirationDate.isBefore(today.plusDays(4))
+            val isNotificationEnabled = settingsRepository.isNotificationEnabled.first()
+            if (!isNotificationEnabled) {
+                return Result.success()
             }
 
-            if (expiringSoon.isNotEmpty()) {
-                val ingredientNames = expiringSoon.joinToString(", ") { it.name }
+            return try {
+                val allIngredients = ingredientRepository.getAllIngredientsSuspend()
+                val today = LocalDate.now()
 
-                makeNotification(
-                    title = "소비기한 임박 알림!",
-                    message = "냉장고의 $ingredientNames 소비기한이 3일 이내입니다!"
-                )
+                val expiringSoon = allIngredients.filter {
+                    !it.expirationDate.isBefore(today) &&
+                            it.expirationDate.isBefore(today.plusDays(4))
+                }
+
+                if (expiringSoon.isNotEmpty()) {
+                    val ingredientNames = expiringSoon.joinToString(", ") { it.name }
+
+                    makeNotification(
+                        title = "소비기한 임박 알림!",
+                        message = "냉장고의 $ingredientNames 소비기한이 3일 이내입니다!"
+                    )
+                }
+
+                Result.success()
+            } catch (e: Exception) {
+                android.util.Log.e("ExpirationCheckWorker", "Worker retry", e)
+
+                Result.retry()
             }
-
-            return Result.success()
         } catch (e: Exception) {
             android.util.Log.e("ExpirationCheckWorker", "Worker failed", e)
 

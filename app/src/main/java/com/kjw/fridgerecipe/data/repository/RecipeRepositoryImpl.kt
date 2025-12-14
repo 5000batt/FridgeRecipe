@@ -30,7 +30,8 @@ class RecipeRepositoryImpl @Inject constructor(
         levelFilter: LevelType?,
         categoryFilter: String?,
         utensilFilter: String?,
-        useOnlySelected: Boolean
+        useOnlySelected: Boolean,
+        excludedIngredients: List<String>
     ): Recipe? {
 
         val ingredientDetails = ingredients.joinToString(", ") { "${it.name} (${it.amount}${it.unit.label})" }
@@ -43,6 +44,10 @@ class RecipeRepositoryImpl @Inject constructor(
             if (useOnlySelected) {
                 add("제약: 소금, 후추, 물 같은 기본 양념을 제외하고, 명시된 '필수 재료' 외에 다른 재료는 절대 사용하지 마.")
             }
+            if (excludedIngredients.isNotEmpty()) {
+                val excludedString = excludedIngredients.joinToString(", ")
+                add("제외 재료: [$excludedString] (이 재료들은 레시피에 절대 사용하지 마.")
+            }
         }.joinToString("\n")
 
         val prompt = """
@@ -51,12 +56,16 @@ class RecipeRepositoryImpl @Inject constructor(
         (만약 특정 조건이 '상관없음'이나 null이면, 그 조건은 자유롭게 결정해.)
 
         응답은 반드시 아래 JSON 형식과 정확히 일치해야 하며, 다른 설명이나 마크다운(` ``` `)을 포함하지 마.
+        
+        [중요] ingredients 리스트에서, 위 '필수 재료' 목록에 포함된 재료를 사용했다면 "isEssential": true 로 설정하고, 소금/물 등 기본 양념이나 추가된 재료는 false로 설정해.
 
         {
           "recipe": { 
               "title": "요리 이름",
               "info": { "servings": "X인분", "time": "X분", "level": "난이도" },
-              "ingredients": [ { "name": "재료 1", "quantity": "수량 1" } ],
+              "ingredients": [ 
+                  { "name": "재료명", "quantity": "수량", "isEssential": true } 
+              ],
               "steps": [ { "number": 1, "description": "조리법 1" } ]
           }
         }
@@ -148,5 +157,9 @@ class RecipeRepositoryImpl @Inject constructor(
 
     override suspend fun deleteRecipe(recipe: Recipe) {
         recipeDao.deleteRecipe(recipe.toEntity())
+    }
+
+    override suspend fun deleteAllRecipes() {
+        recipeDao.deleteAllRecipes()
     }
 }

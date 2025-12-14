@@ -16,4 +16,6 @@ interface IngredientRepository {
     suspend fun updateIngredient(ingredient: Ingredient)
 
     suspend fun getAllIngredientsSuspend(): List<Ingredient>
+
+    suspend fun deleteAllIngredients()
 }
