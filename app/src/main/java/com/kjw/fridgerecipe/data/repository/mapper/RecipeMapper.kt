@@ -44,17 +44,22 @@ fun Recipe.toEntity(): RecipeEntity {
         title = this.title,
         servings = this.servings,
         time = this.time,
-        level = this.level.label,
+        level = this.level.name,
         ingredients = this.ingredients,
         steps = this.steps,
         imageUri = this.imageUri,
         searchMetadata = this.searchMetadata?.toEntity()
-        /*ingredientsQuery = this.ingredientsQuery,
+    )
+}
+
+fun RecipeSearchMetadata.toEntity(): RecipeSearchMetadataEntity {
+    return RecipeSearchMetadataEntity(
+        ingredientsQuery = this.ingredientsQuery,
         timeFilter = this.timeFilter,
-        levelFilter = this.levelFilter?.label,
+        levelFilter = this.levelFilter?.name,
         categoryFilter = this.categoryFilter,
         utensilFilter = this.utensilFilter,
-        useOnlySelected = this.useOnlySelected*/
+        useOnlySelected = this.useOnlySelected
     )
 }
 
@@ -64,17 +69,15 @@ fun RecipeEntity.toDomainModel(): Recipe {
         title = this.title,
         servings = this.servings,
         time = this.time,
-        level = LevelType.fromString(this.level),
+        level = try {
+            LevelType.valueOf(this.level)
+        } catch (e: Exception) {
+            LevelType.ETC
+        },
         ingredients = this.ingredients,
         steps = this.steps,
         imageUri = this.imageUri,
         searchMetadata = this.searchMetadata?.toDomainModel()
-        /*ingredientsQuery = this.ingredientsQuery,
-        timeFilter = this.timeFilter,
-        levelFilter = this.levelFilter?.let { LevelType.fromString(it) },
-        categoryFilter = this.categoryFilter,
-        utensilFilter = this.utensilFilter,
-        useOnlySelected = this.useOnlySelected*/
     )
 }
 
@@ -82,18 +85,13 @@ fun RecipeSearchMetadataEntity.toDomainModel(): RecipeSearchMetadata {
     return RecipeSearchMetadata(
         ingredientsQuery = this.ingredientsQuery,
         timeFilter = this.timeFilter,
-        levelFilter = this.levelFilter?.let { LevelType.fromString(it) },
-        categoryFilter = this.categoryFilter,
-        utensilFilter = this.utensilFilter,
-        useOnlySelected = this.useOnlySelected
-    )
-}
-
-fun RecipeSearchMetadata.toEntity(): RecipeSearchMetadataEntity {
-    return RecipeSearchMetadataEntity(
-        ingredientsQuery = this.ingredientsQuery,
-        timeFilter = this.timeFilter,
-        levelFilter = this.levelFilter?.label,
+        levelFilter = this.levelFilter?.let {
+            try {
+                LevelType.valueOf(it)
+            } catch (e: Exception) {
+                null
+            }
+        },
         categoryFilter = this.categoryFilter,
         utensilFilter = this.utensilFilter,
         useOnlySelected = this.useOnlySelected
