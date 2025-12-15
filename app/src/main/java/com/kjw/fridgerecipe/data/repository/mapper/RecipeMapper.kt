@@ -72,7 +72,7 @@ fun RecipeEntity.toDomainModel(): Recipe {
         level = try {
             LevelType.valueOf(this.level)
         } catch (e: Exception) {
-            LevelType.ETC
+            LevelType.INTERMEDIATE
         },
         ingredients = this.ingredients,
         steps = this.steps,

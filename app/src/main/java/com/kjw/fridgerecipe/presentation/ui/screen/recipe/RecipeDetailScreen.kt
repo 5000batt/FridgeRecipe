@@ -39,6 +39,7 @@ import coil.compose.AsyncImage
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.IngredientListItem
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeInfoRow
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeStepItem
+import com.kjw.fridgerecipe.presentation.viewmodel.FILTER_ANY
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeManageViewModel
 
 @Composable
@@ -113,7 +114,7 @@ fun RecipeDetailScreen(
                         .padding(24.dp)
                 ) {
                     val categoryFilter = recipe.searchMetadata?.categoryFilter
-                    val displayCategory = if (categoryFilter == "상관없음" || categoryFilter.isNullOrBlank()) {
+                    val displayCategory = if (categoryFilter == FILTER_ANY || categoryFilter.isNullOrBlank()) {
                         "추천 레시피"
                     } else {
                         categoryFilter

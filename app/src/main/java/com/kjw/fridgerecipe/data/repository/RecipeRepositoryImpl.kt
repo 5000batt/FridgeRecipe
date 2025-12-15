@@ -40,6 +40,9 @@ class RecipeRepositoryImpl @Inject constructor(
             add("필수 재료: [$ingredientDetails]")
             timeFilter?.let { add("조리 시간: $it") }
             levelFilter?.let { add("난이도: ${it.label}") }
+            if (levelFilter == null) {
+                add("난이도는 반드시 '초급', '중급', '고급' 중에서만 선택해.")
+            }
             categoryFilter?.let { add("음식 종류: $it") }
             utensilFilter?.let { add("조리 도구: $it (필수 사용)") }
             if (useOnlySelected) {

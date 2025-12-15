@@ -30,7 +30,6 @@ import java.io.FileOutputStream
 import java.lang.Exception
 import java.util.UUID
 import javax.inject.Inject
-import androidx.core.graphics.scale
 import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
 
 enum class RecipeValidationField {
@@ -61,8 +60,8 @@ data class RecipeEditUiState(
     val timeState: String = "",
     val timeError: String? = null,
     val level: LevelType = LevelType.ETC,
-    val categoryState: String = "상관없음",
-    val utensilState: String = "상관없음",
+    val categoryState: String = FILTER_ANY,
+    val utensilState: String = FILTER_ANY,
     val ingredientsState: List<IngredientUiState> = emptyList(),
     val ingredientsError: String? = null,
     val ingredientsErrorType: ListErrorType = ListErrorType.NONE,
@@ -356,29 +355,6 @@ class RecipeManageViewModel @Inject constructor(
         return inSampleSize
     }
 
-    /*private fun scaleBitmapDown(bitmap: Bitmap, maxDimension: Int): Bitmap {
-        val originalWidth = bitmap.width
-        val originalHeight = bitmap.height
-
-        if (originalWidth <= maxDimension && originalHeight <= maxDimension) {
-            return bitmap
-        }
-
-        val aspectRatio = originalWidth.toFloat() / originalHeight.toFloat()
-        var newWidth = 0
-        var newHeight = 0
-
-        if (originalWidth > originalHeight) {
-            newWidth = maxDimension
-            newHeight = (newWidth / aspectRatio).toInt()
-        } else {
-            newHeight = maxDimension
-            newWidth = (newHeight * aspectRatio).toInt()
-        }
-
-        return bitmap.scale(newWidth, newHeight)
-    }*/
-
     private fun checkIngredientErrors(list: List<IngredientUiState>): Pair<String?, ListErrorType> {
         return if (!list.any { it.name.isBlank() || it.quantity.isBlank() }) {
             Pair(null, ListErrorType.NONE)
@@ -443,8 +419,8 @@ class RecipeManageViewModel @Inject constructor(
         val currentState = _editUiState.value
         val actualTimeInt = currentState.timeState.toIntOrNull() ?: 0
         val actualLevel = currentState.level
-        val actualCategory = if (currentState.categoryState == "상관없음") null else currentState.categoryState
-        val actualUtensil = if (currentState.utensilState == "상관없음") null else currentState.utensilState
+        val actualCategory = if (currentState.categoryState == FILTER_ANY) null else currentState.categoryState
+        val actualUtensil = if (currentState.utensilState == FILTER_ANY) null else currentState.utensilState
 
         val timeFilterTag = when {
             actualTimeInt <= 15 -> "15분 이내"
@@ -501,8 +477,8 @@ private fun Recipe.toEditUiState(): RecipeEditUiState {
         servingsState = servingsExtracted,
         timeState = timeExtracted,
         level = this.level,
-        categoryState = this.searchMetadata?.categoryFilter ?: "상관없음",
-        utensilState = this.searchMetadata?.utensilFilter ?: "상관없음",
+        categoryState = this.searchMetadata?.categoryFilter ?: FILTER_ANY,
+        utensilState = this.searchMetadata?.utensilFilter ?: FILTER_ANY,
         ingredientsState = this.ingredients.map {
             IngredientUiState(
                 name = it.name,

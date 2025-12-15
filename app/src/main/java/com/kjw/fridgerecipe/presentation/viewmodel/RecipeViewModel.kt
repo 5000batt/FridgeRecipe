@@ -23,11 +23,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+const val FILTER_ANY = "상관없음"
 data class RecipeFilterState(
-    val timeLimit: String? = "상관없음",
+    val timeLimit: String? = FILTER_ANY,
     val level: LevelType? = null,
-    val category: String? = "상관없음",
-    val utensil: String? = "상관없음",
+    val category: String? = FILTER_ANY,
+    val utensil: String? = FILTER_ANY,
     val useOnlySelected: Boolean = false
 )
 
@@ -48,10 +49,10 @@ class RecipeViewModel @Inject constructor(
 ) : ViewModel() {
 
     companion object {
-        val TIME_FILTER_OPTIONS = listOf("상관없음", "15분 이내", "30분 이내", "60분 이내", "60분 초과")
-        val LEVEL_FILTER_OPTIONS = listOf(null) + LevelType.entries
-        val CATEGORY_FILTER_OPTIONS = listOf("상관없음", "한식", "일식", "중식", "양식", "기타")
-        val UTENSIL_FILTER_OPTIONS = listOf("상관없음", "에어프라이어", "전자레인지", "냄비", "후라이팬")
+        val TIME_FILTER_OPTIONS = listOf(FILTER_ANY, "15분 이내", "30분 이내", "60분 이내", "60분 초과")
+        val LEVEL_FILTER_OPTIONS = listOf(null, LevelType.BEGINNER, LevelType.INTERMEDIATE, LevelType.ADVANCED)
+        val CATEGORY_FILTER_OPTIONS = listOf(FILTER_ANY, "한식", "일식", "중식", "양식")
+        val UTENSIL_FILTER_OPTIONS = listOf(FILTER_ANY, "에어프라이어", "전자레인지", "냄비", "후라이팬")
     }
 
     sealed class HomeNavigationEvent {
@@ -184,7 +185,7 @@ class RecipeViewModel @Inject constructor(
     fun onTimeFilterChanged(time: String) {
         _homeUiState.update { state ->
             state.copy(filterState = state.filterState.copy(
-                timeLimit = if (time == "상관없음") null else time
+                timeLimit = if (time == FILTER_ANY) null else time
             ))
         }
     }
@@ -198,7 +199,7 @@ class RecipeViewModel @Inject constructor(
     fun onCategoryFilterChanged(category: String) {
         _homeUiState.update { state ->
             state.copy(filterState = state.filterState.copy(
-                category = if (category == "상관없음") null else category
+                category = if (category == FILTER_ANY) null else category
             ))
         }
     }
@@ -206,7 +207,7 @@ class RecipeViewModel @Inject constructor(
     fun onUtensilFilterChanged(utensil: String) {
         _homeUiState.update { state ->
             state.copy(filterState = state.filterState.copy(
-                utensil = if (utensil == "상관없음") null else utensil
+                utensil = if (utensil == FILTER_ANY) null else utensil
             ))
         }
     }

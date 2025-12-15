@@ -37,7 +37,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -50,6 +49,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
+import com.kjw.fridgerecipe.presentation.viewmodel.FILTER_ANY
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
 import com.kjw.fridgerecipe.ui.theme.ExpirationContainerColor
@@ -61,12 +61,6 @@ fun HomeScreen(
     recipeViewModel: RecipeViewModel = hiltViewModel(),
     onNavigateToRecipeDetail: (Long) -> Unit
 ) {
-    /*DisposableEffect(Unit) {
-        onDispose {
-            recipeViewModel.clearSeenRecipeIds()
-        }
-    }*/
-
     LaunchedEffect(Unit) {
         recipeViewModel.navigationEvent.collect { event ->
             when (event) {
@@ -191,7 +185,7 @@ fun HomeScreen(
                 FilterSection(
                     title = "조리 시간",
                     options = timeFilterOptions,
-                    selectedOption = uiState.filterState.timeLimit ?: "상관없음",
+                    selectedOption = uiState.filterState.timeLimit ?: FILTER_ANY,
                     onOptionSelected = { recipeViewModel.onTimeFilterChanged(it) }
                 )
 
@@ -199,10 +193,10 @@ fun HomeScreen(
 
                 FilterSection(
                     title = "난이도",
-                    options = levelFilterOptions.map { it?.label ?: "상관없음" },
-                    selectedOption = uiState.filterState.level?.label ?: "상관없음",
+                    options = levelFilterOptions.map { it?.label ?: FILTER_ANY },
+                    selectedOption = uiState.filterState.level?.label ?: FILTER_ANY,
                     onOptionSelected = { label ->
-                        val level = levelFilterOptions.find { (it?.label ?: "상관없음") == label }
+                        val level = levelFilterOptions.find { (it?.label ?: FILTER_ANY) == label }
                         recipeViewModel.onLevelFilterChanged(level)
                     }
                 )
@@ -212,7 +206,7 @@ fun HomeScreen(
                 FilterSection(
                     title = "음식 종류",
                     options = categoryFilterOptions,
-                    selectedOption = uiState.filterState.category ?: "상관없음",
+                    selectedOption = uiState.filterState.category ?: FILTER_ANY,
                     onOptionSelected = { recipeViewModel.onCategoryFilterChanged(it) }
                 )
 
@@ -221,7 +215,7 @@ fun HomeScreen(
                 FilterSection(
                     title = "조리 도구",
                     options = utensilFilterOptions,
-                    selectedOption = uiState.filterState.utensil ?: "상관없음",
+                    selectedOption = uiState.filterState.utensil ?: FILTER_ANY,
                     onOptionSelected = { recipeViewModel.onUtensilFilterChanged(it) }
                 )
 
