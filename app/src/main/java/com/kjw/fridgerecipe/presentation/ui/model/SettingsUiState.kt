@@ -15,6 +15,7 @@ data class SettingsUiState(
     // UI 제어
     val showResetIngredientsDialog: Boolean = false,
     val showResetRecipesDialog: Boolean = false,
+    val showPermissionDialog: Boolean = false,
 
     // 입력 필드
     val newExcludedIngredient: String = ""

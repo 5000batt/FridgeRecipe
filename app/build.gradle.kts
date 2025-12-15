@@ -105,4 +105,7 @@ dependencies {
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
+
+    // layout
+    implementation(libs.androidx.compose.foundation.layout)
 }

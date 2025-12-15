@@ -4,10 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import com.kjw.fridgerecipe.presentation.ui.screen.ingredient.IngredientEditScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.ingredient.IngredientListScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.home.HomeScreen
@@ -103,7 +101,8 @@ fun AppNavHost(
 
         composable(DetailDestination.Settings.route) {
             SettingsScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onShowSnackbar = onShowSnackbar
             )
         }
     }

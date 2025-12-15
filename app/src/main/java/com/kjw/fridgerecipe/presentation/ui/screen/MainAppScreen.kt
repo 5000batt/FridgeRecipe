@@ -1,20 +1,25 @@
 package com.kjw.fridgerecipe.presentation.ui.screen
 
 import android.app.Activity
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -23,9 +28,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -53,6 +60,7 @@ import com.kjw.fridgerecipe.presentation.ui.components.common.AppBottomNavigatio
 import com.kjw.fridgerecipe.presentation.util.CustomSnackbarVisuals
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.worker.ExpirationCheckWorker
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private data class MainAppScreenState(
@@ -107,12 +115,20 @@ fun MainAppScreen() {
     val showSnackbar: (String, SnackbarType) -> Unit = { message, type ->
         scope.launch {
             snackbarHostState.currentSnackbarData?.dismiss()
-            snackbarHostState.showSnackbar(
-                CustomSnackbarVisuals(
-                    message = message,
-                    type = type
+
+            val job = launch {
+                snackbarHostState.showSnackbar(
+                    CustomSnackbarVisuals(
+                        message = message,
+                        type = type,
+                        duration = SnackbarDuration.Indefinite
+                    )
                 )
-            )
+            }
+
+            delay(2000L)
+
+            job.cancel()
         }
     }
 
@@ -124,126 +140,156 @@ fun MainAppScreen() {
         val currentTime = System.currentTimeMillis()
         if (currentTime - backPressedTime > 2000L) {
             backPressedTime = currentTime
-            Toast.makeText(context, "한 번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show()
+            showSnackbar("한 번 더 누르면 종료됩니다.", SnackbarType.INFO)
         } else {
             activity?.finish()
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = screenState.currentTitle,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                navigationIcon = {
-                    if (screenState.showBackButton) {
-                        IconButton(onClick = { screenState.navController.popBackStack() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "뒤로 가기"
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = screenState.currentTitle,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.primary,
+                        actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    navigationIcon = {
+                        if (screenState.showBackButton) {
+                            IconButton(onClick = { screenState.navController.popBackStack() }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "뒤로 가기"
+                                )
+                            }
+                        }
+                    },
+                    actions = {
+                        if (BuildConfig.DEBUG && screenState.currentDestination?.route == MainTab.HOME.route) {
+                            IconButton(onClick = {
+                                val testRequest = OneTimeWorkRequestBuilder<ExpirationCheckWorker>().build()
+                                WorkManager.getInstance(context).enqueue(testRequest)
+                                showSnackbar("알림 테스트 실행!", SnackbarType.SUCCESS)
+                            }) {
+                                Icon(Icons.Default.BugReport, contentDescription = "알림 테스트")
+                            }
+                        }
+
+                        if (!screenState.showBackButton) {
+                            IconButton(onClick = { screenState.navController.navigate(DetailDestination.Settings.createRoute())}) {
+                                Icon(Icons.Default.Settings, contentDescription = "설정")
+                            }
+                        }
+                    }
+                )
+            },
+            bottomBar = {
+                if (screenState.showBottomBar) {
+                    AppBottomNavigationBar(navController = screenState.navController, currentRoute = screenState.currentDestination?.route)
+                }
+            },
+            floatingActionButton = {
+                when (screenState.currentDestination) {
+                    MainTab.INGREDIENTS -> {
+                        ExtendedFloatingActionButton(
+                            onClick = { screenState.navController.navigate(DetailDestination.IngredientEdit.createRoute()) },
+                            icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                            text = { Text("재료 추가") },
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                    MainTab.RECIPES -> {
+                        ExtendedFloatingActionButton(
+                            onClick = { screenState.navController.navigate(DetailDestination.RecipeEdit.createRoute()) },
+                            icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                            text = { Text("레시피 추가") }
+                        )
+                    }
+                    else -> {}
+                }
+            }
+        ) { paddingValues ->
+
+            AppNavHost(
+                navController = screenState.navController,
+                modifier = Modifier.padding(paddingValues),
+                onShowSnackbar = showSnackbar
+            )
+        }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 100.dp)
+                .systemBarsPadding()
+        ) { data ->
+            val customVisuals = data.visuals as? CustomSnackbarVisuals
+
+            val (containerColor, contentColor, icon) = when (customVisuals?.type) {
+                SnackbarType.ERROR -> Triple(
+                    MaterialTheme.colorScheme.errorContainer,
+                    MaterialTheme.colorScheme.onErrorContainer,
+                    Icons.Default.ErrorOutline
+                )
+                SnackbarType.SUCCESS -> Triple(
+                    MaterialTheme.colorScheme.primaryContainer,
+                    MaterialTheme.colorScheme.onPrimaryContainer,
+                    Icons.Default.CheckCircle
+                )
+                else -> Triple(
+                    MaterialTheme.colorScheme.inverseSurface,
+                    MaterialTheme.colorScheme.inverseOnSurface,
+                    Icons.Default.Info
+                )
+            }
+
+            Snackbar(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .widthIn(max = 400.dp),
+                containerColor = containerColor.copy(alpha = 0.9f),
+                contentColor = contentColor,
+                shape = RoundedCornerShape(28.dp),
+                action = {
+                    data.visuals.actionLabel?.let { actionLabel ->
+                        TextButton(onClick = { data.performAction() }) {
+                            Text(
+                                text = actionLabel,
+                                color = contentColor,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
-                },
-                actions = {
-                    if (BuildConfig.DEBUG && screenState.currentDestination?.route == MainTab.HOME.route) {
-                        IconButton(onClick = {
-                            val testRequest = OneTimeWorkRequestBuilder<ExpirationCheckWorker>().build()
-                            WorkManager.getInstance(context).enqueue(testRequest)
-                            Toast.makeText(context, "알림 테스트 실행!", Toast.LENGTH_SHORT).show()
-                        }) {
-                            Icon(Icons.Default.BugReport, contentDescription = "알림 테스트")
-                        }
-                    }
-
-                    if (!screenState.showBackButton) {
-                        IconButton(onClick = { screenState.navController.navigate(DetailDestination.Settings.createRoute())}) {
-                            Icon(Icons.Default.Settings, contentDescription = "설정")
-                        }
-                    }
                 }
-            )
-        },
-        bottomBar = {
-            if (screenState.showBottomBar) {
-                AppBottomNavigationBar(navController = screenState.navController, currentRoute = screenState.currentDestination?.route)
-            }
-        },
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState) { data ->
-                val customVisuals = data.visuals as? CustomSnackbarVisuals
-                val type = customVisuals?.type ?: SnackbarType.INFO
-
-                val isError = type == SnackbarType.ERROR
-
-                val containerColor = if (isError) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer
-                val contentColor = if (isError) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer
-                val icon = if (isError) Icons.Default.Error else Icons.Default.CheckCircle
-
-                Snackbar(
-                    containerColor = containerColor,
-                    contentColor = contentColor,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.padding(12.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(horizontal = 4.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp)
-                        )
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Text(
-                            text = data.visuals.message,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-        },
-        floatingActionButton = {
-            when (screenState.currentDestination) {
-                MainTab.INGREDIENTS -> {
-                    ExtendedFloatingActionButton(
-                        onClick = { screenState.navController.navigate(DetailDestination.IngredientEdit.createRoute()) },
-                        icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                        text = { Text("재료 추가") },
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = data.visuals.message,
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
-                MainTab.RECIPES -> {
-                    ExtendedFloatingActionButton(
-                        onClick = { screenState.navController.navigate(DetailDestination.RecipeEdit.createRoute()) },
-                        icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                        text = { Text("레시피 추가") }
-                    )
-                }
-                else -> {}
             }
         }
-    ) { paddingValues ->
-
-        AppNavHost(
-            navController = screenState.navController,
-            modifier = Modifier.padding(paddingValues),
-            onShowSnackbar = showSnackbar
-        )
     }
 }

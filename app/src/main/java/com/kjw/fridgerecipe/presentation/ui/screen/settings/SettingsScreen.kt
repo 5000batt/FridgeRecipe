@@ -1,8 +1,12 @@
 package com.kjw.fridgerecipe.presentation.ui.screen.settings
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,6 +40,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -43,18 +48,44 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.presentation.viewmodel.SettingsViewModel
 import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.kjw.fridgerecipe.presentation.util.SnackbarType
 
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
+    onShowSnackbar: (String, SnackbarType) -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    val isGranted = ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) == PackageManager.PERMISSION_GRANTED
+
+                    viewModel.syncNotificationState(isGranted)
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -70,7 +101,26 @@ fun SettingsScreen(
                 title = "푸시 알림",
                 description = "소비기한 임박 알림",
                 checked = uiState.isNotificationEnabled,
-                onCheckedChange = { viewModel.toggleNotification(it) }
+                onCheckedChange = { isChecked ->
+                    if (isChecked) {
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            val isGranted = ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.POST_NOTIFICATIONS
+                            ) == PackageManager.PERMISSION_GRANTED
+
+                            if (isGranted) {
+                                viewModel.toggleNotification(true)
+                            } else {
+                                viewModel.showPermissionDialog()
+                            }
+                        } else {
+                            viewModel.toggleNotification(true)
+                        }
+                    } else {
+                        viewModel.toggleNotification(false)
+                    }
+                }
             )
 
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -195,7 +245,7 @@ fun SettingsScreen(
             SettingsInfoItem(title = "앱 버전", value = "v${BuildConfig.VERSION_NAME}")
             SettingsClickableItem(
                 title = "문의하기",
-                onClick = { sendEmail(context) }
+                onClick = { sendEmail(context, onShowSnackbar) }
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -231,6 +281,39 @@ fun SettingsScreen(
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissResetRecipesDialog() }) { Text("취소") }
             }
+        )
+    }
+
+    if (uiState.showPermissionDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissPermissionDialog() },
+            title = { Text(text = "알림 권한 필요") },
+            text = {
+                Text(
+                    text = "소비기한 알림을 받으려면 안드로이드 설정에서 알림 권한을 허용해야 합니다.\n설정 화면으로 이동하시겠습니까?",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.dismissPermissionDialog()
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                        }
+                        context.startActivity(intent)
+                    }
+                ) {
+                    Text("설정으로 이동", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissPermissionDialog() }) {
+                    Text("취소")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(16.dp)
         )
     }
 }
@@ -366,15 +449,15 @@ fun ThemeOptionChip(
     )
 }
 
-private fun sendEmail(context: Context) {
+private fun sendEmail(context: Context, onShowSnackbar: (String, SnackbarType) -> Unit) {
     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
         data = "mailto:".toUri()
         putExtra(Intent.EXTRA_EMAIL, arrayOf("5000batt@gmail.com"))
         putExtra(Intent.EXTRA_SUBJECT, "[냉장고 파먹기] 문의 및 의견")
         putExtra(Intent.EXTRA_TEXT, """
             앱 버전: ${BuildConfig.VERSION_NAME}
-            기기 모델: ${android.os.Build.MODEL}
-            OS 버전: ${android.os.Build.VERSION.SDK_INT}
+            기기 모델: ${Build.MODEL}
+            OS 버전: ${Build.VERSION.SDK_INT}
             
             문의 내용을 작성해 주세요:
             
@@ -384,6 +467,6 @@ private fun sendEmail(context: Context) {
     try {
         context.startActivity(emailIntent)
     } catch (e: Exception) {
-        android.widget.Toast.makeText(context, "이메일을 보낼 수 있는 앱이 없습니다.", android.widget.Toast.LENGTH_SHORT).show()
+        onShowSnackbar("이메일을 보낼 수 있는 앱이 없습니다.", SnackbarType.ERROR)
     }
 }

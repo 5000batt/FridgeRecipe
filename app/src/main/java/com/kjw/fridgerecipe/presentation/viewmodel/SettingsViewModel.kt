@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -48,10 +49,28 @@ class SettingsViewModel @Inject constructor(
         initialValue = SettingsUiState()
     )
 
+    fun syncNotificationState(isSystemPermissionGranted: Boolean) {
+        viewModelScope.launch {
+            val currentEnabled = settingsRepository.isNotificationEnabled.first()
+
+            if (!isSystemPermissionGranted && currentEnabled) {
+                settingsRepository.setNotificationEnabled(false)
+            }
+        }
+    }
+
     fun toggleNotification(isEnabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setNotificationEnabled(isEnabled)
         }
+    }
+
+    fun showPermissionDialog() {
+        _internalState.update { it.copy(showPermissionDialog = true) }
+    }
+
+    fun dismissPermissionDialog() {
+        _internalState.update { it.copy(showPermissionDialog = false) }
     }
 
     fun setTheme(isDark: Boolean?) {

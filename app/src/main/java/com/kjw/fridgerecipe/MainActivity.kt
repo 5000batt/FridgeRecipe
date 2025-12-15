@@ -1,5 +1,7 @@
 package com.kjw.fridgerecipe
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
@@ -13,12 +15,15 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.presentation.ui.screen.MainAppScreen
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import com.kjw.fridgerecipe.ui.theme.FridgeRecipeTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -40,6 +45,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val themeMode by settingsRepository.themeMode.collectAsState(initial = 0)
+            val isNotificationEnabled by settingsRepository.isNotificationEnabled.collectAsState(initial = null)
 
             val isDarkTheme = when (themeMode) {
                 1 -> false
@@ -50,6 +56,7 @@ class MainActivity : ComponentActivity() {
             FridgeRecipeTheme(darkTheme = isDarkTheme) {
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    val context = this
                     val permissionLauncher = rememberLauncherForActivityResult(
                         contract = ActivityResultContracts.RequestPermission(),
                         onResult = { isGranted: Boolean ->
@@ -57,12 +64,25 @@ class MainActivity : ComponentActivity() {
 
                             } else {
                                 Toast.makeText(this, "알림을 거부하여 소비기한 알림을 받을 수 없습니다.", Toast.LENGTH_SHORT).show()
+
+                                lifecycleScope.launch {
+                                    settingsRepository.setNotificationEnabled(false)
+                                }
                             }
                         }
                     )
 
-                    LaunchedEffect(Unit) {
-                        permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                    LaunchedEffect(isNotificationEnabled) {
+                        if (isNotificationEnabled == true) {
+                            val hasPermission = ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.POST_NOTIFICATIONS
+                            ) == PackageManager.PERMISSION_GRANTED
+
+                            if (!hasPermission) {
+                                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
+                        }
                     }
                 }
 
