@@ -305,14 +305,19 @@ class RecipeManageViewModel @Inject constructor(
 
     private fun saveImageToInternalStorage(uri: Uri): String? {
         return try {
-            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                BitmapFactory.decodeStream(inputStream, null, options)
+            }
 
-            val originalBitmap = BitmapFactory.decodeStream(inputStream)
-            inputStream.close()
+            options.inSampleSize = calculateInSampleSize(options, 1024, 1024)
+            options.inJustDecodeBounds = false
 
-            if (originalBitmap == null) return null
-
-            val scaledBitmap = scaleBitmapDown(originalBitmap, 1024)
+            val scaledBitmap = context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                BitmapFactory.decodeStream(inputStream, null, options)
+            } ?: return null
 
             val directory = File(context.filesDir, "recipe_images")
             if (!directory.exists()) {
@@ -322,16 +327,13 @@ class RecipeManageViewModel @Inject constructor(
             val fileName = "IMG_${UUID.randomUUID()}.jpg"
             val file = File(directory, fileName)
             val outputStream = FileOutputStream(file)
+
             scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)
 
             outputStream.flush()
             outputStream.close()
 
-            if (originalBitmap != scaledBitmap) {
-                originalBitmap.recycle()
-            }
             scaledBitmap.recycle()
-
             file.absolutePath
         } catch (e: Exception) {
             e.printStackTrace()
@@ -339,7 +341,22 @@ class RecipeManageViewModel @Inject constructor(
         }
     }
 
-    private fun scaleBitmapDown(bitmap: Bitmap, maxDimension: Int): Bitmap {
+    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        val (height: Int, width: Int) = options.run { outHeight to outWidth }
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight: Int = height / 2
+            val halfWidth: Int = width / 2
+
+            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+        return inSampleSize
+    }
+
+    /*private fun scaleBitmapDown(bitmap: Bitmap, maxDimension: Int): Bitmap {
         val originalWidth = bitmap.width
         val originalHeight = bitmap.height
 
@@ -360,7 +377,7 @@ class RecipeManageViewModel @Inject constructor(
         }
 
         return bitmap.scale(newWidth, newHeight)
-    }
+    }*/
 
     private fun checkIngredientErrors(list: List<IngredientUiState>): Pair<String?, ListErrorType> {
         return if (!list.any { it.name.isBlank() || it.quantity.isBlank() }) {
