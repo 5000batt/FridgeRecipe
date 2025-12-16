@@ -25,10 +25,10 @@ import javax.inject.Inject
 
 const val FILTER_ANY = "상관없음"
 data class RecipeFilterState(
-    val timeLimit: String? = FILTER_ANY,
+    val timeLimit: String? = null,
     val level: LevelType? = null,
-    val category: String? = FILTER_ANY,
-    val utensil: String? = FILTER_ANY,
+    val category: String? = null,
+    val utensil: String? = null,
     val useOnlySelected: Boolean = false
 )
 

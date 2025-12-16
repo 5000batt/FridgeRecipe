@@ -14,6 +14,7 @@ import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
 import com.kjw.fridgerecipe.domain.repository.RecipeRepository
+import com.kjw.fridgerecipe.presentation.viewmodel.FILTER_ANY
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -23,6 +24,10 @@ class RecipeRepositoryImpl @Inject constructor(
     private val gson: Gson,
     private val recipeDao: RecipeDao
 ) : RecipeRepository {
+
+    private fun sanitizeFilter(value: String?): String? {
+        return if (value == FILTER_ANY || value.isNullOrBlank()) null else value
+    }
 
     override suspend fun getAiRecipes(
         ingredients: List<Ingredient>,
@@ -35,16 +40,22 @@ class RecipeRepositoryImpl @Inject constructor(
         excludedIngredients: List<String>
     ): Recipe? {
 
+        val safeTime = sanitizeFilter(timeFilter)
+        val safeCategory = sanitizeFilter(categoryFilter)
+        val safeUtensil = sanitizeFilter(utensilFilter)
+
         val ingredientDetails = ingredients.joinToString(", ") { "${it.name} (${it.amount}${it.unit.label})" }
+
         val constraints = buildList {
             add("필수 재료: [$ingredientDetails]")
-            timeFilter?.let { add("조리 시간: $it") }
+            safeTime?.let { add("조리 시간: $it") }
             levelFilter?.let { add("난이도: ${it.label}") }
             if (levelFilter == null) {
                 add("난이도는 반드시 '초급', '중급', '고급' 중에서만 선택해.")
             }
-            categoryFilter?.let { add("음식 종류: $it") }
-            utensilFilter?.let { add("조리 도구: $it (필수 사용)") }
+            safeCategory?.let { add("음식 종류: $it") }
+            safeUtensil?.let { add("조리 도구: $it (필수 사용)") }
+
             if (useOnlySelected) {
                 add("제약: 소금, 후추, 물 같은 기본 양념을 제외하고, 명시된 '필수 재료' 외에 다른 재료는 절대 사용하지 마.")
             }
@@ -107,10 +118,10 @@ class RecipeRepositoryImpl @Inject constructor(
 
             val searchMetadata = RecipeSearchMetadata(
                 ingredientsQuery = ingredientsQuery,
-                timeFilter = timeFilter,
+                timeFilter = safeTime,
                 levelFilter = levelFilter,
-                categoryFilter = categoryFilter,
-                utensilFilter = utensilFilter,
+                categoryFilter = safeCategory,
+                utensilFilter = safeUtensil,
                 useOnlySelected = useOnlySelected
             )
 
@@ -162,10 +173,10 @@ class RecipeRepositoryImpl @Inject constructor(
     ): List<Recipe> {
         val entities = recipeDao.findRecipesByFilters(
             ingredientsQuery =  ingredientsQuery,
-            timeFilter = timeFilter,
+            timeFilter = sanitizeFilter(timeFilter),
             levelFilter = levelFilter?.label,
-            categoryFilter = categoryFilter,
-            utensilFilter = utensilFilter,
+            categoryFilter = sanitizeFilter(categoryFilter),
+            utensilFilter = sanitizeFilter(utensilFilter),
             useOnlySelected = useOnlySelected
         )
         return entities.map { it.toDomainModel() }
