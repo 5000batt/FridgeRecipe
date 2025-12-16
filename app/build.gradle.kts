@@ -108,4 +108,7 @@ dependencies {
 
     // layout
     implementation(libs.androidx.compose.foundation.layout)
+
+    // Lottie
+    implementation(libs.lottie)
 }

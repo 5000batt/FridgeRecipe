@@ -31,6 +31,9 @@ fun AppNavHost(
             HomeScreen(
                 onNavigateToRecipeDetail = { recipeId ->
                     navController.navigate(DetailDestination.RecipeDetail.createRoute(recipeId))
+                },
+                onNavigateToIngredientAdd = {
+                    navController.navigate(DetailDestination.IngredientEdit.createRoute())
                 }
             )
         }

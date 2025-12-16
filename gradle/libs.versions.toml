@@ -22,6 +22,7 @@ material3 = "1.4.0"
 runtime = "1.9.5"
 datastorePreferences = "1.0.0"
 foundationLayout = "1.10.0"
+lottie = "6.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -67,6 +68,8 @@ androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
 # layout
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
+# Lottie
+lottie = { group = "com.airbnb.android", name= "lottie-compose", version.ref = "lottie"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -49,7 +49,6 @@ class RecipeViewModel @Inject constructor(
 ) : ViewModel() {
 
     companion object {
-        val TIME_FILTER_OPTIONS = listOf(FILTER_ANY, "15분 이내", "30분 이내", "60분 이내", "60분 초과")
         val LEVEL_FILTER_OPTIONS = listOf(null, LevelType.BEGINNER, LevelType.INTERMEDIATE, LevelType.ADVANCED)
         val CATEGORY_FILTER_OPTIONS = listOf(FILTER_ANY, "한식", "일식", "중식", "양식")
         val UTENSIL_FILTER_OPTIONS = listOf(FILTER_ANY, "에어프라이어", "전자레인지", "냄비", "후라이팬")
@@ -170,10 +169,6 @@ class RecipeViewModel @Inject constructor(
         _homeUiState.update { it.copy(showConflictDialog = false, conflictIngredients = emptyList()) }
     }
 
-    /*fun clearSeenRecipeIds() {
-        _seenRecipeIds.value = emptySet()
-    }*/
-
     fun toggleIngredientSelection(id: Long) {
         _homeUiState.update { currentState ->
             val currentIds = currentState.selectedIngredientIds
@@ -215,6 +210,16 @@ class RecipeViewModel @Inject constructor(
     fun onUseOnlySelectedIngredientsChanged(isChecked: Boolean) {
         _homeUiState.update { state ->
             state.copy(filterState = state.filterState.copy(useOnlySelected = isChecked))
+        }
+    }
+
+    fun resetHomeState() {
+        _homeUiState.update { state ->
+            state.copy(
+                selectedIngredientIds = emptySet(),
+                filterState = RecipeFilterState(),
+                recommendedRecipe = null
+            )
         }
     }
 
