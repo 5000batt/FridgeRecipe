@@ -18,8 +18,10 @@ import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.ads.MobileAds
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.presentation.ui.screen.MainAppScreen
+import com.kjw.fridgerecipe.presentation.util.RewardedAdManager
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import com.kjw.fridgerecipe.ui.theme.FridgeRecipeTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,6 +34,7 @@ class MainActivity : ComponentActivity() {
     private val viewModel: IngredientViewModel by viewModels()
     @Inject
     lateinit var settingsRepository: SettingsRepository
+    private lateinit var rewardedAdManager: RewardedAdManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +44,11 @@ class MainActivity : ComponentActivity() {
                 viewModel.isLoading.value
             }
         }
+
+        MobileAds.initialize(this) {}
+
+        rewardedAdManager = RewardedAdManager(this)
+        rewardedAdManager.loadAd()
 
         enableEdgeToEdge()
         setContent {
@@ -86,7 +94,11 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                MainAppScreen()
+                MainAppScreen(
+                    onShowAd = { onReward ->
+                        rewardedAdManager.showAd(this@MainActivity, onReward)
+                    }
+                )
             }
         }
     }

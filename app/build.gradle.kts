@@ -111,4 +111,7 @@ dependencies {
 
     // Lottie
     implementation(libs.lottie)
+
+    // Google Mobile Ads
+    implementation(libs.ads)
 }

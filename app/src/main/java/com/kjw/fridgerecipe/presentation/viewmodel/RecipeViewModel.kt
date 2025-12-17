@@ -1,7 +1,9 @@
 package com.kjw.fridgerecipe.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kjw.fridgerecipe.data.repository.TicketRepository
 import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
@@ -40,7 +42,8 @@ data class HomeUiState(
     val filterState: RecipeFilterState = RecipeFilterState(),
     val showConflictDialog: Boolean = false,
     val conflictIngredients: List<String> = emptyList(),
-    val errorDialogState: ErrorDialogState? = null
+    val errorDialogState: ErrorDialogState? = null,
+    val showAdDialog: Boolean = false
 )
 
 data class ErrorDialogState(
@@ -52,8 +55,18 @@ data class ErrorDialogState(
 class RecipeViewModel @Inject constructor(
     private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase,
     getSavedRecipesUseCase: GetSavedRecipesUseCase,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val ticketRepository: TicketRepository
 ) : ViewModel() {
+
+    val remainingTickets: StateFlow<Int> = ticketRepository.ticketCount
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 3)
+
+    init {
+        viewModelScope.launch {
+            ticketRepository.checkAndResetTicket()
+        }
+    }
 
     companion object {
         val LEVEL_FILTER_OPTIONS = listOf(null, LevelType.BEGINNER, LevelType.INTERMEDIATE, LevelType.ADVANCED)
@@ -63,8 +76,6 @@ class RecipeViewModel @Inject constructor(
 
     sealed class HomeNavigationEvent {
         data class NavigateToRecipeDetail(val recipeId: Long) : HomeNavigationEvent()
-        // 추후 에러 화면 설정
-        data object NavigateToError : HomeNavigationEvent()
     }
 
     private val _navigationEvent = MutableSharedFlow<HomeNavigationEvent>()
@@ -130,6 +141,8 @@ class RecipeViewModel @Inject constructor(
         _homeUiState.update { it.copy(showConflictDialog = false, conflictIngredients = emptyList()) }
 
         viewModelScope.launch {
+            var isTicketUsed = false
+
             _homeUiState.update { it.copy(isRecipeLoading = true) }
             try {
                 val ingredientsQuery = selectedIngredients
@@ -156,7 +169,15 @@ class RecipeViewModel @Inject constructor(
                     categoryFilter = currentFilters.category,
                     utensilFilter = currentFilters.utensil,
                     useOnlySelected = currentFilters.useOnlySelected,
-                    excludedIngredients = finalExcludedList
+                    excludedIngredients = finalExcludedList,
+                    onAiCall = {
+                        if (remainingTickets.value <= 0) {
+                            _homeUiState.update { it.copy(showAdDialog = true, isRecipeLoading = false) }
+                            throw Exception("Ticket Exhausted")
+                        }
+                        ticketRepository.useTicket()
+                        isTicketUsed = true
+                    }
                 )
 
                 _homeUiState.update { it.copy(recommendedRecipe = newRecipe) }
@@ -165,8 +186,13 @@ class RecipeViewModel @Inject constructor(
                     newRecipe.id?.let { recipeId ->
                         _seenRecipeIds.value = _seenRecipeIds.value + recipeId
                         _navigationEvent.emit(HomeNavigationEvent.NavigateToRecipeDetail(recipeId))
+
+                        if (!isTicketUsed) {
+                            Log.d("ViewModel", "기존 레시피 제공으로 티켓 차감 안 함")
+                        }
                     }
                 } else {
+                    if (isTicketUsed) ticketRepository.addTicket(1)
                     _homeUiState.update {
                         it.copy(
                             isRecipeLoading = false,
@@ -179,6 +205,7 @@ class RecipeViewModel @Inject constructor(
                 }
 
             } catch (e: GeminiException) {
+                ticketRepository.addTicket(1)
                 val errorState = when (e) {
                     is GeminiException.QuotaExceeded -> ErrorDialogState(
                         title = "주문 폭주! \uD83D\uDC68\u200D\uD83C\uDF73",
@@ -206,6 +233,8 @@ class RecipeViewModel @Inject constructor(
                     it.copy(isRecipeLoading = false, errorDialogState = errorState)
                 }
             } catch (e: Exception) {
+                if (e.message == "Ticket Exhausted") return@launch
+                if (isTicketUsed) ticketRepository.addTicket(1)
                 _homeUiState.update {
                     it.copy(
                         isRecipeLoading = false,
@@ -213,6 +242,17 @@ class RecipeViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    fun dismissAdDialog() {
+        _homeUiState.update { it.copy(showAdDialog = false) }
+    }
+
+    fun onAdWatched() {
+        viewModelScope.launch {
+            ticketRepository.addTicket(1)
+            dismissAdDialog()
         }
     }
 

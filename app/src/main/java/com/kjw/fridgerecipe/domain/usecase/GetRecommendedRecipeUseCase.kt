@@ -18,7 +18,8 @@ class GetRecommendedRecipeUseCase @Inject constructor(
         categoryFilter: String?,
         utensilFilter: String?,
         useOnlySelected: Boolean,
-        excludedIngredients: List<String> = emptyList()
+        excludedIngredients: List<String> = emptyList(),
+        onAiCall: suspend () -> Unit
     ): Recipe? {
 
         val ingredientsQuery = ingredients
@@ -59,6 +60,7 @@ class GetRecommendedRecipeUseCase @Inject constructor(
         }
 
         Log.d("RecipeUseCase", "AI 호출 (캐시 없음 또는 모두 순회)")
+        onAiCall()
 
         return recipeRepository.getAiRecipes(
             ingredients = ingredients,

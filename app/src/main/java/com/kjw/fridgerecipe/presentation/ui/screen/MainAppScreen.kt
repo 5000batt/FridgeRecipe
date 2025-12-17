@@ -106,7 +106,9 @@ private fun rememberMainAppScreenState(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainAppScreen() {
+fun MainAppScreen(
+    onShowAd: (onReward: () -> Unit) -> Unit
+) {
     val screenState = rememberMainAppScreenState()
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -223,7 +225,8 @@ fun MainAppScreen() {
             AppNavHost(
                 navController = screenState.navController,
                 modifier = Modifier.padding(paddingValues),
-                onShowSnackbar = showSnackbar
+                onShowSnackbar = showSnackbar,
+                onShowAd = onShowAd
             )
         }
 

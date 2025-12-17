@@ -19,12 +19,13 @@ import com.kjw.fridgerecipe.presentation.util.SnackbarType
 fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    onShowSnackbar: (String, SnackbarType) -> Unit
+    onShowSnackbar: (String, SnackbarType) -> Unit,
+    onShowAd: (onReward: () -> Unit) -> Unit
 ) {
     NavHost(
         navController = navController,
         startDestination = MainTab.HOME.route,
-        modifier = modifier
+        modifier = modifier,
     ) {
         // --- Main Tabs ---
         composable(MainTab.HOME.route) {
@@ -34,7 +35,8 @@ fun AppNavHost(
                 },
                 onNavigateToIngredientAdd = {
                     navController.navigate(DetailDestination.IngredientEdit.createRoute())
-                }
+                },
+                onShowAd = onShowAd
             )
         }
         composable(MainTab.INGREDIENTS.route) {

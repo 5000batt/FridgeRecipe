@@ -28,10 +28,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -50,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -57,6 +58,9 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
@@ -74,9 +78,16 @@ fun HomeScreen(
     ingredientViewModel: IngredientViewModel = hiltViewModel(),
     recipeViewModel: RecipeViewModel = hiltViewModel(),
     onNavigateToRecipeDetail: (Long) -> Unit,
-    onNavigateToIngredientAdd: () -> Unit
+    onNavigateToIngredientAdd: () -> Unit,
+    onShowAd: (onReward: () -> Unit) -> Unit
 ) {
+    val uiState by recipeViewModel.homeUiState.collectAsState()
+
     LaunchedEffect(Unit) {
+        if (uiState.isRecipeLoading && uiState.recommendedRecipe != null) {
+            recipeViewModel.resetHomeState()
+        }
+
         recipeViewModel.navigationEvent.collect { event ->
             when (event) {
                 is RecipeViewModel.HomeNavigationEvent.NavigateToRecipeDetail -> {
@@ -84,31 +95,12 @@ fun HomeScreen(
                     delay(400)
                     recipeViewModel.resetHomeState()
                 }
-
-                is RecipeViewModel.HomeNavigationEvent.NavigateToError -> {
-
-                }
             }
         }
     }
 
     val homeIngredients by ingredientViewModel.homeScreenIngredients.collectAsState()
-    val uiState by recipeViewModel.homeUiState.collectAsState()
-
-    val loadingTips = remember {
-        listOf(
-            "💡 싹 난 감자는 독성이 있으니 과감히 버리세요!",
-            "💡 양파는 스타킹에 넣어 걸어두면 오래 보관할 수 있어요.",
-            "💡 시들한 채소는 50도 따뜻한 물에 씻으면 싱싱해져요!",
-            "💡 고기를 얼릴 때 식용유를 살짝 바르면 수분 증발을 막아줘요.",
-            "💡 깐 마늘은 설탕을 뿌려 보관하면 색이 변하지 않아요.",
-            "💡 먹다 남은 과자는 각설탕과 함께 보관하면 눅눅해지지 않아요."
-        )
-    }
-
-    val currentTip = remember(uiState.isRecipeLoading) {
-        if (uiState.isRecipeLoading) loadingTips.random() else ""
-    }
+    val remainingTickets by recipeViewModel.remainingTickets.collectAsState()
 
     val levelFilterOptions = RecipeViewModel.LEVEL_FILTER_OPTIONS
     val categoryFilterOptions = RecipeViewModel.CATEGORY_FILTER_OPTIONS
@@ -242,7 +234,7 @@ fun HomeScreen(
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
@@ -281,7 +273,8 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .padding(16.dp)
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val buttonText = when {
                     uiState.isRecipeLoading -> "레시피 생성 중..."
@@ -289,6 +282,14 @@ fun HomeScreen(
                     uiState.recommendedRecipe == null -> "AI 레시피 추천 받기"
                     else -> "다른 레시피 추천 받기"
                 }
+
+                Text(
+                    text = "오늘의 무료 레시피: $remainingTickets / 3회",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (remainingTickets > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
 
                 Button(
                     onClick = {
@@ -337,7 +338,7 @@ fun HomeScreen(
                     dismissOnClickOutside = false
                 )
             ) {
-                RecipeLoadingScreen(tip = currentTip)
+                RecipeLoadingScreen()
             }
         }
     }
@@ -400,6 +401,38 @@ fun HomeScreen(
             confirmButton = {
                 TextButton(onClick = { recipeViewModel.dismissErrorDialog() }) {
                     Text("확인")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    if (uiState.showAdDialog) {
+        AlertDialog(
+            onDismissRequest = { recipeViewModel.dismissAdDialog() },
+            title = { Text(text = "무료 이용권 소진 🎫") },
+            text = {
+                Text(
+                    text = "오늘 제공된 무료 이용권 3장을 모두 사용하셨어요!\n\n" +
+                            "내일 다시 이용해 주세요!",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onShowAd {
+                            recipeViewModel.onAdWatched()
+                        }
+                    }
+                ) {
+                    Text("광고 보고 충전 (+1)", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { recipeViewModel.dismissAdDialog() }) {
+                    Text("다음에 할게요")
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,
@@ -537,7 +570,7 @@ private fun StatusIndicator(color: Color, text: String) {
 }
 
 @Composable
-private fun RecipeLoadingScreen(tip: String) {
+private fun RecipeLoadingScreen() {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading_chef))
 
     Box(
@@ -567,33 +600,43 @@ private fun RecipeLoadingScreen(tip: String) {
                 color = MaterialTheme.colorScheme.onBackground
             )
 
+            Text(
+                text = "(잠시만 기다려 주세요)",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
             Spacer(modifier = Modifier.height(48.dp))
 
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                ),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "알고 계셨나요?",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = tip,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                }
-            }
+            Text(
+                text = "후원 광고",
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.Gray,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            AdMobBanner(
+                adSize = AdSize.MEDIUM_RECTANGLE
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
+}
+
+@Composable
+fun AdMobBanner(
+    modifier: Modifier = Modifier,
+    adSize: AdSize = AdSize.BANNER
+) {
+    AndroidView(
+        modifier = modifier.fillMaxWidth(),
+        factory = { context ->
+            AdView(context).apply {
+                setAdSize(adSize)
+                adUnitId = "ca-app-pub-3940256099942544/6300978111"
+                loadAd(AdRequest.Builder().build())
+            }
+        }
+    )
 }
