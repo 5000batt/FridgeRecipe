@@ -1,6 +1,7 @@
 package com.kjw.fridgerecipe.data.repository
 
 import android.util.Log
+import retrofit2.HttpException
 import com.google.gson.Gson
 import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.data.local.dao.RecipeDao
@@ -9,6 +10,7 @@ import com.kjw.fridgerecipe.data.remote.ApiService
 import com.kjw.fridgerecipe.data.remote.GeminiRequest
 import com.kjw.fridgerecipe.data.repository.mapper.toDomainModel
 import com.kjw.fridgerecipe.data.repository.mapper.toEntity
+import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
@@ -17,6 +19,7 @@ import com.kjw.fridgerecipe.domain.repository.RecipeRepository
 import com.kjw.fridgerecipe.presentation.viewmodel.FILTER_ANY
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import okio.IOException
 import javax.inject.Inject
 
 class RecipeRepositoryImpl @Inject constructor(
@@ -94,14 +97,14 @@ class RecipeRepositoryImpl @Inject constructor(
 
         val apiKey = BuildConfig.API_KEY
 
-        return try {
+        try {
             val geminiResponse = apiService.getGeminiRecipe(apiKey = apiKey, request = geminiRequest)
             var aiResponseText = geminiResponse.candidates?.firstOrNull()
                                     ?.content?.parts?.firstOrNull()?.text
 
             if (aiResponseText == null) {
                 Log.e("RecipeRepo", "AI 응답이 비어있습니다.")
-                return null
+                throw GeminiException.ParsingError()
             }
 
             Log.e("RecipeRepo", "AI 원본 응답: $aiResponseText")
@@ -148,7 +151,25 @@ class RecipeRepositoryImpl @Inject constructor(
             )
         } catch (e: Exception) {
             Log.e("RecipeRepo", "AI 레시피 호출 실패", e)
-            null
+            throw mapToGeminiException(e)
+        }
+    }
+
+    private fun mapToGeminiException(e: Exception): GeminiException {
+        return when (e) {
+            is HttpException -> {
+                when (e.code()) {
+                    400 -> GeminiException.InvalidRequest()
+                    401, 403 -> GeminiException.ApiKeyError()
+                    429 -> GeminiException.QuotaExceeded()
+                    503 -> GeminiException.ServerOverloaded()
+                    else -> GeminiException.Unknown(e.code())
+                }
+            }
+            is com.google.gson.JsonSyntaxException,
+            is IllegalStateException -> GeminiException.ParsingError()
+            is IOException -> GeminiException.ServerOverloaded()
+            else -> GeminiException.Unknown(-1)
         }
     }
 

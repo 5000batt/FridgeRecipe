@@ -21,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -65,6 +66,7 @@ import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
 import com.kjw.fridgerecipe.ui.theme.ExpirationContainerColor
 import kotlin.math.roundToInt
 import com.kjw.fridgerecipe.R
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,6 +81,7 @@ fun HomeScreen(
             when (event) {
                 is RecipeViewModel.HomeNavigationEvent.NavigateToRecipeDetail -> {
                     onNavigateToRecipeDetail(event.recipeId)
+                    delay(400)
                     recipeViewModel.resetHomeState()
                 }
 
@@ -202,23 +205,6 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-
-                    /*Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.Tune,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "상세 조건 설정",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))*/
 
                     TimeSliderSection(
                         currentFilter = uiState.filterState.timeLimit,
@@ -384,6 +370,36 @@ fun HomeScreen(
             dismissButton = {
                 TextButton(onClick = { recipeViewModel.dismissConflictDialog() }) {
                     Text("아니요")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    uiState.errorDialogState?.let { errorState ->
+        AlertDialog(
+            onDismissRequest = { recipeViewModel.dismissErrorDialog() },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.ErrorOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(errorState.title)
+                }
+            },
+            text = {
+                Text(
+                    text = errorState.message,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { recipeViewModel.dismissErrorDialog() }) {
+                    Text("확인")
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,

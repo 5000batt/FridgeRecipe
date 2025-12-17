@@ -2,6 +2,7 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
@@ -38,7 +39,13 @@ data class HomeUiState(
     val selectedIngredientIds: Set<Long> = emptySet(),
     val filterState: RecipeFilterState = RecipeFilterState(),
     val showConflictDialog: Boolean = false,
-    val conflictIngredients: List<String> = emptyList()
+    val conflictIngredients: List<String> = emptyList(),
+    val errorDialogState: ErrorDialogState? = null
+)
+
+data class ErrorDialogState(
+    val title: String,
+    val message: String
 )
 
 @HiltViewModel
@@ -154,15 +161,63 @@ class RecipeViewModel @Inject constructor(
 
                 _homeUiState.update { it.copy(recommendedRecipe = newRecipe) }
 
-                newRecipe?.id?.let { recipeId ->
-                    _seenRecipeIds.value = _seenRecipeIds.value + recipeId
-                    _navigationEvent.emit(HomeNavigationEvent.NavigateToRecipeDetail(recipeId))
+                if (newRecipe != null) {
+                    newRecipe.id?.let { recipeId ->
+                        _seenRecipeIds.value = _seenRecipeIds.value + recipeId
+                        _navigationEvent.emit(HomeNavigationEvent.NavigateToRecipeDetail(recipeId))
+                    }
+                } else {
+                    _homeUiState.update {
+                        it.copy(
+                            isRecipeLoading = false,
+                            errorDialogState = ErrorDialogState(
+                                title = "오류 발생",
+                                message = "레시피 데이터를 불러오지 못했습니다.\n다시 시도해주세요."
+                            )
+                        )
+                    }
                 }
 
-            } finally {
-                _homeUiState.update { it.copy(isRecipeLoading = false) }
+            } catch (e: GeminiException) {
+                val errorState = when (e) {
+                    is GeminiException.QuotaExceeded -> ErrorDialogState(
+                        title = "주문 폭주! \uD83D\uDC68\u200D\uD83C\uDF73",
+                        message = "현재 요청이 너무 많아 AI 셰프가 바쁩니다! \uD83D\uDC68\u200D\uD83C\uDF73\\n잠시 후 다시 시도하거나 내일 이용해 주세요."
+                    )
+                    is GeminiException.ServerOverloaded -> ErrorDialogState(
+                        title = "서버 연결 지연",
+                        message = "AI 서버가 잠시 응답하지 않습니다.\n잠시 후 다시 시도해주세요."
+                    )
+                    is GeminiException.ApiKeyError -> ErrorDialogState(
+                        title = "업데이트 필요",
+                        message = "서비스 연결 정보가 변경되었습니다. 최신 버전으로 업데이트 또는 문의해주세요."
+                    )
+                    is GeminiException.ParsingError -> ErrorDialogState(
+                        title = "레시피 생성 실패",
+                        message = "AI가 레시피를 만드는 데 실패했습니다.\n다시 시도해주세요."
+                    )
+                    else -> ErrorDialogState(
+                        title = "오류 발생",
+                        message = "알 수 없는 오류가 발생했습니다.\n다시 시도해주세요."
+                    )
+                }
+
+                _homeUiState.update {
+                    it.copy(isRecipeLoading = false, errorDialogState = errorState)
+                }
+            } catch (e: Exception) {
+                _homeUiState.update {
+                    it.copy(
+                        isRecipeLoading = false,
+                        errorDialogState = ErrorDialogState("오류", "일시적인 오류입니다.")
+                    )
+                }
             }
         }
+    }
+
+    fun dismissErrorDialog() {
+        _homeUiState.update { it.copy(errorDialogState = null) }
     }
 
     fun dismissConflictDialog() {
@@ -216,6 +271,7 @@ class RecipeViewModel @Inject constructor(
     fun resetHomeState() {
         _homeUiState.update { state ->
             state.copy(
+                isRecipeLoading = false,
                 selectedIngredientIds = emptySet(),
                 filterState = RecipeFilterState(),
                 recommendedRecipe = null
