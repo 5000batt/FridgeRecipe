@@ -70,6 +70,7 @@ import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
 import com.kjw.fridgerecipe.ui.theme.ExpirationContainerColor
 import kotlin.math.roundToInt
 import com.kjw.fridgerecipe.R
+import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,7 +80,8 @@ fun HomeScreen(
     recipeViewModel: RecipeViewModel = hiltViewModel(),
     onNavigateToRecipeDetail: (Long) -> Unit,
     onNavigateToIngredientAdd: () -> Unit,
-    onShowAd: (onReward: () -> Unit) -> Unit
+    onShowAd: (onReward: () -> Unit) -> Unit,
+    onShowSnackbar: (String, SnackbarType) -> Unit
 ) {
     val uiState by recipeViewModel.homeUiState.collectAsState()
 
@@ -88,12 +90,15 @@ fun HomeScreen(
             recipeViewModel.resetHomeState()
         }
 
-        recipeViewModel.navigationEvent.collect { event ->
+        recipeViewModel.sideEffect.collect { event ->
             when (event) {
-                is RecipeViewModel.HomeNavigationEvent.NavigateToRecipeDetail -> {
+                is RecipeViewModel.HomeSideEffect.NavigateToRecipeDetail -> {
                     onNavigateToRecipeDetail(event.recipeId)
                     delay(400)
                     recipeViewModel.resetHomeState()
+                }
+                is RecipeViewModel.HomeSideEffect.ShowSnackbar -> {
+                    onShowSnackbar(event.message, SnackbarType.SUCCESS)
                 }
             }
         }
@@ -106,15 +111,14 @@ fun HomeScreen(
     val categoryFilterOptions = RecipeViewModel.CATEGORY_FILTER_OPTIONS
     val utensilFilterOptions = RecipeViewModel.UTENSIL_FILTER_OPTIONS
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
+                .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
-                .padding(bottom = 100.dp)
         ) {
-
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
@@ -260,12 +264,12 @@ fun HomeScreen(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
         }
 
         Surface(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
             shadowElevation = 16.dp,
             tonalElevation = 8.dp
@@ -279,7 +283,7 @@ fun HomeScreen(
                 val buttonText = when {
                     uiState.isRecipeLoading -> "레시피 생성 중..."
                     uiState.selectedIngredientIds.isEmpty() -> "재료를 먼저 선택해주세요"
-                    uiState.recommendedRecipe == null -> "AI 레시피 추천 받기"
+                    uiState.recommendedRecipe == null -> "맞춤 레시피 추천 받기"
                     else -> "다른 레시피 추천 받기"
                 }
 

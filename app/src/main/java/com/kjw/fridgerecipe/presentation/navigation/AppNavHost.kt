@@ -36,7 +36,8 @@ fun AppNavHost(
                 onNavigateToIngredientAdd = {
                     navController.navigate(DetailDestination.IngredientEdit.createRoute())
                 },
-                onShowAd = onShowAd
+                onShowAd = onShowAd,
+                onShowSnackbar = onShowSnackbar
             )
         }
         composable(MainTab.INGREDIENTS.route) {

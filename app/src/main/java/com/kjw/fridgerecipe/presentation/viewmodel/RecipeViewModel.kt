@@ -74,12 +74,13 @@ class RecipeViewModel @Inject constructor(
         val UTENSIL_FILTER_OPTIONS = listOf(FILTER_ANY, "에어프라이어", "전자레인지", "냄비", "후라이팬")
     }
 
-    sealed class HomeNavigationEvent {
-        data class NavigateToRecipeDetail(val recipeId: Long) : HomeNavigationEvent()
+    sealed interface HomeSideEffect {
+        data class NavigateToRecipeDetail(val recipeId: Long) : HomeSideEffect
+        data class ShowSnackbar(val message: String) : HomeSideEffect
     }
 
-    private val _navigationEvent = MutableSharedFlow<HomeNavigationEvent>()
-    val navigationEvent: SharedFlow<HomeNavigationEvent> = _navigationEvent.asSharedFlow()
+    private val _sideEffect = MutableSharedFlow<HomeSideEffect>()
+    val sideEffect: SharedFlow<HomeSideEffect> = _sideEffect.asSharedFlow()
 
     // HomeScreen States
     private val _homeUiState = MutableStateFlow(HomeUiState())
@@ -185,9 +186,10 @@ class RecipeViewModel @Inject constructor(
                 if (newRecipe != null) {
                     newRecipe.id?.let { recipeId ->
                         _seenRecipeIds.value = _seenRecipeIds.value + recipeId
-                        _navigationEvent.emit(HomeNavigationEvent.NavigateToRecipeDetail(recipeId))
+                        _sideEffect.emit(HomeSideEffect.NavigateToRecipeDetail(recipeId))
 
                         if (!isTicketUsed) {
+                            _sideEffect.emit(HomeSideEffect.ShowSnackbar("✨ 보관함에서 레시피를 찾았어요! 티켓이 차감되지 않았습니다."))
                             Log.d("ViewModel", "기존 레시피 제공으로 티켓 차감 안 함")
                         }
                     }
