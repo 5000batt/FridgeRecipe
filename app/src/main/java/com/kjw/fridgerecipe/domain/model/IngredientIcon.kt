@@ -6,6 +6,7 @@ enum class IngredientIcon(val id: String, val label: String, val category: Categ
     DEFAULT("default", "기본", CategoryType.ETC),
 
     //채소
+    GARLIC("garlic", "마늘", CategoryType.VEGETABLE),
     CARROT("carrot", "당근", CategoryType.VEGETABLE),
     ONION("onion", "양파", CategoryType.VEGETABLE),
     POTATO("potato", "감자", CategoryType.VEGETABLE),

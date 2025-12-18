@@ -67,9 +67,9 @@ import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
 import com.kjw.fridgerecipe.presentation.viewmodel.FILTER_ANY
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
-import com.kjw.fridgerecipe.ui.theme.ExpirationContainerColor
 import kotlin.math.roundToInt
 import com.kjw.fridgerecipe.R
+import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import kotlinx.coroutines.delay
 
@@ -128,15 +128,11 @@ fun HomeScreen(
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End
-            ) {
-                StatusIndicator(color = ExpirationContainerColor, text = "만료")
-                Spacer(modifier = Modifier.width(8.dp))
-                StatusIndicator(color = MaterialTheme.colorScheme.tertiaryContainer, text = "임박")
-            }
+            IngredientStatusLegend(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+            )
 
             StorageType.entries.forEach { storageType ->
                 val items = homeIngredients[storageType] ?: emptyList()
@@ -553,23 +549,6 @@ private fun FilterSection(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun StatusIndicator(color: Color, text: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .background(color, shape = CircleShape)
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
 

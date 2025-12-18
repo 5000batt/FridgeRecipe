@@ -27,7 +27,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.presentation.util.getIconResId
-import com.kjw.fridgerecipe.ui.theme.ExpirationContainerColor
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -37,16 +36,14 @@ fun IngredientChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val containerColor = when {
+    val (containerColor, contentColor) = when {
         ingredient.expirationDate.isBefore(LocalDate.now()) ->
-            ExpirationContainerColor
+            MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
         ingredient.expirationDate.isBefore(LocalDate.now().plusDays(3)) ->
-            MaterialTheme.colorScheme.tertiaryContainer
+            MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
         else ->
-            MaterialTheme.colorScheme.primaryContainer
+            MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onSurface
     }
-
-    val contentColor = MaterialTheme.colorScheme.onSurface
 
     Card(
         modifier = Modifier

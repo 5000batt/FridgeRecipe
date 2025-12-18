@@ -34,10 +34,10 @@ private val DarkColorScheme = darkColorScheme(
     onSurfaceVariant = GreenOnSurfaceVariantDark,
     outline = GreenOutlineDark,
 
-    /*error = StatusExpiredContentDark,
+    error = StatusExpiredContentDark,
     onError = StatusExpiredContainerDark,
     errorContainer = StatusExpiredContainerDark,
-    onErrorContainer = StatusExpiredContentDark,*/
+    onErrorContainer = StatusExpiredContentDark,
 
     tertiary = StatusWarningContentDark,
     onTertiary = StatusWarningContainerDark,
@@ -64,10 +64,10 @@ private val LightColorScheme = lightColorScheme(
     onSurfaceVariant = GreenOnSurfaceVariantLight,
     outline = GreenOutlineLight,
 
-    /*error = StatusExpiredContentLight,
+    error = StatusExpiredContentLight,
     onError = StatusExpiredContainerLight,
     errorContainer = StatusExpiredContainerLight,
-    onErrorContainer = StatusExpiredContentLight,*/
+    onErrorContainer = StatusExpiredContentLight,
 
     tertiary = StatusWarningContentLight,
     onTertiary = StatusWarningContainerLight,

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.presentation.ui.components.common.EmptyStateView
+import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
@@ -68,7 +69,13 @@ fun IngredientListScreen(
             )
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        IngredientStatusLegend(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 4.dp)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         if (categorizedIngredients.isEmpty()) {
             EmptyStateView(
