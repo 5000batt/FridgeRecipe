@@ -22,7 +22,7 @@ enum class MainTab(
     val icon: ImageVector,
     val label: String
 ) : Destination {
-    HOME("home", "Fridge Recipe", Icons.Default.Home, "홈"),
+    HOME("home", "냉파고", Icons.Default.Home, "홈"),
     INGREDIENTS("ingredients", "전체 재료 목록", Icons.Default.Kitchen, "재료"),
     RECIPES("recipes", "레시피", Icons.Default.RestaurantMenu, "레시피");
 
