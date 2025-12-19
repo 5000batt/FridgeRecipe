@@ -24,8 +24,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 import com.kjw.fridgerecipe.domain.model.RecipeStep
@@ -39,17 +41,17 @@ fun RecipeInfoRow(recipe: Recipe) {
         RecipeMetaInfo(
             icon = Icons.Default.Person,
             label = recipe.servings,
-            contentDescription = "인원"
+            contentDescription = stringResource(R.string.recipe_meta_servings_desc)
         )
         RecipeMetaInfo(
             icon = Icons.Default.AccessTime,
             label = recipe.time,
-            contentDescription = "조리 시간"
+            contentDescription = stringResource(R.string.recipe_meta_time_desc)
         )
         RecipeMetaInfo(
             icon = Icons.Default.SignalCellularAlt,
             label = recipe.level.label,
-            contentDescription = "난이도"
+            contentDescription = stringResource(R.string.recipe_meta_level_desc)
         )
     }
 }
@@ -93,7 +95,7 @@ fun IngredientListItem(ingredient: RecipeIngredient) {
         if (ingredient.isEssential) {
             Icon(
                 imageVector = Icons.Default.Star,
-                contentDescription = "필수 재료",
+                contentDescription = stringResource(R.string.recipe_ingredient_essential_desc),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
             )

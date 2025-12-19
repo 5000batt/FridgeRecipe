@@ -81,4 +81,16 @@
     <string name="recipe_search_empty_title">\'%1$s\' 검색 결과가 없습니다.</string>
     <string name="recipe_search_empty_desc">다른 키워드로 검색해 보세요.</string>
 
+    <!--  RecipeDetail  -->
+    <string name="recipe_detail_image_desc">레시피 사진</string>
+    <string name="recipe_detail_default_category">추천 레시피</string>
+    <string name="recipe_detail_ingredients_title">필요한 재료</string>
+    <string name="recipe_detail_steps_title">조리 순서</string>
+    <string name="recipe_detail_btn_edit">레시피 수정하기</string>
+
+    <string name="recipe_meta_servings_desc">인원</string>
+    <string name="recipe_meta_time_desc">조리 시간</string>
+    <string name="recipe_meta_level_desc">난이도</string>
+    <string name="recipe_ingredient_essential_desc">필수 재료</string>
+
 </resources>

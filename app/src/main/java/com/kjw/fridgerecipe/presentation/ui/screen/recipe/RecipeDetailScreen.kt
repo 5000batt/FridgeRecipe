@@ -11,9 +11,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.SoupKitchen
@@ -33,10 +34,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.IngredientListItem
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeInfoRow
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeStepItem
@@ -73,111 +76,116 @@ fun RecipeDetailScreen(
         val recipe = selectedRecipe!!
 
         Column(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
+            LazyColumn(
+                modifier = Modifier.weight(1f)
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    if (recipe.imageUri != null) {
-                        AsyncImage(
-                            model = recipe.imageUri,
-                            contentDescription = "레시피 사진",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SoupKitchen,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        if (recipe.imageUri != null) {
+                            AsyncImage(
+                                model = recipe.imageUri,
+                                contentDescription = stringResource(R.string.recipe_detail_image_desc),
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
                             )
+                        } else {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.SoupKitchen,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(64.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                )
+                            }
                         }
                     }
                 }
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp)
-                ) {
-                    val categoryFilter = recipe.searchMetadata?.categoryFilter
-                    val displayCategory = if (categoryFilter == FILTER_ANY || categoryFilter.isNullOrBlank()) {
-                        "추천 레시피"
-                    } else {
-                        categoryFilter
-                    }
-
-                    Text(
-                        text = displayCategory,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = recipe.title,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    RecipeInfoRow(recipe = recipe)
-
-                    Spacer(modifier = Modifier.height(32.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    Text(
-                        text = "필요한 재료",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
+                item {
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp)
                     ) {
-                        recipe.ingredients.forEach { ingredient ->
-                            IngredientListItem(ingredient)
+                        val categoryFilter = recipe.searchMetadata?.categoryFilter
+                        val displayCategory = if (categoryFilter == FILTER_ANY || categoryFilter.isNullOrBlank()) {
+                            stringResource(R.string.recipe_detail_default_category)
+                        } else {
+                            categoryFilter
                         }
+
+                        Text(
+                            text = displayCategory,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = recipe.title,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        RecipeInfoRow(recipe = recipe)
+
+                        Spacer(modifier = Modifier.height(32.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        Text(
+                            text = stringResource(R.string.recipe_detail_ingredients_title),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(32.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    Text(
-                        text = "조리 순서",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Column {
-                        recipe.steps.forEachIndexed { index, step ->
-                            RecipeStepItem(index + 1, step)
-                        }
+                items(recipe.ingredients) { ingredient ->
+                    Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+                        IngredientListItem(ingredient)
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                item {
+                    Column(modifier = Modifier.padding(24.dp)) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        Text(
+                            text = stringResource(R.string.recipe_detail_steps_title),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+
+                itemsIndexed(recipe.steps) { index, step ->
+                    Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+                        RecipeStepItem(index + 1, step)
+                    }
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
 
@@ -207,7 +215,10 @@ fun RecipeDetailScreen(
 
                         Spacer(modifier = Modifier.width(8.dp))
 
-                        Text("레시피 수정하기", fontWeight = FontWeight.Bold)
+                        Text(
+                            text = stringResource(R.string.recipe_detail_btn_edit),
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }
