@@ -16,7 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
 
@@ -42,13 +44,13 @@ fun StorageSection(
 
     Column(modifier = modifier) {
         Text(
-            text = "$title (${items.size}개)",
+            text = stringResource(R.string.storage_section_title_format, title, items.size),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
         if (items.isEmpty()) {
-            Text("재료가 없습니다.")
+            Text(stringResource(R.string.storage_empty_item))
         } else {
             when (displayType) {
                 ListDisplayType.ROW -> {

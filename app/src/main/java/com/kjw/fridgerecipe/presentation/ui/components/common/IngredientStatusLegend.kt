@@ -14,7 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.kjw.fridgerecipe.R
 
 @Composable
 fun IngredientStatusLegend(
@@ -27,21 +29,21 @@ fun IngredientStatusLegend(
     ) {
         StatusIndicator(
             color = MaterialTheme.colorScheme.primaryContainer,
-            text = "여유"
+            text = stringResource(R.string.ingredient_status_safe)
         )
 
         Spacer(modifier = Modifier.width(8.dp))
 
         StatusIndicator(
             color = MaterialTheme.colorScheme.tertiaryContainer,
-            text = "임박"
+            text = stringResource(R.string.ingredient_status_warning)
         )
 
         Spacer(modifier = Modifier.width(8.dp))
 
         StatusIndicator(
             color = MaterialTheme.colorScheme.errorContainer,
-            text = "만료"
+            text = stringResource(R.string.ingredient_status_danger)
         )
     }
 }
