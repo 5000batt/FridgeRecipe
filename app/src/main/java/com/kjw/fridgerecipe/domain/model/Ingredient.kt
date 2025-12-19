@@ -28,6 +28,7 @@ enum class StorageType(val label: String) {
 }
 
 enum class CategoryType(val label: String) {
+    ETC("기타"),
     VEGETABLE("채소"),
     FRUIT("과일"),
     MEAT("육류"),
@@ -35,8 +36,7 @@ enum class CategoryType(val label: String) {
     DAIRY("유제품/계란"),
     GRAIN("곡물/면/빵"),
     BEVERAGE("음료"),
-    SEASONING("양념/오일"),
-    ETC("기타");
+    SEASONING("소스/양념/조미료");
 
     companion object {
         fun fromString(label: String?): CategoryType {
@@ -52,6 +52,6 @@ data class Ingredient (
     val unit: UnitType,                 // 단위
     val expirationDate: LocalDate,      // 소비기한
     val storageLocation: StorageType,   // 보관위치
-    val category: CategoryType,         // 카테고리
-    val emoticon: IngredientIcon        // 이모티콘
+    val emoticon: IngredientIcon,        // 이모티콘
+    val category: CategoryType
 )
