@@ -30,6 +30,7 @@ import com.kjw.fridgerecipe.presentation.util.getIconResId
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+private val DateFormatter = DateTimeFormatter.ofPattern("y.MM.dd")
 @Composable
 fun IngredientChip(
     ingredient: Ingredient,
@@ -82,7 +83,7 @@ fun IngredientChip(
             Spacer(modifier = Modifier.height(2.dp))
 
             Text(
-                text = ingredient.expirationDate.format(DateTimeFormatter.ofPattern("y.MM.dd")),
+                text = ingredient.expirationDate.format(DateFormatter),
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.padding(horizontal = 4.dp),
                 maxLines = 1,

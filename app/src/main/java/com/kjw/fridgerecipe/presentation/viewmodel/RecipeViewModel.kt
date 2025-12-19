@@ -9,6 +9,7 @@ import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
+import com.kjw.fridgerecipe.domain.usecase.CheckIngredientConflictsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -55,6 +56,7 @@ data class ErrorDialogState(
 class RecipeViewModel @Inject constructor(
     private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase,
     getSavedRecipesUseCase: GetSavedRecipesUseCase,
+    private val checkIngredientConflictsUseCase: CheckIngredientConflictsUseCase,
     private val settingsRepository: SettingsRepository,
     private val ticketRepository: TicketRepository
 ) : ViewModel() {
@@ -117,13 +119,15 @@ class RecipeViewModel @Inject constructor(
     private var currentIngredientsQuery: String = ""
 
     // HomeScreen Functions
+    fun checkTicketReset() {
+        viewModelScope.launch {
+            ticketRepository.checkAndResetTicket()
+        }
+    }
+
     fun checkIngredientConflicts(selectedIngredients: List<Ingredient>) {
         viewModelScope.launch {
-            val excludedList = settingsRepository.excludedIngredients.first().toSet()
-
-            val conflicts = selectedIngredients
-                .map { it.name }
-                .filter { it in excludedList }
+            val conflicts = checkIngredientConflictsUseCase(selectedIngredients)
 
             if (conflicts.isNotEmpty()) {
                 _homeUiState.update {

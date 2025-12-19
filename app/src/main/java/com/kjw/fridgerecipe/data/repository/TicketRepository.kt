@@ -5,7 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -20,17 +20,17 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class TicketRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    private val KEY_DATE = stringPreferencesKey("last_open_date")
+    private val KEY_DATE_EPOCH = longPreferencesKey("last_open_date_epoch")
     private val KEY_TICKET_COUNT = intPreferencesKey("ticket_count")
 
     private val MAX_FREE_TICKETS = 3
 
     val ticketCount: Flow<Int> = context.dataStore.data
         .map { preferences ->
-            val saveDate = preferences[KEY_DATE] ?: ""
-            val currentDate = LocalDate.now().toString()
+            val lastSavedEpochDay = preferences[KEY_DATE_EPOCH] ?: 0L
+            val currentEpochDay = LocalDate.now().toEpochDay()
 
-            if (saveDate != currentDate) {
+            if (lastSavedEpochDay != currentEpochDay) {
                 MAX_FREE_TICKETS
             } else {
                 preferences[KEY_TICKET_COUNT] ?: MAX_FREE_TICKETS
@@ -38,12 +38,12 @@ class TicketRepository @Inject constructor(
         }
 
     suspend fun checkAndResetTicket() {
-        val currentDate = LocalDate.now().toString()
+        val currentEpochDay = LocalDate.now().toEpochDay()
         context.dataStore.edit { preferences ->
-            val saveDate = preferences[KEY_DATE]
+            val lastSavedEpochDay = preferences[KEY_DATE_EPOCH]
 
-            if (saveDate != currentDate) {
-                preferences[KEY_DATE] = currentDate
+            if (lastSavedEpochDay != currentEpochDay) {
+                preferences[KEY_DATE_EPOCH] = currentEpochDay
                 preferences[KEY_TICKET_COUNT] = MAX_FREE_TICKETS
             }
         }
@@ -55,6 +55,7 @@ class TicketRepository @Inject constructor(
             if (current > 0) {
                 preferences[KEY_TICKET_COUNT] = current - 1
             }
+            preferences[KEY_DATE_EPOCH] = LocalDate.now().toEpochDay()
         }
     }
 

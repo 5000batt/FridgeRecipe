@@ -1,5 +1,9 @@
 package com.kjw.fridgerecipe.presentation.ui.screen.home
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,10 +18,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -41,6 +44,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,6 +52,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -85,6 +90,13 @@ fun HomeScreen(
 ) {
     val uiState by recipeViewModel.homeUiState.collectAsState()
 
+    val homeIngredients by ingredientViewModel.homeScreenIngredients.collectAsState()
+    val remainingTickets by recipeViewModel.remainingTickets.collectAsState()
+
+    val levelFilterOptions = RecipeViewModel.LEVEL_FILTER_OPTIONS
+    val categoryFilterOptions = RecipeViewModel.CATEGORY_FILTER_OPTIONS
+    val utensilFilterOptions = RecipeViewModel.UTENSIL_FILTER_OPTIONS
+
     LaunchedEffect(Unit) {
         if (uiState.isRecipeLoading && uiState.recommendedRecipe != null) {
             recipeViewModel.resetHomeState()
@@ -104,37 +116,55 @@ fun HomeScreen(
         }
     }
 
-    val homeIngredients by ingredientViewModel.homeScreenIngredients.collectAsState()
-    val remainingTickets by recipeViewModel.remainingTickets.collectAsState()
+    val context = LocalContext.current
+    DisposableEffect(context) {
+        val timeReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == Intent.ACTION_DATE_CHANGED ||
+                    intent?.action == Intent.ACTION_TIME_CHANGED) {
+                    if (remainingTickets < 3) {
+                        recipeViewModel.checkTicketReset()
+                    }
+                }
+            }
+        }
 
-    val levelFilterOptions = RecipeViewModel.LEVEL_FILTER_OPTIONS
-    val categoryFilterOptions = RecipeViewModel.CATEGORY_FILTER_OPTIONS
-    val utensilFilterOptions = RecipeViewModel.UTENSIL_FILTER_OPTIONS
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_DATE_CHANGED)
+            addAction(Intent.ACTION_TIME_CHANGED)
+        }
+        context.registerReceiver(timeReceiver, filter)
+
+        onDispose {
+            context.unregisterReceiver(timeReceiver)
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            item { Spacer(modifier = Modifier.height(8.dp)) }
 
-            Text(
-                text = "🥕 나의 냉장고",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            item {
+                Text(
+                    text = "🥕 나의 냉장고",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
 
-            IngredientStatusLegend(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-            )
+                IngredientStatusLegend(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                )
+            }
 
-            StorageType.entries.forEach { storageType ->
+            items(StorageType.entries) { storageType ->
                 val items = homeIngredients[storageType] ?: emptyList()
 
                 if (items.isNotEmpty()) {
@@ -152,116 +182,122 @@ fun HomeScreen(
             }
 
             if (homeIngredients.values.all { it.isEmpty() }) {
+                item {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp)
+                            .clickable { onNavigateToIngredientAdd() }
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(24.dp)
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Filled.Add,
+                                contentDescription = null,
+                                modifier = Modifier.size(32.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("냉장고가 비어있어요!", style = MaterialTheme.typography.titleMedium)
+                            Text("터치해서 재료를 채워보세요.", style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+            }
+
+            item { Spacer(modifier = Modifier.height(32.dp)) }
+
+            item {
+                Text(
+                    text = "🍳 레시피 조건 설정",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
                 Card(
+                    shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                     ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 24.dp)
-                        .clickable { onNavigateToIngredientAdd() }
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp).fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            Icons.Filled.Add,
-                            contentDescription = null,
-                            modifier = Modifier.size(32.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                    Column(modifier = Modifier.padding(16.dp)) {
+
+                        TimeSliderSection(
+                            currentFilter = uiState.filterState.timeLimit,
+                            onValueChange = { recipeViewModel.onTimeFilterChanged(it) }
                         )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        FilterSection(
+                            title = "난이도",
+                            options = levelFilterOptions.map { it?.label ?: FILTER_ANY },
+                            selectedOption = uiState.filterState.level?.label ?: FILTER_ANY,
+                            onOptionSelected = { label ->
+                                val level = levelFilterOptions.find { (it?.label ?: FILTER_ANY) == label }
+                                recipeViewModel.onLevelFilterChanged(level)
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        FilterSection(
+                            title = "음식 종류",
+                            options = categoryFilterOptions,
+                            selectedOption = uiState.filterState.category ?: FILTER_ANY,
+                            onOptionSelected = { recipeViewModel.onCategoryFilterChanged(it) }
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        FilterSection(
+                            title = "조리 도구",
+                            options = utensilFilterOptions,
+                            selectedOption = uiState.filterState.utensil ?: FILTER_ANY,
+                            onOptionSelected = { recipeViewModel.onUtensilFilterChanged(it) }
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("냉장고가 비어있어요!", style = MaterialTheme.typography.titleMedium)
-                        Text("터치해서 재료를 채워보세요.", style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-            }
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Text(
-                text = "🍳 레시피 조건 설정",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-
-                    TimeSliderSection(
-                        currentFilter = uiState.filterState.timeLimit,
-                        onValueChange = { recipeViewModel.onTimeFilterChanged(it) }
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    FilterSection(
-                        title = "난이도",
-                        options = levelFilterOptions.map { it?.label ?: FILTER_ANY },
-                        selectedOption = uiState.filterState.level?.label ?: FILTER_ANY,
-                        onOptionSelected = { label ->
-                            val level = levelFilterOptions.find { (it?.label ?: FILTER_ANY) == label }
-                            recipeViewModel.onLevelFilterChanged(level)
-                        }
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    FilterSection(
-                        title = "음식 종류",
-                        options = categoryFilterOptions,
-                        selectedOption = uiState.filterState.category ?: FILTER_ANY,
-                        onOptionSelected = { recipeViewModel.onCategoryFilterChanged(it) }
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    FilterSection(
-                        title = "조리 도구",
-                        options = utensilFilterOptions,
-                        selectedOption = uiState.filterState.utensil ?: FILTER_ANY,
-                        onOptionSelected = { recipeViewModel.onUtensilFilterChanged(it) }
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "선택한 재료만 사용하기",
-                                style = MaterialTheme.typography.titleSmall
-                            )
-                            Text(
-                                text = "기본 재료(물, 조미료 등)를 제외한 다른 재료는 쓰지 않아요.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "선택한 재료만 사용하기",
+                                    style = MaterialTheme.typography.titleSmall
+                                )
+                                Text(
+                                    text = "기본 재료(물, 조미료 등)를 제외한 다른 재료는 쓰지 않아요.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = uiState.filterState.useOnlySelected,
+                                onCheckedChange = { recipeViewModel.onUseOnlySelectedIngredientsChanged(it) }
                             )
                         }
-                        Switch(
-                            checked = uiState.filterState.useOnlySelected,
-                            onCheckedChange = { recipeViewModel.onUseOnlySelectedIngredientsChanged(it) }
-                        )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+            }
         }
 
         Surface(
