@@ -1,34 +1,18 @@
 package com.kjw.fridgerecipe.presentation.ui.screen.ingredient
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -36,16 +20,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -57,33 +34,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.kjw.fridgerecipe.domain.model.CategoryType
+import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
-import com.kjw.fridgerecipe.domain.model.StorageType
-import com.kjw.fridgerecipe.domain.model.UnitType
 import com.kjw.fridgerecipe.presentation.navigation.DetailDestination
+import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IconSelectionSection
+import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientDetailFields
+import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientInputFields
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
-import com.kjw.fridgerecipe.presentation.util.getIconResId
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import com.kjw.fridgerecipe.presentation.viewmodel.ValidationField
 import java.time.Instant
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,10 +63,6 @@ fun IngredientEditScreen(
 ) {
     val isEditMode = ingredientId != DetailDestination.IngredientEdit.DEFAULT_ID
     val uiState by viewModel.editUiState.collectAsState()
-
-    var unitExpanded by remember { mutableStateOf(false) }
-    var storageExpanded by remember { mutableStateOf(false) }
-    var categoryExpanded by remember { mutableStateOf(false) }
 
     val iconListState = rememberLazyListState()
 
@@ -159,14 +123,6 @@ fun IngredientEditScreen(
         }
     }
 
-    val textFieldColors = OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = Color.Transparent,
-        unfocusedContainerColor = Color.Transparent,
-        focusedBorderColor = MaterialTheme.colorScheme.primary,
-        unfocusedBorderColor = MaterialTheme.colorScheme.outline
-    )
-    val shape = RoundedCornerShape(12.dp)
-
     Column(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -178,272 +134,35 @@ fun IngredientEditScreen(
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(
-                    text = "아이콘 선택",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            IconSelectionSection(
+                selectedIconCategory = uiState.selectedIconCategory,
+                selectedIcon = uiState.selectedIcon,
+                currentIcons = currentIcons,
+                iconListState = iconListState,
+                onIconCategorySelected = { viewModel.onIconCategorySelected(it) },
+                onIconSelected = { viewModel.onIconSelected(it) }
+            )
 
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(vertical = 4.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(CategoryType.entries) { category ->
-                        val isSelected = uiState.selectedIconCategory == category
+            IngredientInputFields(
+                name = uiState.name,
+                nameError = uiState.nameError,
+                amount = uiState.amount,
+                amountError = uiState.amountError,
+                selectedUnit = uiState.selectedUnit,
+                nameFocusRequester = nameFocusRequester,
+                amountFocusRequester = amountFocusRequester,
+                onNameChanged = { viewModel.onNameChanged(it) },
+                onAmountChanged = { viewModel.onAmountChanged(it) },
+                onUnitChanged = { viewModel.onUnitChanged(it) }
+            )
 
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = { viewModel.onIconCategorySelected(category) },
-                            label = { Text(category.label) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            ),
-                            border = FilterChipDefaults.filterChipBorder(
-                                enabled = true,
-                                selected = isSelected,
-                                borderColor = MaterialTheme.colorScheme.outline,
-                                selectedBorderColor = Color.Transparent
-                            )
-                        )
-                    }
-                }
-
-                LazyRow(
-                    state = iconListState,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(vertical = 4.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(currentIcons) { icon ->
-                        val isSelected = uiState.selectedIcon == icon
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = LocalIndication.current
-                                ) {
-                                    viewModel.onIconSelected(icon)
-                                }
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                                    else Color.Transparent
-                                )
-                                .border(
-                                    width = if (isSelected) 2.dp else 1.dp,
-                                    color = if (isSelected) Color.Transparent
-                                    else MaterialTheme.colorScheme.outline,
-                                    shape = RoundedCornerShape(12.dp)
-                                )
-                                .padding(8.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(id = getIconResId(icon)),
-                                contentDescription = icon.label,
-                                modifier = Modifier.size(36.dp)
-                            )
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Text(
-                                text = icon.label,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                                else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-            }
-
-            // 이름
-            Column {
-                OutlinedTextField(
-                    value = uiState.name,
-                    onValueChange = { viewModel.onNameChanged(it) },
-                    label = { Text("재료 이름 *") },
-                    isError = uiState.nameError != null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(nameFocusRequester),
-                    singleLine = true,
-                    colors = textFieldColors,
-                    shape = shape,
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Next
-                    ),
-                )
-                if (uiState.nameError != null) {
-                    Text(
-                        text = uiState.nameError ?: "",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-                    )
-                }
-            }
-
-            // 수량 & 단위
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = uiState.amount,
-                        onValueChange = { viewModel.onAmountChanged(it) },
-                        label = { Text("수량 *") },
-                        isError = uiState.amountError != null,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Decimal,
-                            imeAction = ImeAction.Done
-                        ),
-                        modifier = Modifier
-                            .weight(1f)
-                            .focusRequester(amountFocusRequester),
-                        singleLine = true,
-                        colors = textFieldColors,
-                        shape = shape
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    ExposedDropdownMenuBox(
-                        expanded = unitExpanded,
-                        onExpandedChange = { unitExpanded = !unitExpanded },
-                        modifier = Modifier.weight(0.8f)
-                    ) {
-                        OutlinedTextField(
-                            value = uiState.selectedUnit.label,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("단위") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
-                            modifier = Modifier.menuAnchor(),
-                            colors = textFieldColors,
-                            shape = shape
-                        )
-                        ExposedDropdownMenu(
-                            expanded = unitExpanded,
-                            onDismissRequest = { unitExpanded = false }
-                        ) {
-                            UnitType.entries.forEach { unit ->
-                                DropdownMenuItem(
-                                    text = { Text(unit.label) },
-                                    onClick = {
-                                        viewModel.onUnitChanged(unit)
-                                        unitExpanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-                if (uiState.amountError != null) {
-                    Text(
-                        text = uiState.amountError ?: "",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-                    )
-                }
-            }
-
-            // 카테고리 선택
-            ExposedDropdownMenuBox(
-                expanded = categoryExpanded,
-                onExpandedChange = { categoryExpanded = !categoryExpanded }
-            ) {
-                OutlinedTextField(
-                    value = uiState.selectedCategory.label,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("카테고리") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
-                    colors = textFieldColors,
-                    shape = shape
-                )
-                ExposedDropdownMenu(
-                    expanded = categoryExpanded,
-                    onDismissRequest = { categoryExpanded = false }
-                ) {
-                    CategoryType.entries.forEach { category ->
-                        DropdownMenuItem(
-                            text = { Text(category.label) },
-                            onClick = {
-                                viewModel.onCategoryChanged(category)
-                                categoryExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
-
-            // 보관 위치
-            ExposedDropdownMenuBox(
-                expanded = storageExpanded,
-                onExpandedChange = { storageExpanded = !storageExpanded }
-            ) {
-                OutlinedTextField(
-                    value = uiState.selectedStorage.label,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("보관 위치") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = storageExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
-                    colors = textFieldColors,
-                    shape = shape
-                )
-                ExposedDropdownMenu(
-                    expanded = storageExpanded,
-                    onDismissRequest = { storageExpanded = false }
-                ) {
-                    StorageType.entries.forEach { storage ->
-                        DropdownMenuItem(
-                            text = { Text(storage.label) },
-                            onClick = {
-                                viewModel.onStorageChanged(storage)
-                                storageExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
-
-            // 소비 기한
-            OutlinedTextField(
-                value = uiState.selectedDate.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")),
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("소비기한 *") },
-                trailingIcon = {
-                    Icon(
-                        Icons.Default.DateRange,
-                        contentDescription = "날짜 선택",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .pointerInput(Unit) {
-                        awaitEachGesture {
-                            awaitFirstDown(pass = PointerEventPass.Initial)
-                            val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
-                            if (upEvent != null) {
-                                viewModel.onDatePickerDialogShow()
-                            }
-                        }
-                    },
-                colors = textFieldColors,
-                shape = shape
+            IngredientDetailFields(
+                selectedCategory = uiState.selectedCategory,
+                selectedStorage = uiState.selectedStorage,
+                selectedDate = uiState.selectedDate,
+                onCategoryChanged = { viewModel.onCategoryChanged(it) },
+                onStorageChanged = { viewModel.onStorageChanged(it) },
+                onDatePickerShow = { viewModel.onDatePickerDialogShow() }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -474,7 +193,7 @@ fun IngredientEditScreen(
                             shape = RoundedCornerShape(16.dp),
                             modifier = Modifier.height(56.dp)
                         ) {
-                            Icon(Icons.Default.Delete, contentDescription = "삭제")
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.ingredient_edit_btn_delete))
                         }
 
                         Button(
@@ -487,7 +206,7 @@ fun IngredientEditScreen(
                             )
                         ) {
                             Text(
-                                "수정 완료",
+                                text = stringResource(R.string.ingredient_edit_btn_complete),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -504,7 +223,7 @@ fun IngredientEditScreen(
                         )
                     ) {
                         Text(
-                            "재료 저장",
+                            text = stringResource(R.string.ingredient_edit_btn_save),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -533,10 +252,10 @@ fun IngredientEditScreen(
                             viewModel.onDateSelected(date)
                         }
                     }
-                ) { Text("확인") }
+                ) { Text(stringResource(R.string.btn_confirm)) }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.onDatePickerDialogDismiss() }) { Text("취소") }
+                TextButton(onClick = { viewModel.onDatePickerDialogDismiss() }) {Text(stringResource(R.string.btn_cancel)) }
             }
         ) {
             DatePicker(
@@ -562,20 +281,24 @@ fun IngredientEditScreen(
     if (uiState.showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.onDeleteDialogDismiss() },
-            title = { Text("재료 삭제") },
-            text = { Text("정말로 '${uiState.selectedIngredientName ?: "이 재료"}'를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.") },
+            title = { Text(stringResource(R.string.ingredient_edit_dialog_delete_title)) },
+            text = {
+                val targetName = uiState.selectedIngredientName
+                    ?: stringResource(R.string.ingredient_edit_dialog_delete_msg_default)
+                Text(stringResource(R.string.ingredient_edit_dialog_delete_msg, targetName))
+            },
             confirmButton = {
                 TextButton(
                     onClick = { viewModel.onDeleteIngredient() }
                 ) {
-                    Text("삭제", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.ingredient_edit_btn_delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { viewModel.onDeleteDialogDismiss() }
                 ) {
-                    Text("취소")
+                    Text(stringResource(R.string.btn_cancel))
                 }
             }
         )
