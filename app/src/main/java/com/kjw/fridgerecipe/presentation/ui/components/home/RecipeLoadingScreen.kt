@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.compose.LottieAnimation
@@ -52,14 +53,14 @@ fun RecipeLoadingScreen() {
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "AI 셰프가 레시피를 연구 중이에요...",
+                text = stringResource(R.string.loading_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
-                text = "(잠시만 기다려 주세요)",
+                text = stringResource(R.string.loading_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -67,7 +68,7 @@ fun RecipeLoadingScreen() {
             Spacer(modifier = Modifier.height(48.dp))
 
             Text(
-                text = "후원 광고",
+                text = stringResource(R.string.ad_label),
                 style = MaterialTheme.typography.labelSmall,
                 color = Color.Gray,
                 modifier = Modifier.padding(bottom = 8.dp)

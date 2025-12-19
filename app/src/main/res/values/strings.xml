@@ -1,3 +1,45 @@
 <resources>
     <string name="app_name">냉파고</string>
+    <string name="ad_label">후원 광고</string>
+
+    <string name="loading_title">AI 셰프가 레시피를 연구 중이에요…</string>
+    <string name="loading_desc">(잠시만 기다려 주세요)</string>
+
+    <string name="btn_confirm">확인</string>
+    <string name="btn_cancel">취소</string>
+    <string name="btn_no">아니요</string>
+
+    <string name="option_time_15">15분 이내</string>
+    <string name="option_time_30">30분 이내</string>
+    <string name="option_time_60">60분 이내</string>
+    <string name="option_time_over_60">60분 초과</string>
+
+    <!-- HomeScreen -->
+    <string name="home_title_fridge">🥕 나의 냉장고</string>
+    <string name="home_empty_title">냉장고가 비어있어요!</string>
+    <string name="home_empty_desc">터치해서 재료를 채워보세요.</string>
+    <string name="ticket_count_format">오늘의 무료 레시피: %1$d / %2$d회</string>
+
+    <string name="home_btn_loading">레시피 생성 중…</string>
+    <string name="home_btn_select_ingredient">재료를 먼저 선택해주세요</string>
+    <string name="home_btn_recommend">맞춤 레시피 추천 받기</string>
+    <string name="home_btn_recommend_another">다른 레시피 추천 받기</string>
+
+    <string name="home_filter_title">🍳 레시피 조건 설정</string>
+    <string name="home_filter_time">조리 시간</string>
+    <string name="home_filter_level">난이도</string>
+    <string name="home_filter_category">음식 종류</string>
+    <string name="home_filter_utensil">조리 도구</string>
+    <string name="home_filter_only_selected_title">선택한 재료만 사용하기</string>
+    <string name="home_filter_only_selected_desc">기본 재료(물, 조미료 등)를 제외한 다른 재료는 쓰지 않아요.</string>
+
+    <string name="home_dialog_conflict_title">제외 재료 포함 알림</string>
+    <string name="home_dialog_conflict_msg">선택하신 재료 중 \'%1$s\'은(는)\n설정에서 \'제외할 재료\'로 지정되어 있습니다.\n\n그래도 해당 재료를 포함하여 레시피를 추천받으시겠습니까?</string>
+    <string name="home_dialog_conflict_btn_yes">네, 포함할게요</string>
+
+    <string name="ticket_dialog_empty_title">무료 이용권 소진 🎫</string>
+    <string name="ticket_dialog_empty_msg">오늘 제공된 무료 이용권 3장을 모두 사용하셨어요!\n\n내일 다시 이용해 주세요!</string>
+    <string name="ticket_dialog_btn_charge">광고 보고 충전 (+1)</string>
+    <string name="ticket_dialog_btn_next_time">다음에 할게요</string>
+
 </resources>

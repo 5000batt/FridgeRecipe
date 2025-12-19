@@ -20,8 +20,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.viewmodel.FILTER_ANY
 import kotlin.math.roundToInt
 
@@ -30,8 +32,13 @@ fun TimeSliderSection(
     currentFilter: String?,
     onValueChange: (String) -> Unit
 ) {
-    val timeOptions = remember {
-        listOf(FILTER_ANY, "15분 이내", "30분 이내", "60분 이내", "60분 초과")
+    val option15 = stringResource(R.string.option_time_15)
+    val option30 = stringResource(R.string.option_time_30)
+    val option60 = stringResource(R.string.option_time_60)
+    val optionOver60 = stringResource(R.string.option_time_over_60)
+
+    val timeOptions = remember(option15, option30, option60, optionOver60) {
+        listOf(FILTER_ANY, option15, option30, option60, optionOver60)
     }
 
     val sliderValue = remember(currentFilter) {
@@ -49,7 +56,7 @@ fun TimeSliderSection(
             verticalAlignment = Alignment.Bottom
         ) {
             Text(
-                text = "조리 시간",
+                text = stringResource(R.string.home_filter_time),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Bold

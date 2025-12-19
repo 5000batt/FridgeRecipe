@@ -45,11 +45,13 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
@@ -138,7 +140,7 @@ fun HomeScreen(
 
             item {
                 Text(
-                    text = "🥕 나의 냉장고",
+                    text = stringResource(R.string.home_title_fridge),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
@@ -192,8 +194,8 @@ fun HomeScreen(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("냉장고가 비어있어요!", style = MaterialTheme.typography.titleMedium)
-                            Text("터치해서 재료를 채워보세요.", style = MaterialTheme.typography.bodyMedium)
+                            Text(stringResource(R.string.home_empty_title), style = MaterialTheme.typography.titleMedium)
+                            Text(stringResource(R.string.home_empty_desc), style = MaterialTheme.typography.bodyMedium)
                         }
                     }
                 }
@@ -203,7 +205,7 @@ fun HomeScreen(
 
             item {
                 Text(
-                    text = "🍳 레시피 조건 설정",
+                    text = stringResource(R.string.home_filter_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
@@ -228,7 +230,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(20.dp))
 
                         FilterSection(
-                            title = "난이도",
+                            title = stringResource(R.string.home_filter_level),
                             options = levelFilterOptions.map { it?.label ?: FILTER_ANY },
                             selectedOption = uiState.filterState.level?.label ?: FILTER_ANY,
                             onOptionSelected = { label ->
@@ -240,7 +242,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(20.dp))
 
                         FilterSection(
-                            title = "음식 종류",
+                            title = stringResource(R.string.home_filter_category),
                             options = categoryFilterOptions,
                             selectedOption = uiState.filterState.category ?: FILTER_ANY,
                             onOptionSelected = { recipeViewModel.onCategoryFilterChanged(it) }
@@ -249,7 +251,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(20.dp))
 
                         FilterSection(
-                            title = "조리 도구",
+                            title = stringResource(R.string.home_filter_utensil),
                             options = utensilFilterOptions,
                             selectedOption = uiState.filterState.utensil ?: FILTER_ANY,
                             onOptionSelected = { recipeViewModel.onUtensilFilterChanged(it) }
@@ -266,11 +268,11 @@ fun HomeScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "선택한 재료만 사용하기",
+                                    text = stringResource(R.string.home_filter_only_selected_title),
                                     style = MaterialTheme.typography.titleSmall
                                 )
                                 Text(
-                                    text = "기본 재료(물, 조미료 등)를 제외한 다른 재료는 쓰지 않아요.",
+                                    text = stringResource(R.string.home_filter_only_selected_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -300,14 +302,14 @@ fun HomeScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val buttonText = when {
-                    uiState.isRecipeLoading -> "레시피 생성 중..."
-                    uiState.selectedIngredientIds.isEmpty() -> "재료를 먼저 선택해주세요"
-                    uiState.recommendedRecipe == null -> "맞춤 레시피 추천 받기"
-                    else -> "다른 레시피 추천 받기"
+                    uiState.isRecipeLoading -> stringResource(R.string.home_btn_loading)
+                    uiState.selectedIngredientIds.isEmpty() -> stringResource(R.string.home_btn_select_ingredient)
+                    uiState.recommendedRecipe == null -> stringResource(R.string.home_btn_recommend)
+                    else -> stringResource(R.string.home_btn_recommend_another)
                 }
 
                 Text(
-                    text = "오늘의 무료 레시피: $remainingTickets / 3회",
+                    text = stringResource(R.string.ticket_count_format, remainingTickets, 3),
                     style = MaterialTheme.typography.labelMedium,
                     color = if (remainingTickets > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                     fontWeight = FontWeight.Bold,
@@ -371,12 +373,10 @@ fun HomeScreen(
 
         AlertDialog(
             onDismissRequest = { recipeViewModel.dismissConflictDialog() },
-            title = { Text(text = "제외 재료 포함 알림") },
+            title = { Text(text = stringResource(R.string.home_dialog_conflict_title)) },
             text = {
                 Text(
-                    text = "선택하신 재료 중 '$conflictNames'은(는)\n" +
-                            "설정에서 '제외할 재료'로 지정되어 있습니다.\n\n" +
-                            "그래도 해당 재료를 포함하여 레시피를 추천받으시겠습니까?",
+                    text = stringResource(R.string.home_dialog_conflict_msg, conflictNames),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
@@ -388,12 +388,12 @@ fun HomeScreen(
                         recipeViewModel.fetchRecommendedRecipe(selectedIngredients)
                     }
                 ) {
-                    Text("네, 포함할게요", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.home_dialog_conflict_btn_yes), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { recipeViewModel.dismissConflictDialog() }) {
-                    Text("아니요")
+                    Text(stringResource(R.string.btn_no))
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,
@@ -423,7 +423,7 @@ fun HomeScreen(
             },
             confirmButton = {
                 TextButton(onClick = { recipeViewModel.dismissErrorDialog() }) {
-                    Text("확인")
+                    Text(stringResource(R.string.btn_confirm))
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,
@@ -434,11 +434,10 @@ fun HomeScreen(
     if (uiState.showAdDialog) {
         AlertDialog(
             onDismissRequest = { recipeViewModel.dismissAdDialog() },
-            title = { Text(text = "무료 이용권 소진 🎫") },
+            title = { Text(text = stringResource(R.string.ticket_dialog_empty_title)) },
             text = {
                 Text(
-                    text = "오늘 제공된 무료 이용권 3장을 모두 사용하셨어요!\n\n" +
-                            "내일 다시 이용해 주세요!",
+                    text = stringResource(R.string.ticket_dialog_empty_msg),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
@@ -450,12 +449,12 @@ fun HomeScreen(
                         }
                     }
                 ) {
-                    Text("광고 보고 충전 (+1)", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.ticket_dialog_btn_charge), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { recipeViewModel.dismissAdDialog() }) {
-                    Text("다음에 할게요")
+                    Text(stringResource(R.string.ticket_dialog_btn_next_time))
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,
