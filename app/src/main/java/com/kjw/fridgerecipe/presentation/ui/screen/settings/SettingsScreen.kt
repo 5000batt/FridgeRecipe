@@ -1,6 +1,7 @@
 package com.kjw.fridgerecipe.presentation.ui.screen.settings
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -23,12 +24,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
@@ -36,7 +34,6 @@ import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -46,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -56,6 +54,12 @@ import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.kjw.fridgerecipe.R
+import com.kjw.fridgerecipe.presentation.ui.components.settings.SettingsClickableItem
+import com.kjw.fridgerecipe.presentation.ui.components.settings.SettingsInfoItem
+import com.kjw.fridgerecipe.presentation.ui.components.settings.SettingsSectionTitle
+import com.kjw.fridgerecipe.presentation.ui.components.settings.SettingsSwitchItem
+import com.kjw.fridgerecipe.presentation.ui.components.settings.ThemeOptionChip
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 
 @Composable
@@ -66,8 +70,9 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    // 알림 권한 상태 동기화
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -76,15 +81,12 @@ fun SettingsScreen(
                         context,
                         Manifest.permission.POST_NOTIFICATIONS
                     ) == PackageManager.PERMISSION_GRANTED
-
                     viewModel.syncNotificationState(isGranted)
                 }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     Surface(
@@ -96,24 +98,21 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            SettingsSectionTitle("알림")
+            SettingsSectionTitle(stringResource(R.string.settings_section_notification))
             SettingsSwitchItem(
-                title = "푸시 알림",
-                description = "소비기한 임박 알림",
+                title = stringResource(R.string.settings_item_push_notification),
+                description = stringResource(R.string.settings_desc_push_notification),
                 checked = uiState.isNotificationEnabled,
                 onCheckedChange = { isChecked ->
                     if (isChecked) {
-                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             val isGranted = ContextCompat.checkSelfPermission(
                                 context,
                                 Manifest.permission.POST_NOTIFICATIONS
                             ) == PackageManager.PERMISSION_GRANTED
 
-                            if (isGranted) {
-                                viewModel.toggleNotification(true)
-                            } else {
-                                viewModel.showPermissionDialog()
-                            }
+                            if (isGranted) viewModel.toggleNotification(true)
+                            else viewModel.showPermissionDialog()
                         } else {
                             viewModel.toggleNotification(true)
                         }
@@ -125,29 +124,28 @@ fun SettingsScreen(
 
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            SettingsSectionTitle("일반")
-
+            SettingsSectionTitle(stringResource(R.string.settings_section_general))
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                 Text(
-                    text = "테마 설정",
+                    text = stringResource(R.string.settings_item_theme),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     ThemeOptionChip(
-                        text = "시스템",
+                        text = stringResource(R.string.settings_theme_system),
                         selected = uiState.isDarkMode == null,
                         onClick = { viewModel.setTheme(null) },
                         modifier = Modifier.weight(1f)
                     )
                     ThemeOptionChip(
-                        text = "라이트",
+                        text = stringResource(R.string.settings_theme_light),
                         selected = uiState.isDarkMode == false,
                         onClick = { viewModel.setTheme(false) },
                         modifier = Modifier.weight(1f)
                     )
                     ThemeOptionChip(
-                        text = "다크",
+                        text = stringResource(R.string.settings_theme_dark),
                         selected = uiState.isDarkMode == true,
                         onClick = { viewModel.setTheme(true) },
                         modifier = Modifier.weight(1f)
@@ -162,10 +160,10 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 4.dp)
             ) {
-                Text(text = "제외 재료 설정 (알레르기)", style = MaterialTheme.typography.bodyLarge)
+                Text(text = stringResource(R.string.settings_item_excluded), style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "AI 레시피 추천 시 제외할 재료를 입력하세요.",
+                    text = stringResource(R.string.settings_desc_excluded),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -176,7 +174,7 @@ fun SettingsScreen(
                     OutlinedTextField(
                         value = uiState.newExcludedIngredient,
                         onValueChange = { viewModel.onNewExcludedIngredientChanged(it) },
-                        placeholder = { Text("예: 오이, 땅콩") },
+                        placeholder = { Text(stringResource(R.string.settings_hint_excluded)) },
                         modifier = Modifier.weight(1f),
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp)
@@ -187,7 +185,7 @@ fun SettingsScreen(
                         shape = RoundedCornerShape(12.dp),
                         enabled = uiState.newExcludedIngredient.isNotBlank()
                     ) {
-                        Text("추가")
+                        Text(stringResource(R.string.settings_btn_add))
                     }
                 }
 
@@ -206,7 +204,7 @@ fun SettingsScreen(
                                 trailingIcon = {
                                     Icon(
                                         Icons.Default.Close,
-                                        contentDescription = "삭제",
+                                        contentDescription = stringResource(R.string.settings_desc_remove_excluded, item),
                                         modifier = Modifier
                                             .size(16.dp)
                                             .clickable { viewModel.removeExcludedIngredient(item) }
@@ -224,27 +222,30 @@ fun SettingsScreen(
 
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            SettingsSectionTitle("데이터")
+            SettingsSectionTitle(stringResource(R.string.settings_section_data))
             SettingsClickableItem(
-                title = "재료 데이터 초기화",
-                description = "냉장고 속 모든 재료를 삭제합니다.",
+                title = stringResource(R.string.settings_item_reset_ingredients),
+                description = stringResource(R.string.settings_desc_reset_ingredients),
                 isDestructive = true,
                 onClick = { viewModel.showResetIngredientsDialog() }
             )
 
             SettingsClickableItem(
-                title = "레시피 데이터 초기화",
-                description = "저장된 모든 레시피를 삭제합니다.",
+                title = stringResource(R.string.settings_item_reset_recipes),
+                description = stringResource(R.string.settings_desc_reset_recipes),
                 isDestructive = true,
                 onClick = { viewModel.showResetRecipesDialog() }
             )
 
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            SettingsSectionTitle("정보")
-            SettingsInfoItem(title = "앱 버전", value = "v${BuildConfig.VERSION_NAME}")
+            SettingsSectionTitle(stringResource(R.string.settings_section_info))
+            SettingsInfoItem(
+                title = stringResource(R.string.settings_item_version),
+                value = "v${BuildConfig.VERSION_NAME}"
+            )
             SettingsClickableItem(
-                title = "문의하기",
+                title = stringResource(R.string.settings_item_contact),
                 onClick = { sendEmail(context, onShowSnackbar) }
             )
 
@@ -255,15 +256,17 @@ fun SettingsScreen(
     if (uiState.showResetIngredientsDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissResetIngredientsDialog() },
-            title = { Text("재료 데이터 초기화") },
-            text = { Text("정말로 모든 재료 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.") },
+            title = { Text(stringResource(R.string.settings_dialog_reset_ingredients_title)) },
+            text = { Text(stringResource(R.string.settings_dialog_reset_ingredients_msg)) },
             confirmButton = {
                 TextButton(onClick = { viewModel.resetIngredients() }) {
-                    Text("삭제", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.settings_btn_delete_data), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.dismissResetIngredientsDialog() }) { Text("취소") }
+                TextButton(onClick = { viewModel.dismissResetIngredientsDialog() }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
             }
         )
     }
@@ -271,15 +274,17 @@ fun SettingsScreen(
     if (uiState.showResetRecipesDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissResetRecipesDialog() },
-            title = { Text("레시피 데이터 초기화") },
-            text = { Text("정말로 저장된 모든 레시피를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.") },
+            title = { Text(stringResource(R.string.settings_dialog_reset_recipes_title)) },
+            text = { Text(stringResource(R.string.settings_dialog_reset_recipes_msg)) },
             confirmButton = {
                 TextButton(onClick = { viewModel.resetRecipes() }) {
-                    Text("삭제", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.settings_btn_delete_data), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.dismissResetRecipesDialog() }) { Text("취소") }
+                TextButton(onClick = { viewModel.dismissResetRecipesDialog() }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
             }
         )
     }
@@ -287,13 +292,8 @@ fun SettingsScreen(
     if (uiState.showPermissionDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissPermissionDialog() },
-            title = { Text(text = "알림 권한 필요") },
-            text = {
-                Text(
-                    text = "소비기한 알림을 받으려면 안드로이드 설정에서 알림 권한을 허용해야 합니다.\n설정 화면으로 이동하시겠습니까?",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
+            title = { Text(stringResource(R.string.settings_dialog_permission_title)) },
+            text = { Text(stringResource(R.string.settings_dialog_permission_msg)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -304,12 +304,12 @@ fun SettingsScreen(
                         context.startActivity(intent)
                     }
                 ) {
-                    Text("설정으로 이동", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.settings_btn_go_to_settings), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissPermissionDialog() }) {
-                    Text("취소")
+                    Text(stringResource(R.string.btn_cancel))
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,
@@ -318,155 +318,28 @@ fun SettingsScreen(
     }
 }
 
-@Composable
-fun SettingsSectionTitle(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
-    )
-}
-
-@Composable
-fun SettingsSwitchItem(
-    title: String,
-    description: String? = null,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.bodyLarge)
-            if (description != null) {
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
-    }
-}
-
-@Composable
-fun SettingsClickableItem(
-    title: String,
-    description: String? = null,
-    value: String? = null,
-    isDestructive: Boolean = false,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
-            )
-            if (description != null) {
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        if (value != null) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-            }
-        }
-
-        Icon(
-            Icons.Default.ArrowForwardIos,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-        )
-    }
-}
-
-@Composable
-fun SettingsInfoItem(title: String, value: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = title, style = MaterialTheme.typography.bodyLarge)
-        Text(text = value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-}
-
-@Composable
-fun ThemeOptionChip(
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    FilterChip(
-        selected = selected,
-        onClick = onClick,
-        label = {
-            Text(
-                text = text,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-        },
-        modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-        )
-    )
-}
-
 private fun sendEmail(context: Context, onShowSnackbar: (String, SnackbarType) -> Unit) {
+    val subject = context.getString(R.string.settings_email_subject)
+    val body = context.getString(
+        R.string.settings_email_body_format,
+        BuildConfig.VERSION_NAME,
+        Build.MODEL,
+        Build.VERSION.SDK_INT
+    )
+
     val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
         data = "mailto:".toUri()
         putExtra(Intent.EXTRA_EMAIL, arrayOf("5000batt@gmail.com"))
-        putExtra(Intent.EXTRA_SUBJECT, "[냉장고 파먹기] 문의 및 의견")
-        putExtra(Intent.EXTRA_TEXT, """
-            앱 버전: ${BuildConfig.VERSION_NAME}
-            기기 모델: ${Build.MODEL}
-            OS 버전: ${Build.VERSION.SDK_INT}
-            
-            문의 내용을 작성해 주세요:
-            
-        """.trimIndent())
+        putExtra(Intent.EXTRA_SUBJECT, subject)
+        putExtra(Intent.EXTRA_TEXT, body)
     }
 
     try {
         context.startActivity(emailIntent)
-    } catch (e: Exception) {
-        onShowSnackbar("이메일을 보낼 수 있는 앱이 없습니다.", SnackbarType.ERROR)
+    } catch (e: ActivityNotFoundException) {
+        onShowSnackbar(
+            context.getString(R.string.settings_error_no_email),
+            SnackbarType.ERROR
+        )
     }
 }

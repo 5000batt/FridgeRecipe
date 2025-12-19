@@ -125,4 +125,45 @@
     <string name="recipe_edit_dialog_delete_title">레시피 삭제</string>
     <string name="recipe_edit_dialog_delete_msg">정말로 \'%1$s\' 레시피를 삭제하시겠습니까?</string>
 
+    <!--  Settings  -->
+    <string name="settings_title">설정</string>
+
+    <string name="settings_section_notification">알림</string>
+    <string name="settings_item_push_notification">푸시 알림</string>
+    <string name="settings_desc_push_notification">소비기한 임박 알림</string>
+    <string name="settings_dialog_permission_title">알림 권한 필요</string>
+    <string name="settings_dialog_permission_msg">소비기한 알림을 받으려면 안드로이드 설정에서 알림 권한을 허용해야 합니다.\n설정 화면으로 이동하시겠습니까?</string>
+    <string name="settings_btn_go_to_settings">설정으로 이동</string>
+
+    <string name="settings_section_general">일반</string>
+    <string name="settings_item_theme">테마 설정</string>
+    <string name="settings_theme_system">시스템</string>
+    <string name="settings_theme_light">라이트</string>
+    <string name="settings_theme_dark">다크</string>
+
+    <string name="settings_item_excluded">제외 재료 설정 (알레르기)</string>
+    <string name="settings_desc_excluded">AI 레시피 추천 시 제외할 재료를 입력하세요.</string>
+    <string name="settings_hint_excluded">예: 오이, 땅콩</string>
+    <string name="settings_btn_add">추가</string>
+    <string name="settings_desc_remove_excluded">%1$s 삭제</string>
+
+    <string name="settings_section_data">데이터</string>
+    <string name="settings_item_reset_ingredients">재료 데이터 초기화</string>
+    <string name="settings_desc_reset_ingredients">냉장고 속 모든 재료를 삭제합니다.</string>
+    <string name="settings_item_reset_recipes">레시피 데이터 초기화</string>
+    <string name="settings_desc_reset_recipes">저장된 모든 레시피를 삭제합니다.</string>
+
+    <string name="settings_dialog_reset_ingredients_title">재료 데이터 초기화</string>
+    <string name="settings_dialog_reset_ingredients_msg">정말로 모든 재료 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.</string>
+    <string name="settings_dialog_reset_recipes_title">레시피 데이터 초기화</string>
+    <string name="settings_dialog_reset_recipes_msg">정말로 저장된 모든 레시피를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.</string>
+    <string name="settings_btn_delete_data">삭제</string>
+
+    <string name="settings_section_info">정보</string>
+    <string name="settings_item_version">앱 버전</string>
+    <string name="settings_item_contact">문의하기</string>
+    <string name="settings_email_subject">[냉파고] 문의 및 의견</string>
+    <string name="settings_email_body_format">앱 버전: %1$s\n기기 모델: %2$s\nOS 버전: %3$d\n\n문의 내용을 작성해 주세요:\n</string>
+    <string name="settings_error_no_email">이메일을 보낼 수 있는 앱이 없습니다.</string>
+
 </resources>
