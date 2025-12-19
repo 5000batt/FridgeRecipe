@@ -93,4 +93,36 @@
     <string name="recipe_meta_level_desc">난이도</string>
     <string name="recipe_ingredient_essential_desc">필수 재료</string>
 
+    <!--  RecipeEdit  -->
+    <string name="recipe_edit_image_desc">레시피 이미지</string>
+    <string name="recipe_edit_add_photo">대표 사진 추가</string>
+
+    <string name="recipe_edit_label_title">레시피 제목 *</string>
+    <string name="recipe_edit_label_servings">조리 양 *</string>
+    <string name="recipe_edit_suffix_servings">인분</string>
+    <string name="recipe_edit_label_time">조리 시간 *</string>
+    <string name="recipe_edit_suffix_time">분</string>
+
+    <string name="recipe_edit_label_level">난이도 *</string>
+    <string name="recipe_edit_label_category">음식 종류</string>
+    <string name="recipe_edit_label_utensil">주요 조리 도구</string>
+
+    <string name="recipe_edit_section_ingredients">재료</string>
+    <string name="recipe_edit_btn_add">추가</string>
+    <string name="recipe_edit_guide_ingredients">홈 화면에서 \'재료로 검색\' 시 사용될 \'필수 재료\'를 체크하세요.</string>
+    <string name="recipe_edit_label_ingredient_name">재료명</string>
+    <string name="recipe_edit_label_ingredient_qty">용량</string>
+    <string name="recipe_edit_desc_delete">삭제</string>
+
+    <string name="recipe_edit_section_steps">조리 순서</string>
+    <string name="recipe_edit_btn_add_step">순서 추가</string>
+    <string name="recipe_edit_label_step_desc">상세 설명</string>
+
+    <string name="recipe_edit_btn_delete">삭제</string>
+    <string name="recipe_edit_btn_complete">수정 완료</string>
+    <string name="recipe_edit_btn_save">레시피 저장</string>
+
+    <string name="recipe_edit_dialog_delete_title">레시피 삭제</string>
+    <string name="recipe_edit_dialog_delete_msg">정말로 \'%1$s\' 레시피를 삭제하시겠습니까?</string>
+
 </resources>
