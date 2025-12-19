@@ -4,12 +4,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,13 +29,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -48,33 +41,25 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.rememberLottieComposition
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
 import com.kjw.fridgerecipe.presentation.viewmodel.FILTER_ANY
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
-import kotlin.math.roundToInt
-import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
+import com.kjw.fridgerecipe.presentation.ui.components.home.FilterSection
+import com.kjw.fridgerecipe.presentation.ui.components.home.RecipeLoadingScreen
+import com.kjw.fridgerecipe.presentation.ui.components.home.TimeSliderSection
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import kotlinx.coroutines.delay
 
@@ -92,6 +77,8 @@ fun HomeScreen(
 
     val homeIngredients by ingredientViewModel.homeScreenIngredients.collectAsState()
     val remainingTickets by recipeViewModel.remainingTickets.collectAsState()
+
+    val currentTickets by rememberUpdatedState(remainingTickets)
 
     val levelFilterOptions = RecipeViewModel.LEVEL_FILTER_OPTIONS
     val categoryFilterOptions = RecipeViewModel.CATEGORY_FILTER_OPTIONS
@@ -122,7 +109,7 @@ fun HomeScreen(
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action == Intent.ACTION_DATE_CHANGED ||
                     intent?.action == Intent.ACTION_TIME_CHANGED) {
-                    if (remainingTickets < 3) {
+                    if (currentTickets < 3) {
                         recipeViewModel.checkTicketReset()
                     }
                 }
@@ -475,187 +462,4 @@ fun HomeScreen(
             shape = RoundedCornerShape(16.dp)
         )
     }
-}
-
-@Composable
-private fun TimeSliderSection(
-    currentFilter: String?,
-    onValueChange: (String) -> Unit
-) {
-    val timeOptions = remember {
-        listOf(FILTER_ANY, "15분 이내", "30분 이내", "60분 이내", "60분 초과")
-    }
-
-    val sliderValue = remember(currentFilter) {
-        val targetValue = currentFilter ?: FILTER_ANY
-        val index = timeOptions.indexOf(targetValue)
-        if (index >= 0) index.toFloat() else 0f
-    }
-
-    val currentLabel = timeOptions.getOrNull(sliderValue.toInt()) ?: FILTER_ANY
-
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom
-        ) {
-            Text(
-                text = "조리 시간",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = currentLabel,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Slider(
-            value = sliderValue,
-            onValueChange = { newValue ->
-                val index = newValue.roundToInt()
-                val selectedOption = timeOptions.getOrNull(index) ?: FILTER_ANY
-                onValueChange(selectedOption)
-            },
-            valueRange = 0f..(timeOptions.size - 1).toFloat(),
-            steps = timeOptions.size - 2,
-            colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary,
-                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-            )
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun FilterSection(
-    title: String,
-    options: List<String>,
-    selectedOption: String,
-    onOptionSelected: (String) -> Unit
-) {
-    Column {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            options.forEach { option ->
-                val isSelected = option == selectedOption
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { onOptionSelected(option) },
-                    label = {
-                        Text(
-                            text = option,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
-                    },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        labelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    ),
-                    border = FilterChipDefaults.filterChipBorder(
-                        enabled = true,
-                        selected = isSelected,
-                        borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                        selectedBorderColor = Color.Transparent,
-                        borderWidth = 1.dp
-                    )
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun RecipeLoadingScreen() {
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading_chef))
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.95f))
-            .clickable(enabled = false) {}
-            .padding(24.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            LottieAnimation(
-                composition = composition,
-                iterations = LottieConstants.IterateForever,
-                modifier = Modifier.size(200.dp)
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "AI 셰프가 레시피를 연구 중이에요...",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Text(
-                text = "(잠시만 기다려 주세요)",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(48.dp))
-
-            Text(
-                text = "후원 광고",
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            AdMobBanner(
-                adSize = AdSize.MEDIUM_RECTANGLE
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-    }
-}
-
-@Composable
-fun AdMobBanner(
-    modifier: Modifier = Modifier,
-    adSize: AdSize = AdSize.BANNER
-) {
-    AndroidView(
-        modifier = modifier.fillMaxWidth(),
-        factory = { context ->
-            AdView(context).apply {
-                setAdSize(adSize)
-                adUnitId = "ca-app-pub-3940256099942544/6300978111"
-                loadAd(AdRequest.Builder().build())
-            }
-        }
-    )
 }
