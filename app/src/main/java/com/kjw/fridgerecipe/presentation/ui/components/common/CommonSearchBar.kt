@@ -1,4 +1,4 @@
-package com.kjw.fridgerecipe.presentation.ui.components.ingredient
+package com.kjw.fridgerecipe.presentation.ui.components.common
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -10,28 +10,25 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.kjw.fridgerecipe.R
 
 @Composable
-fun IngredientSearchBar(
+fun CommonSearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier.Companion
+    placeholderText: String,
+    modifier: Modifier = Modifier
 ) {
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
         modifier = modifier,
-        placeholder = {
-            Text(stringResource(R.string.ingredient_search_placeholder))
-        },
+        placeholder = { Text(placeholderText) },
         singleLine = true,
         leadingIcon = {
             Icon(
                 Icons.Filled.Search,
-                contentDescription = stringResource(R.string.ingredient_search_desc),
+                contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )
         },

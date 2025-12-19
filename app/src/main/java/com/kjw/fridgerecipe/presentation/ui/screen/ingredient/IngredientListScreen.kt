@@ -21,9 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.CategoryType
+import com.kjw.fridgerecipe.presentation.ui.components.common.CommonSearchBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.EmptyStateView
 import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
-import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientSearchBar
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
@@ -44,9 +44,10 @@ fun IngredientListScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        IngredientSearchBar(
+        CommonSearchBar(
             query = searchQuery,
             onQueryChange = { viewModel.onSearchQueryChanged(it) },
+            placeholderText = stringResource(R.string.ingredient_search_placeholder),
             modifier = Modifier.fillMaxWidth()
         )
 
