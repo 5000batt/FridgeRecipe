@@ -22,7 +22,7 @@ import com.google.android.gms.ads.MobileAds
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.presentation.ui.screen.MainAppScreen
 import com.kjw.fridgerecipe.presentation.util.RewardedAdManager
-import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
+import com.kjw.fridgerecipe.presentation.viewmodel.HomeViewModel
 import com.kjw.fridgerecipe.ui.theme.FridgeRecipeTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -31,19 +31,17 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: IngredientViewModel by viewModels()
+    private val homeViewModel: HomeViewModel by viewModels()
     @Inject
     lateinit var settingsRepository: SettingsRepository
     private lateinit var rewardedAdManager: RewardedAdManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        installSplashScreen().apply {
-            setKeepOnScreenCondition {
-                viewModel.isLoading.value
-            }
+        installSplashScreen().setKeepOnScreenCondition {
+            !homeViewModel.isDataLoaded.value
         }
+
+        super.onCreate(savedInstanceState)
 
         MobileAds.initialize(this) {}
 

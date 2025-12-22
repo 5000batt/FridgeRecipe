@@ -24,11 +24,11 @@ import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonSearchBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.EmptyStateView
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeListItem
-import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
+import com.kjw.fridgerecipe.presentation.viewmodel.RecipeListViewModel
 
 @Composable
 fun RecipeListScreen(
-    viewModel: RecipeViewModel = hiltViewModel(),
+    viewModel: RecipeListViewModel = hiltViewModel(),
     onRecipeClick: (Long) -> Unit
 ) {
     val filteredRecipes by viewModel.savedRecipes.collectAsState()

@@ -8,13 +8,12 @@ import com.kjw.fridgerecipe.data.repository.TicketRepository
 import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
-import com.kjw.fridgerecipe.domain.model.Recipe
-import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.domain.usecase.CheckIngredientConflictsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
 import com.kjw.fridgerecipe.presentation.ui.model.ErrorDialogState
+import com.kjw.fridgerecipe.presentation.ui.model.HomeUiState
 import com.kjw.fridgerecipe.presentation.ui.model.RecipeFilterState
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import com.kjw.fridgerecipe.presentation.util.UiText
@@ -29,20 +28,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-data class HomeUiState(
-    val storageIngredients: Map<StorageType, List<Ingredient>> = emptyMap(),
-    val allIngredients: List<Ingredient> = emptyList(),
-    val recommendedRecipe: Recipe? = null,
-    val isRecipeLoading: Boolean = false,
-    val selectedIngredientIds: Set<Long> = emptySet(),
-    val filterState: RecipeFilterState = RecipeFilterState(),
-    val showConflictDialog: Boolean = false,
-    val conflictIngredients: List<String> = emptyList(),
-    val errorDialogState: ErrorDialogState? = null,
-    val showAdDialog: Boolean = false,
-    val remainingTickets: Int = 3
-)
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -64,6 +49,10 @@ class HomeViewModel @Inject constructor(
     private val _sideEffect = MutableSharedFlow<HomeSideEffect>()
     val sideEffect: SharedFlow<HomeSideEffect> = _sideEffect.asSharedFlow()
 
+    // 초기 데이터 로딩 완료 여부 체크
+    private val _isDataLoaded = MutableStateFlow(false)
+    val isDataLoaded: StateFlow<Boolean> = _isDataLoaded.asStateFlow()
+
     private val _seenRecipeIds = MutableStateFlow<Set<Long>>(emptySet())
     private var currentIngredientsQuery: String = ""
 
@@ -84,6 +73,7 @@ class HomeViewModel @Inject constructor(
                         storageIngredients = grouped
                     )
                 }
+                _isDataLoaded.value = true
             }
         }
     }

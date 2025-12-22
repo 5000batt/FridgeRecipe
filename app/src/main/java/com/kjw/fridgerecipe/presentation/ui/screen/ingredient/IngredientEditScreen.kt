@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -47,10 +48,10 @@ import com.kjw.fridgerecipe.presentation.navigation.DetailDestination
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IconSelectionSection
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientDetailFields
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientInputFields
+import com.kjw.fridgerecipe.presentation.ui.model.IngredientValidationField
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
-import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
-import com.kjw.fridgerecipe.presentation.viewmodel.ValidationField
+import com.kjw.fridgerecipe.presentation.viewmodel.IngredientEditViewModel
 import java.time.Instant
 import java.time.ZoneId
 
@@ -58,7 +59,7 @@ import java.time.ZoneId
 @Composable
 fun IngredientEditScreen(
     onNavigateBack: () -> Unit,
-    viewModel: IngredientViewModel = hiltViewModel(),
+    viewModel: IngredientEditViewModel = hiltViewModel(),
     ingredientId: Long,
     onShowSnackbar: (String, SnackbarType) -> Unit
 ) {
@@ -85,7 +86,13 @@ fun IngredientEditScreen(
         if (isEditMode) {
             viewModel.loadIngredientById(ingredientId)
         } else {
-            viewModel.clearSelectedIngredient()
+            viewModel.clearState()
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.clearState()
         }
     }
 
@@ -96,7 +103,6 @@ fun IngredientEditScreen(
                     onShowSnackbar(result.message.asString(context), SnackbarType.SUCCESS)
                     onNavigateBack()
                 }
-
                 is OperationResult.Failure -> {
                     onShowSnackbar(result.message.asString(context), SnackbarType.ERROR)
                 }
@@ -104,23 +110,21 @@ fun IngredientEditScreen(
         }
     }
 
-    LaunchedEffect(uiState.selectedIconCategory, uiState.selectedIcon) {
-        if (isEditMode && !hasScrolledToInitialSelection && uiState.name.isNotEmpty()) {
-
-            val index = currentIcons.indexOf(uiState.selectedIcon)
-
-            if (index >= 0) {
-                iconListState.scrollToItem(index)
-                hasScrolledToInitialSelection = true
+    LaunchedEffect(Unit) {
+        viewModel.validationEvent.collect { field ->
+            when (field) {
+                IngredientValidationField.NAME -> nameFocusRequester.requestFocus()
+                IngredientValidationField.AMOUNT -> amountFocusRequester.requestFocus()
             }
         }
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.validationEvent.collect { field ->
-            when (field) {
-                ValidationField.NAME -> nameFocusRequester.requestFocus()
-                ValidationField.AMOUNT -> amountFocusRequester.requestFocus()
+    LaunchedEffect(uiState.selectedIconCategory, uiState.selectedIcon) {
+        if (isEditMode && !hasScrolledToInitialSelection && uiState.name.isNotEmpty()) {
+            val index = currentIcons.indexOf(uiState.selectedIcon)
+            if (index >= 0) {
+                iconListState.scrollToItem(index)
+                hasScrolledToInitialSelection = true
             }
         }
     }

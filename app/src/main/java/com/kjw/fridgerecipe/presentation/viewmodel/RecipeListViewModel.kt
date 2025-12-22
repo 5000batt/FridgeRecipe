@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class RecipeViewModel @Inject constructor(
+class RecipeListViewModel @Inject constructor(
     getSavedRecipesUseCase: GetSavedRecipesUseCase
 ) : ViewModel() {
 

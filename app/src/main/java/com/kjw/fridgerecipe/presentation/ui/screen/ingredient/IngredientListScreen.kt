@@ -26,11 +26,11 @@ import com.kjw.fridgerecipe.presentation.ui.components.common.EmptyStateView
 import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
-import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
+import com.kjw.fridgerecipe.presentation.viewmodel.IngredientListViewModel
 
 @Composable
 fun IngredientListScreen(
-    viewModel: IngredientViewModel = hiltViewModel(),
+    viewModel: IngredientListViewModel = hiltViewModel(),
     onIngredientClick: (Long) -> Unit
 ) {
     val categorizedIngredients by viewModel.categorizedIngredients.collectAsState()
