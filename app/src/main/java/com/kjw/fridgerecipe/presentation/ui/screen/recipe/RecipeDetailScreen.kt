@@ -46,24 +46,24 @@ import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeInfoRow
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeStepItem
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
-import com.kjw.fridgerecipe.presentation.viewmodel.RecipeManageViewModel
+import com.kjw.fridgerecipe.presentation.viewmodel.RecipeDetailViewModel
 
 @Composable
 fun RecipeDetailScreen(
     onNavigateToRecipeEdit: (Long) -> Unit,
-    viewModel: RecipeManageViewModel = hiltViewModel(),
+    viewModel: RecipeDetailViewModel = hiltViewModel(),
     recipeId: Long
 ) {
-    val selectedRecipe by viewModel.selectedRecipe.collectAsState()
+    val recipe by viewModel.recipe.collectAsState()
     val context = LocalContext.current
 
     LaunchedEffect(recipeId) {
-        viewModel.loadRecipeById(recipeId)
+        viewModel.loadRecipe(recipeId)
     }
 
     DisposableEffect(Unit) {
         onDispose {
-            viewModel.clearSelectedRecipe()
+            viewModel.clearRecipe()
         }
     }
 
@@ -73,7 +73,7 @@ fun RecipeDetailScreen(
             ?: value
     }
 
-    if (selectedRecipe == null) {
+    if (recipe == null) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -82,7 +82,7 @@ fun RecipeDetailScreen(
             CircularProgressIndicator()
         }
     } else {
-        val recipe = selectedRecipe!!
+        val recipe = recipe!!
 
         Column(modifier = Modifier.fillMaxSize()) {
             LazyColumn(

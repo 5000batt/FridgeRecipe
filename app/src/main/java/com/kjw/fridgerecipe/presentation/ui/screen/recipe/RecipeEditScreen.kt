@@ -53,7 +53,7 @@ import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeSectionHeade
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.StepEditRow
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
-import com.kjw.fridgerecipe.presentation.viewmodel.RecipeManageViewModel
+import com.kjw.fridgerecipe.presentation.viewmodel.RecipeEditViewModel
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeValidationField
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,7 +61,7 @@ import com.kjw.fridgerecipe.presentation.viewmodel.RecipeValidationField
 fun RecipeEditScreen(
     onNavigateBack: () -> Unit,
     onNavigateToList: () -> Unit,
-    viewModel: RecipeManageViewModel = hiltViewModel(),
+    viewModel: RecipeEditViewModel = hiltViewModel(),
     recipeId: Long,
     onShowSnackbar: (String, SnackbarType) -> Unit
 ) {
@@ -82,9 +82,9 @@ fun RecipeEditScreen(
 
     LaunchedEffect(recipeId, isEditMode) {
         if (isEditMode) {
-            viewModel.loadRecipeById(recipeId)
+            viewModel.loadRecipeForEdit(recipeId)
         } else {
-            viewModel.clearSelectedRecipe()
+            viewModel.clearState()
         }
     }
 
@@ -100,8 +100,8 @@ fun RecipeEditScreen(
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collect { event ->
             when (event) {
-                is RecipeManageViewModel.NavigationEvent.NavigateBack -> onNavigateBack()
-                is RecipeManageViewModel.NavigationEvent.NavigateToList -> onNavigateToList()
+                is RecipeEditViewModel.NavigationEvent.NavigateBack -> onNavigateBack()
+                is RecipeEditViewModel.NavigationEvent.NavigateToList -> onNavigateToList()
             }
         }
     }

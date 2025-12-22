@@ -1,8 +1,10 @@
 package com.kjw.fridgerecipe.di
 
+import com.kjw.fridgerecipe.data.repository.ImageRepositoryImpl
 import com.kjw.fridgerecipe.data.repository.IngredientRepositoryImpl
 import com.kjw.fridgerecipe.data.repository.RecipeRepositoryImpl
 import com.kjw.fridgerecipe.data.repository.SettingsRepositoryImpl
+import com.kjw.fridgerecipe.domain.repository.ImageRepository
 import com.kjw.fridgerecipe.domain.repository.IngredientRepository
 import com.kjw.fridgerecipe.domain.repository.RecipeRepository
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
@@ -33,4 +35,10 @@ abstract class RepositoryModule {
     abstract fun bindSettingsRepository(
         settingsRepositoryImpl: SettingsRepositoryImpl
     ): SettingsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindImageRepository(
+        imageRepositoryImpl: ImageRepositoryImpl
+    ): ImageRepository
 }

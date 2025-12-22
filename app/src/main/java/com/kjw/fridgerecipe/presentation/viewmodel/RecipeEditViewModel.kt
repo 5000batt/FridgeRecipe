@@ -1,8 +1,5 @@
 package com.kjw.fridgerecipe.presentation.viewmodel
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,7 +14,6 @@ import com.kjw.fridgerecipe.domain.usecase.InsertRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateRecipeUseCase
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -26,12 +22,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
-import java.lang.Exception
-import java.util.UUID
 import javax.inject.Inject
 import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
+import com.kjw.fridgerecipe.domain.usecase.SaveRecipeImageUseCase
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import com.kjw.fridgerecipe.presentation.util.UiText
 
@@ -77,12 +70,12 @@ data class RecipeEditUiState(
 )
 
 @HiltViewModel
-class RecipeManageViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+class RecipeEditViewModel @Inject constructor(
     private val getSavedRecipeByIdUseCase: GetSavedRecipeByIdUseCase,
     private val insertRecipeUseCase: InsertRecipeUseCase,
     private val updateRecipeUseCase: UpdateRecipeUseCase,
-    private val delRecipeUseCase: DelRecipeUseCase
+    private val delRecipeUseCase: DelRecipeUseCase,
+    private val saveRecipeImageUseCase: SaveRecipeImageUseCase
 ) : ViewModel() {
 
     sealed class NavigationEvent {
@@ -92,27 +85,40 @@ class RecipeManageViewModel @Inject constructor(
 
     private val _operationResultEvent = MutableSharedFlow<OperationResult>()
     val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
+
     private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
     val navigationEvent: SharedFlow<NavigationEvent> = _navigationEvent.asSharedFlow()
+
     private val _validationEvent = MutableSharedFlow<RecipeValidationField>()
     val validationEvent: SharedFlow<RecipeValidationField> = _validationEvent.asSharedFlow()
 
-    private val _selectedRecipe = MutableStateFlow<Recipe?>(null)
-    val selectedRecipe: StateFlow<Recipe?> = _selectedRecipe.asStateFlow()
     private val _editUiState = MutableStateFlow(RecipeEditUiState())
     val editUiState: StateFlow<RecipeEditUiState> = _editUiState.asStateFlow()
 
-    fun loadRecipeById(id: Long) {
+    private var currentRecipe: Recipe? = null
+
+    fun loadRecipeForEdit(id: Long) {
         viewModelScope.launch {
             val recipe = getSavedRecipeByIdUseCase(id)
-            _selectedRecipe.value = recipe
+            currentRecipe = recipe
             _editUiState.value = recipe?.toEditUiState() ?: RecipeEditUiState()
         }
     }
 
-    fun clearSelectedRecipe() {
-        _selectedRecipe.value = null
+    fun clearState() {
+        currentRecipe = null
         _editUiState.value = RecipeEditUiState()
+    }
+
+    fun onImageSelected(uri: Uri?) {
+        uri?.let {
+            viewModelScope.launch {
+                val savedPath = saveRecipeImageUseCase(it.toString())
+                if (savedPath != null) {
+                    _editUiState.update { state -> state.copy(imageUri = savedPath) }
+                }
+            }
+        }
     }
 
     fun onSaveOrUpdateRecipe(isEditMode: Boolean) {
@@ -141,7 +147,7 @@ class RecipeManageViewModel @Inject constructor(
 
     fun onDeleteRecipe() {
         viewModelScope.launch {
-            _selectedRecipe.value?.let {
+            currentRecipe?.let {
                 val success = delRecipeUseCase(it)
                 if (success) {
                     _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(R.string.msg_deleted)))
@@ -290,71 +296,11 @@ class RecipeManageViewModel @Inject constructor(
     }
 
     fun onDeleteDialogShow() {
-        _editUiState.update { it.copy(showDeleteDialog = true, selectedRecipeTitle = _selectedRecipe.value?.title) }
+        _editUiState.update { it.copy(showDeleteDialog = true, selectedRecipeTitle = _editUiState.value.title) }
     }
 
     fun onDeleteDialogDismiss() {
         _editUiState.update { it.copy(showDeleteDialog = false) }
-    }
-
-    fun onImageSelected(uri: Uri?) {
-        uri?.let {
-            val savedUri = saveImageToInternalStorage(it)
-            _editUiState.update { state -> state.copy(imageUri = savedUri) }
-        }
-    }
-
-    private fun saveImageToInternalStorage(uri: Uri): String? {
-        return try {
-            val options = BitmapFactory.Options().apply {
-                inJustDecodeBounds = true
-            }
-            context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                BitmapFactory.decodeStream(inputStream, null, options)
-            }
-
-            options.inSampleSize = calculateInSampleSize(options, 1024, 1024)
-            options.inJustDecodeBounds = false
-
-            val scaledBitmap = context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                BitmapFactory.decodeStream(inputStream, null, options)
-            } ?: return null
-
-            val directory = File(context.filesDir, "recipe_images")
-            if (!directory.exists()) {
-                directory.mkdirs()
-            }
-
-            val fileName = "IMG_${UUID.randomUUID()}.jpg"
-            val file = File(directory, fileName)
-            val outputStream = FileOutputStream(file)
-
-            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)
-
-            outputStream.flush()
-            outputStream.close()
-
-            scaledBitmap.recycle()
-            file.absolutePath
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
-    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
-        val (height: Int, width: Int) = options.run { outHeight to outWidth }
-        var inSampleSize = 1
-
-        if (height > reqHeight || width > reqWidth) {
-            val halfHeight: Int = height / 2
-            val halfWidth: Int = width / 2
-
-            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
-                inSampleSize *= 2
-            }
-        }
-        return inSampleSize
     }
 
     private fun checkIngredientErrors(list: List<IngredientUiState>): Pair<UiText?, ListErrorType> {
@@ -443,7 +389,7 @@ class RecipeManageViewModel @Inject constructor(
             else -> null
         }
 
-        val recipeId = if (isEditMode) _selectedRecipe.value?.id else null
+        val recipeId = if (isEditMode) currentRecipe?.id else null
         val ingredientsQueryTag = currentState.ingredientsState
             .filter { it.isEssential }
             .map { it.name }
