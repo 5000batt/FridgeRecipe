@@ -7,7 +7,6 @@ import com.kjw.fridgerecipe.domain.model.UnitType
 import com.kjw.fridgerecipe.presentation.util.UiText
 import java.time.LocalDate
 
-// 재료 편집 화면 상태
 data class IngredientEditUiState(
     val name: String = "",
     val nameError: UiText? = null,
@@ -24,7 +23,6 @@ data class IngredientEditUiState(
     val selectedIconCategory: CategoryType? = null,
 )
 
-// 유효성 검사 필드 Enum
 enum class IngredientValidationField {
     NAME, AMOUNT
 }

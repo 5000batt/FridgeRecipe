@@ -52,9 +52,9 @@ import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeMetadataForm
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeSectionHeader
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.StepEditRow
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
+import com.kjw.fridgerecipe.presentation.ui.model.RecipeValidationField
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeEditViewModel
-import com.kjw.fridgerecipe.presentation.viewmodel.RecipeValidationField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -315,7 +315,7 @@ fun RecipeEditScreen(
             onDismissRequest = { viewModel.onDeleteDialogDismiss() },
             title = { Text(stringResource(R.string.recipe_edit_dialog_delete_title)) },
             text = {
-                val title = uiState.selectedRecipeTitle ?: ""
+                val title = uiState.title
                 Text(stringResource(R.string.recipe_edit_dialog_delete_msg, title))
             },
             confirmButton = {

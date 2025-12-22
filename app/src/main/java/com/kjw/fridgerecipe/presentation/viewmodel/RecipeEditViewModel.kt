@@ -25,49 +25,13 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
 import com.kjw.fridgerecipe.domain.usecase.SaveRecipeImageUseCase
+import com.kjw.fridgerecipe.presentation.ui.model.IngredientItemUiState
+import com.kjw.fridgerecipe.presentation.ui.model.ListErrorType
+import com.kjw.fridgerecipe.presentation.ui.model.RecipeEditUiState
+import com.kjw.fridgerecipe.presentation.ui.model.RecipeValidationField
+import com.kjw.fridgerecipe.presentation.ui.model.StepItemUiState
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import com.kjw.fridgerecipe.presentation.util.UiText
-
-enum class RecipeValidationField {
-    TITLE, SERVINGS, TIME, INGREDIENTS, STEPS
-}
-
-enum class ListErrorType {
-    NONE,
-    IS_EMPTY,
-    HAS_BLANK_ITEMS
-}
-data class IngredientUiState(
-    val name: String,
-    val quantity: String,
-    val isEssential: Boolean
-)
-
-data class StepUiState(
-    val number: Int,
-    val description: String
-)
-
-data class RecipeEditUiState(
-    val title: String = "",
-    val titleError: UiText? = null,
-    val servingsState: String = "",
-    val servingsError: UiText? = null,
-    val timeState: String = "",
-    val timeError: UiText? = null,
-    val level: LevelType = LevelType.ETC,
-    val categoryState: String = FILTER_ANY,
-    val utensilState: String = FILTER_ANY,
-    val ingredientsState: List<IngredientUiState> = emptyList(),
-    val ingredientsError: UiText? = null,
-    val ingredientsErrorType: ListErrorType = ListErrorType.NONE,
-    val stepsState: List<StepUiState> = emptyList(),
-    val stepsError: UiText? = null,
-    val stepsErrorType: ListErrorType = ListErrorType.NONE,
-    val showDeleteDialog: Boolean = false,
-    val selectedRecipeTitle: String? = null,
-    val imageUri: String? = null
-)
 
 @HiltViewModel
 class RecipeEditViewModel @Inject constructor(
@@ -190,7 +154,7 @@ class RecipeEditViewModel @Inject constructor(
 
     fun onAddIngredient() {
         _editUiState.update { currentState ->
-            val newList = currentState.ingredientsState + IngredientUiState("", "", false)
+            val newList = currentState.ingredientsState + IngredientItemUiState("", "", false)
             val (newError, newType) = if (currentState.ingredientsErrorType == ListErrorType.IS_EMPTY) {
                 Pair(null, ListErrorType.NONE)
             } else {
@@ -255,7 +219,10 @@ class RecipeEditViewModel @Inject constructor(
 
     fun onAddStep() {
         _editUiState.update { currentState ->
-            val newList = currentState.stepsState + StepUiState(currentState.stepsState.size + 1, "")
+            val newList = currentState.stepsState + StepItemUiState(
+                currentState.stepsState.size + 1,
+                ""
+            )
             val (newError, newType) = if (currentState.stepsErrorType == ListErrorType.IS_EMPTY) {
                 Pair(null, ListErrorType.NONE)
             } else {
@@ -296,14 +263,14 @@ class RecipeEditViewModel @Inject constructor(
     }
 
     fun onDeleteDialogShow() {
-        _editUiState.update { it.copy(showDeleteDialog = true, selectedRecipeTitle = _editUiState.value.title) }
+        _editUiState.update { it.copy(showDeleteDialog = true) }
     }
 
     fun onDeleteDialogDismiss() {
         _editUiState.update { it.copy(showDeleteDialog = false) }
     }
 
-    private fun checkIngredientErrors(list: List<IngredientUiState>): Pair<UiText?, ListErrorType> {
+    private fun checkIngredientErrors(list: List<IngredientItemUiState>): Pair<UiText?, ListErrorType> {
         return if (!list.any { it.name.isBlank() || it.quantity.isBlank() }) {
             Pair(null, ListErrorType.NONE)
         } else {
@@ -311,7 +278,7 @@ class RecipeEditViewModel @Inject constructor(
         }
     }
 
-    private fun checkStepErrors(list: List<StepUiState>): Pair<UiText?, ListErrorType> {
+    private fun checkStepErrors(list: List<StepItemUiState>): Pair<UiText?, ListErrorType> {
         return if (!list.any { it.description.isBlank() }) {
             Pair(null, ListErrorType.NONE)
         } else {
@@ -440,13 +407,13 @@ private fun Recipe.toEditUiState(): RecipeEditUiState {
         categoryState = this.searchMetadata?.categoryFilter ?: FILTER_ANY,
         utensilState = this.searchMetadata?.utensilFilter ?: FILTER_ANY,
         ingredientsState = this.ingredients.map {
-            IngredientUiState(
+            IngredientItemUiState(
                 name = it.name,
                 quantity = it.quantity,
                 isEssential = it.isEssential
             )
         },
-        stepsState = this.steps.map { StepUiState(it.number, it.description) },
+        stepsState = this.steps.map { StepItemUiState(it.number, it.description) },
         imageUri = this.imageUri
     )
 }
