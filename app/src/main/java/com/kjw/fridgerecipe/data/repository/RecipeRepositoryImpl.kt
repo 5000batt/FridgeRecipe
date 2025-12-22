@@ -16,7 +16,7 @@ import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
 import com.kjw.fridgerecipe.domain.repository.RecipeRepository
-import com.kjw.fridgerecipe.presentation.viewmodel.FILTER_ANY
+import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import okio.IOException

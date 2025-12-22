@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,7 +44,8 @@ import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.IngredientListItem
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeInfoRow
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeStepItem
-import com.kjw.fridgerecipe.presentation.viewmodel.FILTER_ANY
+import com.kjw.fridgerecipe.presentation.util.RecipeConstants
+import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeManageViewModel
 
 @Composable
@@ -53,6 +55,7 @@ fun RecipeDetailScreen(
     recipeId: Long
 ) {
     val selectedRecipe by viewModel.selectedRecipe.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(recipeId) {
         viewModel.loadRecipeById(recipeId)
@@ -62,6 +65,12 @@ fun RecipeDetailScreen(
         onDispose {
             viewModel.clearSelectedRecipe()
         }
+    }
+
+    fun getCategoryLabel(value: String): String {
+        return RecipeConstants.CATEGORY_FILTER_OPTIONS
+            .find { it.value == value }?.label?.asString(context)
+            ?: value
     }
 
     if (selectedRecipe == null) {
@@ -120,7 +129,7 @@ fun RecipeDetailScreen(
                         val displayCategory = if (categoryFilter == FILTER_ANY || categoryFilter.isNullOrBlank()) {
                             stringResource(R.string.recipe_detail_default_category)
                         } else {
-                            categoryFilter
+                            getCategoryLabel(categoryFilter)
                         }
 
                         Text(

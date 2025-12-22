@@ -24,7 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.R
-import com.kjw.fridgerecipe.presentation.viewmodel.FILTER_ANY
+import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import kotlin.math.roundToInt
 
 @Composable

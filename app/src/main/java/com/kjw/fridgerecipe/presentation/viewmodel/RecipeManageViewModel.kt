@@ -32,6 +32,7 @@ import java.lang.Exception
 import java.util.UUID
 import javax.inject.Inject
 import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
+import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import com.kjw.fridgerecipe.presentation.util.UiText
 
 enum class RecipeValidationField {

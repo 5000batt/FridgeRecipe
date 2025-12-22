@@ -41,7 +41,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -55,77 +54,68 @@ import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
-import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
-import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
 import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
 import com.kjw.fridgerecipe.presentation.ui.components.home.FilterSection
 import com.kjw.fridgerecipe.presentation.ui.components.home.RecipeLoadingScreen
 import com.kjw.fridgerecipe.presentation.ui.components.home.TimeSliderSection
+import com.kjw.fridgerecipe.presentation.util.RecipeConstants
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
+import com.kjw.fridgerecipe.presentation.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    ingredientViewModel: IngredientViewModel = hiltViewModel(),
-    recipeViewModel: RecipeViewModel = hiltViewModel(),
+    homeViewModel: HomeViewModel = hiltViewModel(),
     onNavigateToRecipeDetail: (Long) -> Unit,
     onNavigateToIngredientAdd: () -> Unit,
     onShowAd: (onReward: () -> Unit) -> Unit,
     onShowSnackbar: (String, SnackbarType) -> Unit
 ) {
-    val uiState by recipeViewModel.homeUiState.collectAsState()
+    val uiState by homeViewModel.homeUiState.collectAsState()
     val context = LocalContext.current
 
-    val homeIngredients by ingredientViewModel.homeScreenIngredients.collectAsState()
-    val remainingTickets by recipeViewModel.remainingTickets.collectAsState()
-
-    val currentTickets by rememberUpdatedState(remainingTickets)
-
-    val levelFilterOptions = RecipeViewModel.LEVEL_FILTER_OPTIONS
-    val categoryFilterOptions = RecipeViewModel.CATEGORY_FILTER_OPTIONS
-    val utensilFilterOptions = RecipeViewModel.UTENSIL_FILTER_OPTIONS
+    val levelFilterOptions = RecipeConstants.LEVEL_FILTER_OPTIONS
+    val categoryFilterOptions = RecipeConstants.CATEGORY_FILTER_OPTIONS
+    val utensilFilterOptions = RecipeConstants.UTENSIL_FILTER_OPTIONS
 
     LaunchedEffect(Unit) {
         if (uiState.isRecipeLoading && uiState.recommendedRecipe != null) {
-            recipeViewModel.resetHomeState()
+            homeViewModel.resetHomeState()
         }
 
-        recipeViewModel.sideEffect.collect { event ->
+        homeViewModel.sideEffect.collect { event ->
             when (event) {
-                is RecipeViewModel.HomeSideEffect.NavigateToRecipeDetail -> {
+                is HomeViewModel.HomeSideEffect.NavigateToRecipeDetail -> {
                     onNavigateToRecipeDetail(event.recipeId)
                     delay(400)
-                    recipeViewModel.resetHomeState()
+                    homeViewModel.resetHomeState()
                 }
-                is RecipeViewModel.HomeSideEffect.ShowSnackbar -> {
+                is HomeViewModel.HomeSideEffect.ShowSnackbar -> {
                     onShowSnackbar(event.message.asString(context), SnackbarType.SUCCESS)
                 }
             }
         }
     }
 
+    // 시간 변화 감지 (티켓 리셋용)
     DisposableEffect(context) {
         val timeReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action == Intent.ACTION_DATE_CHANGED ||
                     intent?.action == Intent.ACTION_TIME_CHANGED) {
-                    if (currentTickets < 3) {
-                        recipeViewModel.checkTicketReset()
+                    if (uiState.remainingTickets < 3) {
+                        homeViewModel.checkTicketReset()
                     }
                 }
             }
         }
-
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_DATE_CHANGED)
             addAction(Intent.ACTION_TIME_CHANGED)
         }
         context.registerReceiver(timeReceiver, filter)
-
-        onDispose {
-            context.unregisterReceiver(timeReceiver)
-        }
+        onDispose { context.unregisterReceiver(timeReceiver) }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -153,7 +143,7 @@ fun HomeScreen(
             }
 
             items(StorageType.entries) { storageType ->
-                val items = homeIngredients[storageType] ?: emptyList()
+                val items = uiState.storageIngredients[storageType] ?: emptyList()
 
                 if (items.isNotEmpty()) {
                     StorageSection(
@@ -163,13 +153,13 @@ fun HomeScreen(
                         modifier = Modifier.padding(vertical = 8.dp),
                         selectedIngredientIds = uiState.selectedIngredientIds,
                         onIngredientClick = { ingredient ->
-                            ingredient.id?.let { recipeViewModel.toggleIngredientSelection(it) }
+                            ingredient.id?.let { homeViewModel.toggleIngredientSelection(it) }
                         }
                     )
                 }
             }
 
-            if (homeIngredients.values.all { it.isEmpty() }) {
+            if (uiState.storageIngredients.values.all { it.isEmpty() }) {
                 item {
                     Card(
                         colors = CardDefaults.cardColors(
@@ -223,7 +213,7 @@ fun HomeScreen(
 
                         TimeSliderSection(
                             currentFilter = uiState.filterState.timeLimit,
-                            onValueChange = { recipeViewModel.onTimeFilterChanged(it) }
+                            onValueChange = { homeViewModel.onTimeFilterChanged(it) }
                         )
 
                         Spacer(modifier = Modifier.height(20.dp))
@@ -235,7 +225,7 @@ fun HomeScreen(
                             options = levelFilterOptions,
                             selectedOption = selectedLevelOption,
                             onOptionSelected = { option ->
-                                recipeViewModel.onLevelFilterChanged(option.value)
+                                homeViewModel.onLevelFilterChanged(option.value)
                             },
                             itemLabel = { it.label.asString(context) }
                         )
@@ -250,7 +240,7 @@ fun HomeScreen(
                             options = categoryFilterOptions,
                             selectedOption = selectedCategoryOption,
                             onOptionSelected = { option ->
-                                recipeViewModel.onCategoryFilterChanged(option.value)
+                                homeViewModel.onCategoryFilterChanged(option.value)
                             },
                             itemLabel = { it.label.asString(context) }
                         )
@@ -265,7 +255,7 @@ fun HomeScreen(
                             options = utensilFilterOptions,
                             selectedOption = selectedUtensilOption,
                             onOptionSelected = { option ->
-                                recipeViewModel.onUtensilFilterChanged(option.value)
+                                homeViewModel.onUtensilFilterChanged(option.value)
                             },
                             itemLabel = { it.label.asString(context) }
                         )
@@ -292,7 +282,7 @@ fun HomeScreen(
                             }
                             Switch(
                                 checked = uiState.filterState.useOnlySelected,
-                                onCheckedChange = { recipeViewModel.onUseOnlySelectedIngredientsChanged(it) }
+                                onCheckedChange = { homeViewModel.onUseOnlySelectedIngredientsChanged(it) }
                             )
                         }
                     }
@@ -322,20 +312,15 @@ fun HomeScreen(
                 }
 
                 Text(
-                    text = stringResource(R.string.ticket_count_format, remainingTickets, 3),
+                    text = stringResource(R.string.ticket_count_format, uiState.remainingTickets, 3),
                     style = MaterialTheme.typography.labelMedium,
-                    color = if (remainingTickets > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                    color = if (uiState.remainingTickets > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
                 Button(
-                    onClick = {
-                        val allIngredients = ingredientViewModel.allIngredients.value
-                        val selectedIngredients =
-                            allIngredients.filter { it.id in uiState.selectedIngredientIds }
-                        recipeViewModel.checkIngredientConflicts(selectedIngredients)
-                    },
+                    onClick = { homeViewModel.checkIngredientConflicts() },
                     enabled = uiState.selectedIngredientIds.isNotEmpty() && !uiState.isRecipeLoading,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -385,7 +370,7 @@ fun HomeScreen(
         val conflictNames = uiState.conflictIngredients.joinToString(", ")
 
         AlertDialog(
-            onDismissRequest = { recipeViewModel.dismissConflictDialog() },
+            onDismissRequest = { homeViewModel.dismissConflictDialog() },
             title = { Text(text = stringResource(R.string.home_dialog_conflict_title)) },
             text = {
                 Text(
@@ -394,18 +379,12 @@ fun HomeScreen(
                 )
             },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        val allIngredients = ingredientViewModel.allIngredients.value
-                        val selectedIngredients = allIngredients.filter { it.id in uiState.selectedIngredientIds }
-                        recipeViewModel.fetchRecommendedRecipe(selectedIngredients)
-                    }
-                ) {
+                TextButton(onClick = { homeViewModel.onConfirmConflict() }) {
                     Text(stringResource(R.string.home_dialog_conflict_btn_yes), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { recipeViewModel.dismissConflictDialog() }) {
+                TextButton(onClick = { homeViewModel.dismissConflictDialog() }) {
                     Text(stringResource(R.string.btn_no))
                 }
             },
@@ -416,7 +395,7 @@ fun HomeScreen(
 
     uiState.errorDialogState?.let { errorState ->
         AlertDialog(
-            onDismissRequest = { recipeViewModel.dismissErrorDialog() },
+            onDismissRequest = { homeViewModel.dismissErrorDialog() },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
@@ -435,7 +414,7 @@ fun HomeScreen(
                 )
             },
             confirmButton = {
-                TextButton(onClick = { recipeViewModel.dismissErrorDialog() }) {
+                TextButton(onClick = { homeViewModel.dismissErrorDialog() }) {
                     Text(stringResource(R.string.btn_confirm))
                 }
             },
@@ -446,27 +425,16 @@ fun HomeScreen(
 
     if (uiState.showAdDialog) {
         AlertDialog(
-            onDismissRequest = { recipeViewModel.dismissAdDialog() },
+            onDismissRequest = { homeViewModel.dismissAdDialog() },
             title = { Text(text = stringResource(R.string.ticket_dialog_empty_title)) },
-            text = {
-                Text(
-                    text = stringResource(R.string.ticket_dialog_empty_msg),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
+            text = { Text(text = stringResource(R.string.ticket_dialog_empty_msg), style = MaterialTheme.typography.bodyMedium) },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        onShowAd {
-                            recipeViewModel.onAdWatched()
-                        }
-                    }
-                ) {
+                TextButton(onClick = { onShowAd { homeViewModel.onAdWatched() } }) {
                     Text(stringResource(R.string.ticket_dialog_btn_charge), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { recipeViewModel.dismissAdDialog() }) {
+                TextButton(onClick = { homeViewModel.dismissAdDialog() }) {
                     Text(stringResource(R.string.ticket_dialog_btn_next_time))
                 }
             },

@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.LevelType
-import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
+import com.kjw.fridgerecipe.presentation.util.RecipeConstants
 
 @Composable
 fun RecipeImageSelector(
@@ -155,19 +155,19 @@ fun RecipeMetadataForm(
     val context = LocalContext.current
 
     fun getLevelLabel(level: LevelType): String {
-        return RecipeViewModel.LEVEL_FILTER_OPTIONS
+        return RecipeConstants.LEVEL_FILTER_OPTIONS
             .find { it.value == level }?.label?.asString(context)
             ?: level.label
     }
 
     fun getCategoryLabel(value: String): String {
-        return RecipeViewModel.CATEGORY_FILTER_OPTIONS
+        return RecipeConstants.CATEGORY_FILTER_OPTIONS
             .find { it.value == value }?.label?.asString(context)
             ?: value
     }
 
     fun getUtensilLabel(value: String): String {
-        return RecipeViewModel.UTENSIL_FILTER_OPTIONS
+        return RecipeConstants.UTENSIL_FILTER_OPTIONS
             .find { it.value == value }?.label?.asString(context)
             ?: value
     }
@@ -177,7 +177,7 @@ fun RecipeMetadataForm(
         DropdownField(
             value = getLevelLabel(selectedLevel), // ⚠️ RecipeEditScreen에서 변환된 텍스트를 넘겨줘야 함 (4단계 참조)
             label = stringResource(R.string.recipe_edit_label_level),
-            options = RecipeViewModel.LEVEL_FILTER_OPTIONS.filter { it.value != null },
+            options = RecipeConstants.LEVEL_FILTER_OPTIONS.filter { it.value != null },
             onOptionSelected = { option -> option.value?.let { onLevelChange(it) } },
             itemLabel = { it.label.asString() },
             colors = transparentColors
@@ -188,7 +188,7 @@ fun RecipeMetadataForm(
         DropdownField(
             value = getCategoryLabel(categoryState),
             label = stringResource(R.string.recipe_edit_label_category),
-            options = RecipeViewModel.CATEGORY_FILTER_OPTIONS,
+            options = RecipeConstants.CATEGORY_FILTER_OPTIONS,
             onOptionSelected = { onCategoryChange(it.value) },
             itemLabel = { it.label.asString() },
             colors = transparentColors
@@ -199,7 +199,7 @@ fun RecipeMetadataForm(
         DropdownField(
             value = getUtensilLabel(utensilState),
             label = stringResource(R.string.recipe_edit_label_utensil),
-            options = RecipeViewModel.UTENSIL_FILTER_OPTIONS,
+            options = RecipeConstants.UTENSIL_FILTER_OPTIONS,
             onOptionSelected = { onUtensilChange(it.value) },
             itemLabel = { it.label.asString() },
             colors = transparentColors
