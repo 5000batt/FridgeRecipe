@@ -2,9 +2,9 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kjw.fridgerecipe.domain.repository.IngredientRepository
-import com.kjw.fridgerecipe.domain.repository.RecipeRepository
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
+import com.kjw.fridgerecipe.domain.usecase.DeleteAllIngredientsUseCase
+import com.kjw.fridgerecipe.domain.usecase.DeleteAllRecipesUseCase
 import com.kjw.fridgerecipe.presentation.ui.model.SettingsUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,8 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val recipeRepository: RecipeRepository,
-    private val ingredientRepository: IngredientRepository,
+    private val deleteAllRecipesUseCase: DeleteAllRecipesUseCase,
+    private val deleteAllIngredientsUseCase: DeleteAllIngredientsUseCase,
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
@@ -119,7 +119,7 @@ class SettingsViewModel @Inject constructor(
 
     fun resetIngredients() {
         viewModelScope.launch {
-             ingredientRepository.deleteAllIngredients()
+            deleteAllIngredientsUseCase()
             _internalState.update { it.copy(showResetIngredientsDialog = false) }
         }
     }
@@ -134,7 +134,7 @@ class SettingsViewModel @Inject constructor(
 
     fun resetRecipes() {
         viewModelScope.launch {
-             recipeRepository.deleteAllRecipes()
+            deleteAllRecipesUseCase()
             _internalState.update { it.copy(showResetRecipesDialog = false) }
         }
     }
