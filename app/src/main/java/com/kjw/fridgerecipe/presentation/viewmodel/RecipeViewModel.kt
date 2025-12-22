@@ -3,6 +3,7 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.data.repository.TicketRepository
 import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
@@ -12,6 +13,7 @@ import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.domain.usecase.CheckIngredientConflictsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipesUseCase
+import com.kjw.fridgerecipe.presentation.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,8 +50,13 @@ data class HomeUiState(
 )
 
 data class ErrorDialogState(
-    val title: String,
-    val message: String
+    val title: UiText,
+    val message: UiText
+)
+
+data class FilterOption<T>(
+    val value: T,
+    val label: UiText
 )
 
 @HiltViewModel
@@ -71,14 +78,31 @@ class RecipeViewModel @Inject constructor(
     }
 
     companion object {
-        val LEVEL_FILTER_OPTIONS = listOf(null, LevelType.BEGINNER, LevelType.INTERMEDIATE, LevelType.ADVANCED)
-        val CATEGORY_FILTER_OPTIONS = listOf(FILTER_ANY, "한식", "일식", "중식", "양식")
-        val UTENSIL_FILTER_OPTIONS = listOf(FILTER_ANY, "에어프라이어", "전자레인지", "냄비", "후라이팬")
+        val LEVEL_FILTER_OPTIONS = listOf(
+            FilterOption(null, UiText.StringResource(R.string.filter_any)),
+            FilterOption(LevelType.BEGINNER, UiText.StringResource(R.string.level_beginner)),
+            FilterOption(LevelType.INTERMEDIATE, UiText.StringResource(R.string.level_intermediate)),
+            FilterOption(LevelType.ADVANCED, UiText.StringResource(R.string.level_advanced))
+        )
+        val CATEGORY_FILTER_OPTIONS = listOf(
+            FilterOption(FILTER_ANY, UiText.StringResource(R.string.filter_any)),
+            FilterOption("한식", UiText.StringResource(R.string.category_korean)),
+            FilterOption("일식", UiText.StringResource(R.string.category_japanese)),
+            FilterOption("중식", UiText.StringResource(R.string.category_chinese)),
+            FilterOption("양식", UiText.StringResource(R.string.category_western))
+        )
+        val UTENSIL_FILTER_OPTIONS = listOf(
+            FilterOption(FILTER_ANY, UiText.StringResource(R.string.filter_any)),
+            FilterOption("에어프라이어", UiText.StringResource(R.string.utensil_airfryer)),
+            FilterOption("전자레인지", UiText.StringResource(R.string.utensil_microwave)),
+            FilterOption("냄비", UiText.StringResource(R.string.utensil_pot)),
+            FilterOption("후라이팬", UiText.StringResource(R.string.utensil_pan))
+        )
     }
 
     sealed interface HomeSideEffect {
         data class NavigateToRecipeDetail(val recipeId: Long) : HomeSideEffect
-        data class ShowSnackbar(val message: String) : HomeSideEffect
+        data class ShowSnackbar(val message: UiText) : HomeSideEffect
     }
 
     private val _sideEffect = MutableSharedFlow<HomeSideEffect>()
@@ -193,7 +217,11 @@ class RecipeViewModel @Inject constructor(
                         _sideEffect.emit(HomeSideEffect.NavigateToRecipeDetail(recipeId))
 
                         if (!isTicketUsed) {
-                            _sideEffect.emit(HomeSideEffect.ShowSnackbar("✨ 보관함에서 레시피를 찾았어요! 티켓이 차감되지 않았습니다."))
+                            _sideEffect.emit(
+                                HomeSideEffect.ShowSnackbar(
+                                    UiText.StringResource(R.string.msg_recipe_found_saved)
+                                )
+                            )
                             Log.d("ViewModel", "기존 레시피 제공으로 티켓 차감 안 함")
                         }
                     }
@@ -203,8 +231,8 @@ class RecipeViewModel @Inject constructor(
                         it.copy(
                             isRecipeLoading = false,
                             errorDialogState = ErrorDialogState(
-                                title = "오류 발생",
-                                message = "레시피 데이터를 불러오지 못했습니다.\n다시 시도해주세요."
+                                title = UiText.StringResource(R.string.error_title_generic),
+                                message = UiText.StringResource(R.string.error_msg_recipe_fetch_failed)
                             )
                         )
                     }
@@ -214,24 +242,24 @@ class RecipeViewModel @Inject constructor(
                 ticketRepository.addTicket(1)
                 val errorState = when (e) {
                     is GeminiException.QuotaExceeded -> ErrorDialogState(
-                        title = "주문 폭주! \uD83D\uDC68\u200D\uD83C\uDF73",
-                        message = "현재 요청이 너무 많아 AI 셰프가 바쁩니다! \uD83D\uDC68\u200D\uD83C\uDF73\\n잠시 후 다시 시도하거나 내일 이용해 주세요."
+                        title = UiText.StringResource(R.string.error_title_quota),
+                        message = UiText.StringResource(R.string.error_msg_quota)
                     )
                     is GeminiException.ServerOverloaded -> ErrorDialogState(
-                        title = "서버 연결 지연",
-                        message = "AI 서버가 잠시 응답하지 않습니다.\n잠시 후 다시 시도해주세요."
+                        title = UiText.StringResource(R.string.error_title_server),
+                        message = UiText.StringResource(R.string.error_msg_server)
                     )
                     is GeminiException.ApiKeyError -> ErrorDialogState(
-                        title = "업데이트 필요",
-                        message = "서비스 연결 정보가 변경되었습니다. 최신 버전으로 업데이트 또는 문의해주세요."
+                        title = UiText.StringResource(R.string.error_title_update),
+                        message = UiText.StringResource(R.string.error_msg_update)
                     )
                     is GeminiException.ParsingError -> ErrorDialogState(
-                        title = "레시피 생성 실패",
-                        message = "AI가 레시피를 만드는 데 실패했습니다.\n다시 시도해주세요."
+                        title = UiText.StringResource(R.string.error_title_parsing),
+                        message = UiText.StringResource(R.string.error_msg_parsing)
                     )
                     else -> ErrorDialogState(
-                        title = "오류 발생",
-                        message = "알 수 없는 오류가 발생했습니다.\n다시 시도해주세요."
+                        title = UiText.StringResource(R.string.error_title_generic),
+                        message = UiText.StringResource(R.string.error_msg_generic)
                     )
                 }
 
@@ -244,7 +272,10 @@ class RecipeViewModel @Inject constructor(
                 _homeUiState.update {
                     it.copy(
                         isRecipeLoading = false,
-                        errorDialogState = ErrorDialogState("오류", "일시적인 오류입니다.")
+                        errorDialogState = ErrorDialogState(
+                            title = UiText.StringResource(R.string.error_title_temp),
+                            message = UiText.StringResource(R.string.error_msg_temp)
+                        )
                     )
                 }
             }

@@ -166,4 +166,65 @@
     <string name="settings_email_body_format">앱 버전: %1$s\n기기 모델: %2$s\nOS 버전: %3$d\n\n문의 내용을 작성해 주세요:\n</string>
     <string name="settings_error_no_email">이메일을 보낼 수 있는 앱이 없습니다.</string>
 
+    <!--  IngredientViewModel  -->
+    <string name="error_validation_name_empty">재료 이름을 입력해주세요.</string>
+    <string name="error_validation_amount_empty">숫자만 입력해주세요.</string>
+    <string name="error_validation_amount_zero">0보다 큰 값을 입력해주세요.</string>
+
+    <!--  ReciepeViewModel  -->
+    <string name="error_title_generic">오류 발생</string>
+    <string name="error_msg_generic">알 수 없는 오류가 발생했습니다.\n다시 시도해주세요.</string>
+    <string name="error_msg_recipe_fetch_failed">레시피 데이터를 불러오지 못했습니다.\n다시 시도해주세요.</string>
+
+    <string name="error_title_quota">주문 폭주! 👨‍🍳</string>
+    <string name="error_msg_quota">현재 요청이 너무 많아 AI 셰프가 바쁩니다! 👨‍🍳\n잠시 후 다시 시도하거나 내일 이용해 주세요.</string>
+
+    <string name="error_title_server">서버 연결 지연</string>
+    <string name="error_msg_server">AI 서버가 잠시 응답하지 않습니다.\n잠시 후 다시 시도해주세요.</string>
+
+    <string name="error_title_update">업데이트 필요</string>
+    <string name="error_msg_update">서비스 연결 정보가 변경되었습니다. 최신 버전으로 업데이트 또는 문의해주세요.</string>
+
+    <string name="error_title_parsing">레시피 생성 실패</string>
+    <string name="error_msg_parsing">AI가 레시피를 만드는 데 실패했습니다.\n다시 시도해주세요.</string>
+
+    <string name="error_title_temp">오류</string>
+    <string name="error_msg_temp">일시적인 오류입니다.</string>
+
+    <string name="msg_recipe_found_saved">✨ 보관함에서 레시피를 찾았어요! 티켓이 차감되지 않았습니다.</string>
+
+    <string name="filter_any">상관없음</string>
+
+    <string name="level_beginner">쉬움</string>
+    <string name="level_intermediate">보통</string>
+    <string name="level_advanced">어려움</string>
+
+    <string name="category_korean">한식</string>
+    <string name="category_japanese">일식</string>
+    <string name="category_chinese">중식</string>
+    <string name="category_western">양식</string>
+
+    <string name="utensil_airfryer">에어프라이어</string>
+    <string name="utensil_microwave">전자레인지</string>
+    <string name="utensil_pot">냄비</string>
+    <string name="utensil_pan">후라이팬</string>
+
+    <!--  RecipeManageViewModel  -->
+    <string name="error_recipe_title_empty">레시피 이름을 입력해주세요.</string>
+    <string name="error_recipe_servings_empty">조리 양을 입력해주세요.</string>
+    <string name="error_recipe_time_empty">조리 시간을 입력해주세요.</string>
+    <string name="error_recipe_ingredients_empty">재료를 추가해주세요.</string>
+    <string name="error_recipe_ingredients_blank">내용이 비어있는 재료가 있습니다.</string>
+    <string name="error_recipe_steps_empty">조리 순서를 추가해주세요.</string>
+    <string name="error_recipe_steps_blank">내용이 비어있는 조리 순서가 있습니다.</string>
+
+    <!--  SnackBar  -->
+    <string name="msg_saved">저장되었습니다.</string>
+    <string name="msg_updated">수정되었습니다.</string>
+    <string name="msg_deleted">삭제되었습니다.</string>
+
+    <string name="error_save_failed">저장에 실패했습니다.</string>
+    <string name="error_update_failed">수정에 실패했습니다.</string>
+    <string name="error_delete_failed">삭제에 실패했습니다.</string>
+
 </resources>

@@ -36,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -63,6 +64,7 @@ fun IngredientEditScreen(
 ) {
     val isEditMode = ingredientId != DetailDestination.IngredientEdit.DEFAULT_ID
     val uiState by viewModel.editUiState.collectAsState()
+    val context = LocalContext.current
 
     val iconListState = rememberLazyListState()
 
@@ -91,12 +93,12 @@ fun IngredientEditScreen(
         viewModel.operationResultEvent.collect { result ->
             when (result) {
                 is OperationResult.Success -> {
-                    onShowSnackbar(result.message, SnackbarType.SUCCESS)
+                    onShowSnackbar(result.message.asString(context), SnackbarType.SUCCESS)
                     onNavigateBack()
                 }
 
                 is OperationResult.Failure -> {
-                    onShowSnackbar(result.message, SnackbarType.ERROR)
+                    onShowSnackbar(result.message.asString(context), SnackbarType.ERROR)
                 }
             }
         }
@@ -145,9 +147,9 @@ fun IngredientEditScreen(
 
             IngredientInputFields(
                 name = uiState.name,
-                nameError = uiState.nameError,
+                nameError = uiState.nameError?.asString(),
                 amount = uiState.amount,
-                amountError = uiState.amountError,
+                amountError = uiState.amountError?.asString(),
                 selectedUnit = uiState.selectedUnit,
                 nameFocusRequester = nameFocusRequester,
                 amountFocusRequester = amountFocusRequester,

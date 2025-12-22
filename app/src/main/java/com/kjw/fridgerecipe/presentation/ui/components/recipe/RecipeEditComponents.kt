@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -143,41 +144,64 @@ fun RecipeBasicInfoForm(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeMetadataForm(
-    levelLabel: String, onLevelChange: (LevelType) -> Unit,
-    categoryState: String, onCategoryChange: (String) -> Unit,
-    utensilState: String, onUtensilChange: (String) -> Unit,
+    selectedLevel: LevelType,
+    onLevelChange: (LevelType) -> Unit,
+    categoryState: String,
+    onCategoryChange: (String) -> Unit,
+    utensilState: String,
+    onUtensilChange: (String) -> Unit,
     transparentColors: TextFieldColors
 ) {
+    val context = LocalContext.current
+
+    fun getLevelLabel(level: LevelType): String {
+        return RecipeViewModel.LEVEL_FILTER_OPTIONS
+            .find { it.value == level }?.label?.asString(context)
+            ?: level.label
+    }
+
+    fun getCategoryLabel(value: String): String {
+        return RecipeViewModel.CATEGORY_FILTER_OPTIONS
+            .find { it.value == value }?.label?.asString(context)
+            ?: value
+    }
+
+    fun getUtensilLabel(value: String): String {
+        return RecipeViewModel.UTENSIL_FILTER_OPTIONS
+            .find { it.value == value }?.label?.asString(context)
+            ?: value
+    }
+
     Column {
         // 난이도
         DropdownField(
-            value = levelLabel,
+            value = getLevelLabel(selectedLevel), // ⚠️ RecipeEditScreen에서 변환된 텍스트를 넘겨줘야 함 (4단계 참조)
             label = stringResource(R.string.recipe_edit_label_level),
-            options = LevelType.entries,
-            onOptionSelected = onLevelChange,
-            itemLabel = { it.label },
+            options = RecipeViewModel.LEVEL_FILTER_OPTIONS.filter { it.value != null },
+            onOptionSelected = { option -> option.value?.let { onLevelChange(it) } },
+            itemLabel = { it.label.asString() },
             colors = transparentColors
         )
         Spacer(modifier = Modifier.height(12.dp))
 
         // 음식 종류
         DropdownField(
-            value = categoryState,
+            value = getCategoryLabel(categoryState),
             label = stringResource(R.string.recipe_edit_label_category),
             options = RecipeViewModel.CATEGORY_FILTER_OPTIONS,
-            onOptionSelected = onCategoryChange,
-            itemLabel = { it },
+            onOptionSelected = { onCategoryChange(it.value) },
+            itemLabel = { it.label.asString() },
             colors = transparentColors
         )
         Spacer(modifier = Modifier.height(12.dp))
 
         // 조리 도구
         DropdownField(
-            value = utensilState,
+            value = getUtensilLabel(utensilState),
             label = stringResource(R.string.recipe_edit_label_utensil),
             options = RecipeViewModel.UTENSIL_FILTER_OPTIONS,
-            onOptionSelected = onUtensilChange,
-            itemLabel = { it },
+            onOptionSelected = { onUtensilChange(it.value) },
+            itemLabel = { it.label.asString() },
             colors = transparentColors
         )
     }
@@ -304,7 +328,7 @@ private fun <T> DropdownField(
     label: String,
     options: List<T>,
     onOptionSelected: (T) -> Unit,
-    itemLabel: (T) -> String,
+    itemLabel: @Composable (T) -> String,
     colors: TextFieldColors
 ) {
     var expanded by remember { mutableStateOf(false) }

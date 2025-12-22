@@ -2,6 +2,7 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
@@ -13,6 +14,7 @@ import com.kjw.fridgerecipe.domain.usecase.GetIngredientByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateIngredientUseCase
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
+import com.kjw.fridgerecipe.presentation.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,9 +34,9 @@ import javax.inject.Inject
 
 data class IngredientEditUiState(
     val name: String = "",
-    val nameError: String? = null,
+    val nameError: UiText? = null,
     val amount: String = "",
-    val amountError: String? = null,
+    val amountError: UiText? = null,
     val selectedUnit: UnitType = UnitType.COUNT,
     val selectedDate: LocalDate = LocalDate.now(),
     val selectedStorage: StorageType = StorageType.REFRIGERATED,
@@ -58,6 +60,10 @@ class IngredientViewModel @Inject constructor(
     private val getIngredientByIdUseCase: GetIngredientByIdUseCase,
     private val updateIngredientUseCase: UpdateIngredientUseCase
     ) : ViewModel() {
+
+    companion object {
+        private val AMOUNT_REGEX = Regex("^\\d*\\.?\\d{0,2}\$")
+    }
 
     private val _operationResultEvent = MutableSharedFlow<OperationResult>()
     val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
@@ -154,8 +160,7 @@ class IngredientViewModel @Inject constructor(
     }
 
     fun onAmountChanged(newAmount: String) {
-        val regex = Regex("^\\d*\\.?\\d{0,2}\$")
-        if (newAmount.isEmpty() || newAmount.matches(regex)) {
+        if (newAmount.isEmpty() || newAmount.matches(AMOUNT_REGEX)) {
             _editUiState.update { it.copy(amount = newAmount, amountError = null) }
         }
     }
@@ -197,12 +202,19 @@ class IngredientViewModel @Inject constructor(
         val amountDouble = currentState.amount.toDoubleOrNull()
 
         if (currentState.name.isBlank()) {
-            _editUiState.update { it.copy(nameError = "재료 이름을 입력해주세요.") }
+            _editUiState.update {
+                it.copy(nameError = UiText.StringResource(R.string.error_validation_name_empty))
+            }
             _validationEvent.emit(ValidationField.NAME)
             return false
         }
         if (amountDouble == null || amountDouble <= 0) {
-            val errorMsg = if (amountDouble == null) "숫자만 입력해주세요." else "0보다 큰 값을 입력해주세요."
+            val errorMsg = if (amountDouble == null) {
+                UiText.StringResource(R.string.error_validation_amount_empty)
+            } else {
+                UiText.StringResource(R.string.error_validation_amount_zero)
+            }
+
             _editUiState.update { it.copy(amountError = errorMsg) }
             _validationEvent.emit(ValidationField.AMOUNT)
             return false
@@ -242,11 +254,11 @@ class IngredientViewModel @Inject constructor(
             }
 
             if (success) {
-                val message = if (isEditMode) "수정되었습니다." else "저장되었습니다."
-                _operationResultEvent.emit(OperationResult.Success(message))
+                val messageResId = if (isEditMode) R.string.msg_updated else R.string.msg_saved
+                _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(messageResId)))
             } else {
-                val message = if (isEditMode) "수정에 실패했습니다." else "저장에 실패했습니다."
-                _operationResultEvent.emit(OperationResult.Failure(message))
+                val messageResId = if (isEditMode) R.string.error_update_failed else R.string.error_save_failed
+                _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(messageResId)))
             }
         }
     }
@@ -256,9 +268,9 @@ class IngredientViewModel @Inject constructor(
             _selectedIngredient.value?.let {
                 val success = delIngredientUseCase(it)
                 if (success) {
-                    _operationResultEvent.emit(OperationResult.Success("삭제되었습니다."))
+                    _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(R.string.msg_deleted)))
                 } else {
-                    _operationResultEvent.emit(OperationResult.Failure("삭제에 실패했습니다."))
+                    _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(R.string.error_delete_failed)))
                 }
             }
             _editUiState.update { it.copy(showDeleteDialog = false) }

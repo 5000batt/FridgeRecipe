@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
@@ -31,6 +32,7 @@ import java.lang.Exception
 import java.util.UUID
 import javax.inject.Inject
 import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
+import com.kjw.fridgerecipe.presentation.util.UiText
 
 enum class RecipeValidationField {
     TITLE, SERVINGS, TIME, INGREDIENTS, STEPS
@@ -54,19 +56,19 @@ data class StepUiState(
 
 data class RecipeEditUiState(
     val title: String = "",
-    val titleError: String? = null,
+    val titleError: UiText? = null,
     val servingsState: String = "",
-    val servingsError: String? = null,
+    val servingsError: UiText? = null,
     val timeState: String = "",
-    val timeError: String? = null,
+    val timeError: UiText? = null,
     val level: LevelType = LevelType.ETC,
     val categoryState: String = FILTER_ANY,
     val utensilState: String = FILTER_ANY,
     val ingredientsState: List<IngredientUiState> = emptyList(),
-    val ingredientsError: String? = null,
+    val ingredientsError: UiText? = null,
     val ingredientsErrorType: ListErrorType = ListErrorType.NONE,
     val stepsState: List<StepUiState> = emptyList(),
-    val stepsError: String? = null,
+    val stepsError: UiText? = null,
     val stepsErrorType: ListErrorType = ListErrorType.NONE,
     val showDeleteDialog: Boolean = false,
     val selectedRecipeTitle: String? = null,
@@ -127,12 +129,11 @@ class RecipeManageViewModel @Inject constructor(
             }
 
             if (success) {
-                val message = if (isEditMode) "수정되었습니다." else "저장되었습니다."
-                _operationResultEvent.emit(OperationResult.Success(message))
-                _navigationEvent.emit(NavigationEvent.NavigateBack)
+                val messageResId = if (isEditMode) R.string.msg_updated else R.string.msg_saved
+                _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(messageResId)))
             } else {
-                val message = if (isEditMode) "수정에 실패했습니다." else "저장에 실패했습니다."
-                _operationResultEvent.emit(OperationResult.Failure(message))
+                val messageResId = if (isEditMode) R.string.error_update_failed else R.string.error_save_failed
+                _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(messageResId)))
             }
         }
     }
@@ -142,10 +143,10 @@ class RecipeManageViewModel @Inject constructor(
             _selectedRecipe.value?.let {
                 val success = delRecipeUseCase(it)
                 if (success) {
-                    _operationResultEvent.emit(OperationResult.Success("삭제되었습니다."))
+                    _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(R.string.msg_deleted)))
                     _navigationEvent.emit(NavigationEvent.NavigateToList)
                 } else {
-                    _operationResultEvent.emit(OperationResult.Failure("삭제에 실패했습니다."))
+                    _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(R.string.error_delete_failed)))
                 }
             }
             _editUiState.update { it.copy(showDeleteDialog = false) }
@@ -355,7 +356,7 @@ class RecipeManageViewModel @Inject constructor(
         return inSampleSize
     }
 
-    private fun checkIngredientErrors(list: List<IngredientUiState>): Pair<String?, ListErrorType> {
+    private fun checkIngredientErrors(list: List<IngredientUiState>): Pair<UiText?, ListErrorType> {
         return if (!list.any { it.name.isBlank() || it.quantity.isBlank() }) {
             Pair(null, ListErrorType.NONE)
         } else {
@@ -363,7 +364,7 @@ class RecipeManageViewModel @Inject constructor(
         }
     }
 
-    private fun checkStepErrors(list: List<StepUiState>): Pair<String?, ListErrorType> {
+    private fun checkStepErrors(list: List<StepUiState>): Pair<UiText?, ListErrorType> {
         return if (!list.any { it.description.isBlank() }) {
             Pair(null, ListErrorType.NONE)
         } else {
@@ -375,39 +376,51 @@ class RecipeManageViewModel @Inject constructor(
         val currentState = _editUiState.value
 
         if (currentState.title.isBlank()) {
-            _editUiState.update { it.copy(titleError = "레시피 이름을 입력해주세요.") }
+            _editUiState.update { it.copy(titleError = UiText.StringResource(R.string.error_recipe_title_empty)) }
             _validationEvent.emit(RecipeValidationField.TITLE)
             return false
         }
 
         if (currentState.servingsState.isBlank()) {
-            _editUiState.update { it.copy(servingsError = "조리 양을 입력해주세요.") }
+            _editUiState.update { it.copy(servingsError = UiText.StringResource(R.string.error_recipe_servings_empty)) }
             _validationEvent.emit(RecipeValidationField.SERVINGS)
             return false
         }
 
         if (currentState.timeState.isBlank()) {
-            _editUiState.update { it.copy(timeError = "조리 시간을 입력해주세요.") }
+            _editUiState.update { it.copy(timeError = UiText.StringResource(R.string.error_recipe_time_empty)) }
             _validationEvent.emit(RecipeValidationField.TIME)
             return false
         }
 
         if (currentState.ingredientsState.isEmpty()) {
-            _editUiState.update { it.copy(ingredientsError = "재료를 추가해주세요.", ingredientsErrorType = ListErrorType.IS_EMPTY) }
+            _editUiState.update { it.copy(
+                ingredientsError = UiText.StringResource(R.string.error_recipe_ingredients_empty),
+                ingredientsErrorType = ListErrorType.IS_EMPTY
+            ) }
             _validationEvent.emit(RecipeValidationField.INGREDIENTS)
             return false
         } else if (currentState.ingredientsState.any { it.name.isBlank() || it.quantity.isBlank() }) {
-            _editUiState.update { it.copy(ingredientsError = "내용이 비어있는 재료가 있습니다.", ingredientsErrorType = ListErrorType.HAS_BLANK_ITEMS) }
+            _editUiState.update { it.copy(
+                ingredientsError = UiText.StringResource(R.string.error_recipe_ingredients_blank),
+                ingredientsErrorType = ListErrorType.HAS_BLANK_ITEMS
+            ) }
             _validationEvent.emit(RecipeValidationField.INGREDIENTS)
             return false
         }
 
         if (currentState.stepsState.isEmpty()) {
-            _editUiState.update { it.copy(stepsError = "조리 순서를 추가해주세요.", stepsErrorType = ListErrorType.IS_EMPTY) }
+            _editUiState.update { it.copy(
+                stepsError = UiText.StringResource(R.string.error_recipe_steps_empty),
+                stepsErrorType = ListErrorType.IS_EMPTY
+            ) }
             _validationEvent.emit(RecipeValidationField.STEPS)
             return false
         } else if (currentState.stepsState.any { it.description.isBlank() }) {
-            _editUiState.update { it.copy(stepsError = "내용이 비어있는 조리 순서가 있습니다.", stepsErrorType = ListErrorType.HAS_BLANK_ITEMS) }
+            _editUiState.update { it.copy(
+                stepsError = UiText.StringResource(R.string.error_recipe_steps_blank),
+                stepsErrorType = ListErrorType.HAS_BLANK_ITEMS
+            ) }
             _validationEvent.emit(RecipeValidationField.STEPS)
             return false
         }

@@ -91,11 +91,12 @@ fun TimeSliderSection(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FilterSection(
+fun <T> FilterSection(
     title: String,
-    options: List<String>,
-    selectedOption: String,
-    onOptionSelected: (String) -> Unit
+    options: List<T>,
+    selectedOption: T?,
+    onOptionSelected: (T) -> Unit,
+    itemLabel: (T) -> String
 ) {
     Column {
         Text(
@@ -118,7 +119,7 @@ fun FilterSection(
                     onClick = { onOptionSelected(option) },
                     label = {
                         Text(
-                            text = option,
+                            text = itemLabel(option),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             modifier = Modifier.padding(vertical = 4.dp)

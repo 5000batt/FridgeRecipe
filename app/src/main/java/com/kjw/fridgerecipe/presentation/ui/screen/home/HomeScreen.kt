@@ -55,7 +55,6 @@ import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
-import com.kjw.fridgerecipe.presentation.viewmodel.FILTER_ANY
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientViewModel
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeViewModel
 import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
@@ -76,6 +75,7 @@ fun HomeScreen(
     onShowSnackbar: (String, SnackbarType) -> Unit
 ) {
     val uiState by recipeViewModel.homeUiState.collectAsState()
+    val context = LocalContext.current
 
     val homeIngredients by ingredientViewModel.homeScreenIngredients.collectAsState()
     val remainingTickets by recipeViewModel.remainingTickets.collectAsState()
@@ -99,13 +99,12 @@ fun HomeScreen(
                     recipeViewModel.resetHomeState()
                 }
                 is RecipeViewModel.HomeSideEffect.ShowSnackbar -> {
-                    onShowSnackbar(event.message, SnackbarType.SUCCESS)
+                    onShowSnackbar(event.message.asString(context), SnackbarType.SUCCESS)
                 }
             }
         }
     }
 
-    val context = LocalContext.current
     DisposableEffect(context) {
         val timeReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -229,32 +228,46 @@ fun HomeScreen(
 
                         Spacer(modifier = Modifier.height(20.dp))
 
+                        val selectedLevelOption = levelFilterOptions.find { it.value == uiState.filterState.level }
+
                         FilterSection(
                             title = stringResource(R.string.home_filter_level),
-                            options = levelFilterOptions.map { it?.label ?: FILTER_ANY },
-                            selectedOption = uiState.filterState.level?.label ?: FILTER_ANY,
-                            onOptionSelected = { label ->
-                                val level = levelFilterOptions.find { (it?.label ?: FILTER_ANY) == label }
-                                recipeViewModel.onLevelFilterChanged(level)
-                            }
+                            options = levelFilterOptions,
+                            selectedOption = selectedLevelOption,
+                            onOptionSelected = { option ->
+                                recipeViewModel.onLevelFilterChanged(option.value)
+                            },
+                            itemLabel = { it.label.asString(context) }
                         )
 
                         Spacer(modifier = Modifier.height(20.dp))
+
+                        val selectedCategoryOption = categoryFilterOptions.find { it.value == uiState.filterState.category }
+                            ?: categoryFilterOptions.first()
 
                         FilterSection(
                             title = stringResource(R.string.home_filter_category),
                             options = categoryFilterOptions,
-                            selectedOption = uiState.filterState.category ?: FILTER_ANY,
-                            onOptionSelected = { recipeViewModel.onCategoryFilterChanged(it) }
+                            selectedOption = selectedCategoryOption,
+                            onOptionSelected = { option ->
+                                recipeViewModel.onCategoryFilterChanged(option.value)
+                            },
+                            itemLabel = { it.label.asString(context) }
                         )
 
                         Spacer(modifier = Modifier.height(20.dp))
 
+                        val selectedUtensilOption = utensilFilterOptions.find { it.value == uiState.filterState.utensil }
+                            ?: utensilFilterOptions.first()
+
                         FilterSection(
                             title = stringResource(R.string.home_filter_utensil),
                             options = utensilFilterOptions,
-                            selectedOption = uiState.filterState.utensil ?: FILTER_ANY,
-                            onOptionSelected = { recipeViewModel.onUtensilFilterChanged(it) }
+                            selectedOption = selectedUtensilOption,
+                            onOptionSelected = { option ->
+                                recipeViewModel.onUtensilFilterChanged(option.value)
+                            },
+                            itemLabel = { it.label.asString(context) }
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -412,12 +425,12 @@ fun HomeScreen(
                         tint = MaterialTheme.colorScheme.error
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(errorState.title)
+                    Text(errorState.title.asString(context))
                 }
             },
             text = {
                 Text(
-                    text = errorState.message,
+                    text = errorState.message.asString(context),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },

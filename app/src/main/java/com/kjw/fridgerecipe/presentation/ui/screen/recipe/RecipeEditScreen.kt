@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -66,6 +67,7 @@ fun RecipeEditScreen(
 ) {
     val isEditMode = recipeId != DetailDestination.RecipeEdit.DEFAULT_ID
     val uiState by viewModel.editUiState.collectAsState()
+    val context = LocalContext.current
 
     val listState = rememberLazyListState()
 
@@ -89,8 +91,8 @@ fun RecipeEditScreen(
     LaunchedEffect(Unit) {
         viewModel.operationResultEvent.collect { result ->
             when (result) {
-                is OperationResult.Success -> onShowSnackbar(result.message, SnackbarType.SUCCESS)
-                is OperationResult.Failure -> onShowSnackbar(result.message, SnackbarType.ERROR)
+                is OperationResult.Success -> onShowSnackbar(result.message.asString(context), SnackbarType.SUCCESS)
+                is OperationResult.Failure -> onShowSnackbar(result.message.asString(context), SnackbarType.ERROR)
             }
         }
     }
@@ -159,9 +161,15 @@ fun RecipeEditScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 RecipeBasicInfoForm(
-                    title = uiState.title, onTitleChange = { viewModel.onTitleChanged(it) }, titleError = uiState.titleError,
-                    servings = uiState.servingsState, onServingsChange = { viewModel.onServingsChanged(it) }, servingsError = uiState.servingsError,
-                    time = uiState.timeState, onTimeChange = { viewModel.onTimeChanged(it) }, timeError = uiState.timeError,
+                    title = uiState.title,
+                    onTitleChange = { viewModel.onTitleChanged(it) },
+                    titleError = uiState.titleError?.asString(),
+                    servings = uiState.servingsState,
+                    onServingsChange = { viewModel.onServingsChanged(it) },
+                    servingsError = uiState.servingsError?.asString(),
+                    time = uiState.timeState,
+                    onTimeChange = { viewModel.onTimeChanged(it) },
+                    timeError = uiState.timeError?.asString(),
                     titleFocusRequester = titleFocusRequester,
                     servingsFocusRequester = servingsFocusRequester,
                     timeFocusRequester = timeFocusRequester,
@@ -173,9 +181,12 @@ fun RecipeEditScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 RecipeMetadataForm(
-                    levelLabel = uiState.level.label, onLevelChange = { viewModel.onLevelChanged(it) },
-                    categoryState = uiState.categoryState, onCategoryChange = { viewModel.onCategoryChanged(it) },
-                    utensilState = uiState.utensilState, onUtensilChange = { viewModel.onUtensilChanged(it) },
+                    selectedLevel = uiState.level,
+                    onLevelChange = { viewModel.onLevelChanged(it) },
+                    categoryState = uiState.categoryState,
+                    onCategoryChange = { viewModel.onCategoryChanged(it) },
+                    utensilState = uiState.utensilState,
+                    onUtensilChange = { viewModel.onUtensilChanged(it) },
                     transparentColors = transparentColors
                 )
             }
@@ -198,7 +209,7 @@ fun RecipeEditScreen(
                     )
                 }
 
-                if (uiState.ingredientsError != null) ErrorText(uiState.ingredientsError!!)
+                if (uiState.ingredientsError != null) ErrorText(uiState.ingredientsError!!.asString())
 
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -227,7 +238,7 @@ fun RecipeEditScreen(
                     onAddClick = { viewModel.onAddStep() }
                 )
 
-                if (uiState.stepsError != null) ErrorText(uiState.stepsError!!)
+                if (uiState.stepsError != null) ErrorText(uiState.stepsError!!.asString())
 
                 Spacer(modifier = Modifier.height(12.dp))
             }
