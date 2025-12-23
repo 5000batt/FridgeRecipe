@@ -29,7 +29,7 @@ import com.kjw.fridgerecipe.presentation.viewmodel.RecipeListViewModel
 @Composable
 fun RecipeListScreen(
     viewModel: RecipeListViewModel = hiltViewModel(),
-    onRecipeClick: (Long) -> Unit
+    onNavigateToRecipeDetail: (Long) -> Unit
 ) {
     val filteredRecipes by viewModel.savedRecipes.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -77,9 +77,9 @@ fun RecipeListScreen(
                     ) { recipe ->
                         RecipeListItem(
                             recipe = recipe,
-                            onClick = {
+                            onRecipeClick = {
                                 recipe.id?.let { id ->
-                                    onRecipeClick(id)
+                                    onNavigateToRecipeDetail(id)
                                 }
                             }
                         )

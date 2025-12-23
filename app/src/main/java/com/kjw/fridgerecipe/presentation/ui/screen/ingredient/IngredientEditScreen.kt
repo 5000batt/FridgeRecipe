@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
-import com.kjw.fridgerecipe.presentation.navigation.DetailDestination
+import com.kjw.fridgerecipe.presentation.navigation.IngredientEditRoute
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IconSelectionSection
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientDetailFields
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientInputFields
@@ -63,7 +63,7 @@ fun IngredientEditScreen(
     ingredientId: Long,
     onShowSnackbar: (String, SnackbarType) -> Unit
 ) {
-    val isEditMode = ingredientId != DetailDestination.IngredientEdit.DEFAULT_ID
+    val isEditMode = ingredientId != IngredientEditRoute.DEFAULT_ID
     val uiState by viewModel.editUiState.collectAsState()
     val context = LocalContext.current
 

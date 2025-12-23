@@ -42,7 +42,7 @@ import com.kjw.fridgerecipe.domain.model.Recipe
 @Composable
 fun RecipeListItem(
     recipe: Recipe,
-    onClick: () -> Unit
+    onRecipeClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -50,7 +50,7 @@ fun RecipeListItem(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = LocalIndication.current,
-                onClick = onClick
+                onClick = onRecipeClick
             ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),

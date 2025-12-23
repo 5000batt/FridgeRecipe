@@ -102,6 +102,7 @@ class RecipeEditViewModel @Inject constructor(
             if (success) {
                 val messageResId = if (isEditMode) R.string.msg_updated else R.string.msg_saved
                 _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(messageResId)))
+                _navigationEvent.emit(NavigationEvent.NavigateBack)
             } else {
                 val messageResId = if (isEditMode) R.string.error_update_failed else R.string.error_save_failed
                 _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(messageResId)))

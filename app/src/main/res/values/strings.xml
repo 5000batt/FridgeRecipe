@@ -14,6 +14,31 @@
     <string name="option_time_60">60분 이내</string>
     <string name="option_time_over_60">60분 초과</string>
 
+    <!--  MainApp  -->
+    <string name="title_home">냉파고</string>
+    <string name="title_ingredient_list">재료 목록</string>
+    <string name="title_recipe_list">레시피 목록</string>
+    <string name="title_ingredient_add">재료 추가</string>
+    <string name="title_ingredient_edit">재료 수정</string>
+    <string name="title_recipe_add">레시피 추가</string>
+    <string name="title_recipe_edit">레시피 수정</string>
+    <string name="title_recipe_detail">레시피 상세</string>
+    <string name="title_settings">설정</string>
+
+    <string name="msg_back_press_exit">한 번 더 누르면 종료됩니다.</string>
+    <string name="msg_notification_test">알림 테스트 실행!</string>
+
+    <string name="label_tab_home">홈</string>
+    <string name="label_tab_ingredients">재료</string>
+    <string name="label_tab_recipes">레시피</string>
+
+    <string name="fab_add_ingredient">재료 추가</string>
+    <string name="fab_add_recipe">레시피 추가</string>
+
+    <string name="desc_back">뒤로 가기</string>
+    <string name="desc_settings">설정</string>
+    <string name="desc_notification_test">알림 테스트</string>
+
     <!--  Home  -->
     <string name="home_title_fridge">🥕 나의 냉장고</string>
     <string name="home_empty_title">냉장고가 비어있어요!</string>

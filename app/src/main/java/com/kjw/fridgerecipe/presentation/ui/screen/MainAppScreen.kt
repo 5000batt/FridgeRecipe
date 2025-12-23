@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -44,18 +45,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.kjw.fridgerecipe.BuildConfig
+import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.navigation.AppNavHost
-import com.kjw.fridgerecipe.presentation.navigation.Destination
-import com.kjw.fridgerecipe.presentation.navigation.DetailDestination
+import com.kjw.fridgerecipe.presentation.navigation.IngredientEditRoute
 import com.kjw.fridgerecipe.presentation.navigation.MainTab
+import com.kjw.fridgerecipe.presentation.navigation.RecipeDetailRoute
+import com.kjw.fridgerecipe.presentation.navigation.RecipeEditRoute
+import com.kjw.fridgerecipe.presentation.navigation.SettingsRoute
 import com.kjw.fridgerecipe.presentation.ui.components.common.AppBottomNavigationBar
 import com.kjw.fridgerecipe.presentation.util.CustomSnackbarVisuals
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
@@ -63,61 +70,58 @@ import com.kjw.fridgerecipe.worker.ExpirationCheckWorker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-private data class MainAppScreenState(
-    val navController: NavHostController,
-    val currentDestination: Destination?,
-    val currentTitle: String
-) {
-    val showBottomBar: Boolean
-        get() = currentDestination is MainTab
-
-    val showBackButton: Boolean
-        get() = currentDestination is DetailDestination
-}
-
-@Composable
-private fun rememberMainAppScreenState(
-    navController: NavHostController = rememberNavController()
-): MainAppScreenState {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    val currentDestination: Destination? = remember(currentRoute) {
-        MainTab.getByRoute(currentRoute) ?: DetailDestination.getByRoute(currentRoute)
-    }
-
-    val currentTitle = remember(currentDestination, navBackStackEntry) {
-        when(currentDestination) {
-            is MainTab -> currentDestination.title
-            is DetailDestination.IngredientEdit -> {
-                val id = navBackStackEntry?.arguments?.getLong(DetailDestination.IngredientEdit.ARG_ID)
-                    ?: DetailDestination.IngredientEdit.DEFAULT_ID
-                currentDestination.getTitle(id == DetailDestination.IngredientEdit.DEFAULT_ID)
-            }
-            is DetailDestination -> currentDestination.title
-            else -> ""
-        }
-    }
-
-    return remember(navController, currentDestination, currentTitle) {
-        MainAppScreenState(navController, currentDestination, currentTitle)
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainAppScreen(
     onShowAd: (onReward: () -> Unit) -> Unit
 ) {
-    val screenState = rememberMainAppScreenState()
-
+    val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val activity = (context as? Activity)
 
+    // 현재 화면 상태
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
+    // 현재 탭
+    val currentTab = MainTab.entries.find { it.isSelected(currentDestination) }
+
+    // 타이틀
+    val topBarTitle = @Composable {
+        when {
+            currentTab != null -> stringResource(currentTab.titleResId)
+
+            currentDestination?.hasRoute<IngredientEditRoute>() == true -> {
+                val route = navBackStackEntry?.toRoute<IngredientEditRoute>()
+                if (route?.ingredientId == IngredientEditRoute.DEFAULT_ID)
+                    stringResource(R.string.title_ingredient_add)
+                else
+                    stringResource(R.string.title_ingredient_edit)
+            }
+
+            currentDestination?.hasRoute<RecipeEditRoute>() == true -> {
+                val route = navBackStackEntry?.toRoute<RecipeEditRoute>()
+                if (route?.recipeId == RecipeEditRoute.DEFAULT_ID)
+                    stringResource(R.string.title_recipe_add)
+                else
+                    stringResource(R.string.title_recipe_edit)
+            }
+
+            currentDestination?.hasRoute<RecipeDetailRoute>() == true -> stringResource(R.string.title_recipe_detail)
+            currentDestination?.hasRoute<SettingsRoute>() == true -> stringResource(R.string.title_settings)
+            else -> ""
+        }
+    }
+
+    // 뒤로가기 버튼 표시 여부
+    val showBackButton = currentTab == null
+
+    // 스낵바 헬퍼 함수
     val showSnackbar: (String, SnackbarType) -> Unit = { message, type ->
         scope.launch {
             snackbarHostState.currentSnackbarData?.dismiss()
-
             val job = launch {
                 snackbarHostState.showSnackbar(
                     CustomSnackbarVisuals(
@@ -127,24 +131,33 @@ fun MainAppScreen(
                     )
                 )
             }
-
             delay(2000L)
-
             job.cancel()
         }
     }
 
+    // 뒤로가기 2번 종료
     var backPressedTime by remember { mutableLongStateOf(0L) }
-    val context = LocalContext.current
-    val activity = (context as? Activity)
+    val backPressMessage = stringResource(R.string.msg_back_press_exit)
 
-    BackHandler(enabled = screenState.currentDestination?.route == MainTab.HOME.route) {
+    BackHandler(enabled = currentTab == MainTab.HOME) {
         val currentTime = System.currentTimeMillis()
         if (currentTime - backPressedTime > 2000L) {
             backPressedTime = currentTime
-            showSnackbar("한 번 더 누르면 종료됩니다.", SnackbarType.INFO)
+            showSnackbar(backPressMessage, SnackbarType.INFO)
         } else {
             activity?.finish()
+        }
+    }
+
+    // 탭 이동 함수
+    fun navigateToMainTab(tab: MainTab) {
+        navController.navigate(tab.route) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
         }
     }
 
@@ -154,7 +167,7 @@ fun MainAppScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = screenState.currentTitle,
+                            text = topBarTitle(),
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.titleLarge
                         )
@@ -166,64 +179,73 @@ fun MainAppScreen(
                         navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
                     navigationIcon = {
-                        if (screenState.showBackButton) {
-                            IconButton(onClick = { screenState.navController.popBackStack() }) {
+                        if (showBackButton) {
+                            IconButton(onClick = { navController.popBackStack() }) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "뒤로 가기"
+                                    contentDescription = stringResource(R.string.desc_back)
                                 )
                             }
                         }
                     },
                     actions = {
-                        if (BuildConfig.DEBUG && screenState.currentDestination?.route == MainTab.HOME.route) {
+                        if (BuildConfig.DEBUG && currentTab == MainTab.HOME) {
+                            val testMsg = stringResource(R.string.msg_notification_test)
                             IconButton(onClick = {
-                                val testRequest = OneTimeWorkRequestBuilder<ExpirationCheckWorker>().build()
+                                val testRequest =
+                                    OneTimeWorkRequestBuilder<ExpirationCheckWorker>().build()
                                 WorkManager.getInstance(context).enqueue(testRequest)
-                                showSnackbar("알림 테스트 실행!", SnackbarType.SUCCESS)
+                                showSnackbar(testMsg, SnackbarType.SUCCESS)
                             }) {
-                                Icon(Icons.Default.BugReport, contentDescription = "알림 테스트")
+                                Icon(Icons.Default.BugReport, contentDescription = stringResource(R.string.desc_notification_test))
                             }
                         }
 
-                        if (!screenState.showBackButton) {
-                            IconButton(onClick = { screenState.navController.navigate(DetailDestination.Settings.createRoute())}) {
-                                Icon(Icons.Default.Settings, contentDescription = "설정")
+                        if (currentTab != null) {
+                            IconButton(onClick = { navController.navigate(SettingsRoute) }) {
+                                Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.desc_settings))
                             }
                         }
                     }
                 )
             },
             bottomBar = {
-                if (screenState.showBottomBar) {
-                    AppBottomNavigationBar(navController = screenState.navController, currentRoute = screenState.currentDestination?.route)
+                if (currentTab != null) {
+                    AppBottomNavigationBar(
+                        currentTab = currentTab,
+                        onTabSelected = { tab -> navigateToMainTab(tab) }
+                    )
                 }
             },
             floatingActionButton = {
-                when (screenState.currentDestination) {
+                when (currentTab) {
                     MainTab.INGREDIENTS -> {
                         ExtendedFloatingActionButton(
-                            onClick = { screenState.navController.navigate(DetailDestination.IngredientEdit.createRoute()) },
+                            onClick = { navController.navigate(IngredientEditRoute()) },
                             icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                            text = { Text("재료 추가") },
+                            text = { Text(stringResource(R.string.fab_add_ingredient)) },
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
+
                     MainTab.RECIPES -> {
                         ExtendedFloatingActionButton(
-                            onClick = { screenState.navController.navigate(DetailDestination.RecipeEdit.createRoute()) },
+                            onClick = { navController.navigate(RecipeEditRoute()) },
                             icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                            text = { Text("레시피 추가") }
+                            text = { Text(stringResource(R.string.fab_add_recipe)) },
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
+
                     else -> {}
                 }
             }
         ) { paddingValues ->
 
             AppNavHost(
-                navController = screenState.navController,
+                navController = navController,
                 modifier = Modifier.padding(paddingValues),
                 onShowSnackbar = showSnackbar,
                 onShowAd = onShowAd
@@ -238,59 +260,67 @@ fun MainAppScreen(
                 .systemBarsPadding()
         ) { data ->
             val customVisuals = data.visuals as? CustomSnackbarVisuals
+            val type = customVisuals?.type ?: SnackbarType.INFO
 
-            val (containerColor, contentColor, icon) = when (customVisuals?.type) {
-                SnackbarType.ERROR -> Triple(
-                    MaterialTheme.colorScheme.errorContainer,
-                    MaterialTheme.colorScheme.onErrorContainer,
-                    Icons.Default.ErrorOutline
-                )
+            val (containerColor, contentColor, icon) = when (type) {
                 SnackbarType.SUCCESS -> Triple(
                     MaterialTheme.colorScheme.primaryContainer,
                     MaterialTheme.colorScheme.onPrimaryContainer,
                     Icons.Default.CheckCircle
                 )
-                else -> Triple(
-                    MaterialTheme.colorScheme.inverseSurface,
-                    MaterialTheme.colorScheme.inverseOnSurface,
+
+                SnackbarType.ERROR -> Triple(
+                    MaterialTheme.colorScheme.errorContainer,
+                    MaterialTheme.colorScheme.onErrorContainer,
+                    Icons.Default.ErrorOutline
+                )
+
+                SnackbarType.INFO -> Triple(
+                    MaterialTheme.colorScheme.secondaryContainer,
+                    MaterialTheme.colorScheme.onSecondaryContainer,
                     Icons.Default.Info
                 )
             }
 
-            Snackbar(
-                modifier = Modifier
-                    .padding(12.dp)
-                    .widthIn(max = 400.dp),
-                containerColor = containerColor.copy(alpha = 0.9f),
-                contentColor = contentColor,
-                shape = RoundedCornerShape(28.dp),
-                action = {
-                    data.visuals.actionLabel?.let { actionLabel ->
-                        TextButton(onClick = { data.performAction() }) {
-                            Text(
-                                text = actionLabel,
-                                color = contentColor,
-                                fontWeight = FontWeight.Bold
-                            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Snackbar(
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .widthIn(max = 400.dp),
+                    containerColor = containerColor.copy(alpha = 0.9f),
+                    contentColor = contentColor,
+                    shape = RoundedCornerShape(28.dp),
+                    action = {
+                        data.visuals.actionLabel?.let { actionLabel ->
+                            TextButton(onClick = { data.performAction() }) {
+                                Text(
+                                    text = actionLabel,
+                                    color = contentColor,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
-                }
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.padding(horizontal = 4.dp)
                 ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = data.visuals.message,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = data.visuals.message,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             }
         }

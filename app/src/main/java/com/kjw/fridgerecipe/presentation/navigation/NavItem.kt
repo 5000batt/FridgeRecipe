@@ -1,103 +1,76 @@
 package com.kjw.fridgerecipe.presentation.navigation
 
+import android.annotation.SuppressLint
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.RestaurantMenu
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.navigation.NamedNavArgument
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
+import com.kjw.fridgerecipe.R
+import kotlinx.serialization.Serializable
+import kotlin.reflect.KClass
 
-sealed interface Destination {
-    val route: String
-    val title: String
-    val isRoot: Boolean
+// 메인 탭
+@Serializable
+data object HomeRoute
+
+@Serializable
+data object IngredientListRoute
+
+@Serializable
+data object RecipeListRoute
+
+// 상세 화면
+@Serializable
+data class IngredientEditRoute(val ingredientId: Long = -1L) {
+    companion object { const val DEFAULT_ID = -1L }
 }
+
+@Serializable
+data class RecipeDetailRoute(val recipeId: Long)
+
+@Serializable
+data class RecipeEditRoute(val recipeId: Long = -1L) {
+    companion object { const val DEFAULT_ID = -1L }
+}
+
+@Serializable
+data object SettingsRoute
 
 enum class MainTab(
-    override val route: String,
-    override val title: String,
+    val route: Any,
+    val routeClass: KClass<*>,
+    @StringRes val titleResId: Int,
     val icon: ImageVector,
-    val label: String
-) : Destination {
-    HOME("home", "냉파고", Icons.Default.Home, "홈"),
-    INGREDIENTS("ingredients", "전체 재료 목록", Icons.Default.Kitchen, "재료"),
-    RECIPES("recipes", "레시피", Icons.Default.RestaurantMenu, "레시피");
+    @StringRes val labelResId: Int
+) {
+    HOME(
+        route = HomeRoute,
+        routeClass = HomeRoute::class,
+        titleResId = R.string.title_home,
+        icon = Icons.Default.Home,
+        labelResId = R.string.label_tab_home
+    ),
+    INGREDIENTS(
+        route = IngredientListRoute,
+        routeClass = IngredientListRoute::class,
+        titleResId = R.string.title_ingredient_list,
+        icon = Icons.Default.Kitchen,
+        labelResId = R.string.label_tab_ingredients
+    ),
+    RECIPES(
+        route = RecipeListRoute,
+        routeClass = RecipeListRoute::class,
+        titleResId = R.string.title_recipe_list,
+        icon = Icons.Default.RestaurantMenu,
+        labelResId = R.string.label_tab_recipes
+    );
 
-    override val isRoot: Boolean = true
-
-    companion object {
-        fun getByRoute(route: String?): MainTab? = entries.find { it.route == route }
-    }
-}
-
-sealed class DetailDestination(
-    override val route: String,
-    override val title: String
-) : Destination {
-    override val isRoot: Boolean = false
-
-    data object IngredientEdit : DetailDestination(
-        route = "ingredient_edit?ingredientId={ingredientId}",
-        title = "재료 상세"
-    ) {
-        const val ARG_ID = "ingredientId"
-        const val DEFAULT_ID = -1L
-
-        val arguments: List<NamedNavArgument> = listOf(
-            navArgument(ARG_ID) { type = NavType.LongType; defaultValue = DEFAULT_ID}
-        )
-
-        fun createRoute(ingredientId: Long = DEFAULT_ID) = "ingredient_edit?ingredientId=$ingredientId"
-        fun getTitle(isNew: Boolean) = if (isNew) "새 재료 추가" else "재료 수정"
-    }
-
-    data object RecipeDetail : DetailDestination(
-        route = "recipe_detail/{recipeId}",
-        title = "레시피 상세"
-    ) {
-        const val ARG_ID = "recipeId"
-
-        val arguments: List<NamedNavArgument> = listOf(
-            navArgument(ARG_ID) { type = NavType.LongType }
-        )
-
-        fun createRoute(recipeId: Long) = "recipe_detail/$recipeId"
-    }
-
-    data object RecipeEdit : DetailDestination(
-        route = "recipe_edit?recipeId={recipeId}",
-        title = "레시피 작성"
-    ) {
-        const val ARG_ID = "recipeId"
-        const val DEFAULT_ID = -1L
-
-        val arguments: List<NamedNavArgument> = listOf(
-            navArgument(ARG_ID) { type = NavType.LongType }
-        )
-
-        fun createRoute(recipeId: Long = DEFAULT_ID) = "recipe_edit?recipeId=$recipeId"
-    }
-
-    data object Settings: DetailDestination(
-        route = "settings",
-        title = "환경설정"
-    ) {
-        fun createRoute() = "settings"
-    }
-
-    companion object {
-        fun getByRoute(route: String?): DetailDestination? {
-            if(route == null) return null
-            return when {
-                route == Settings.route -> Settings
-                route.startsWith("ingredient_edit") -> IngredientEdit
-                route.startsWith("recipe_detail") -> RecipeDetail
-                route.startsWith("recipe_edit") -> RecipeEdit
-                else -> null
-            }
-        }
+    @SuppressLint("RestrictedApi")
+    fun isSelected(currentDestination: NavDestination?): Boolean {
+        return currentDestination?.hasRoute(this.routeClass) == true
     }
 }

@@ -68,7 +68,7 @@ import kotlinx.coroutines.delay
 fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
     onNavigateToRecipeDetail: (Long) -> Unit,
-    onNavigateToIngredientAdd: () -> Unit,
+    onNavigateToIngredientEdit: () -> Unit,
     onShowAd: (onReward: () -> Unit) -> Unit,
     onShowSnackbar: (String, SnackbarType) -> Unit
 ) {
@@ -168,7 +168,7 @@ fun HomeScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 24.dp)
-                            .clickable { onNavigateToIngredientAdd() }
+                            .clickable { onNavigateToIngredientEdit() }
                     ) {
                         Column(
                             modifier = Modifier

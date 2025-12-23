@@ -24,6 +24,8 @@ datastorePreferences = "1.0.0"
 foundationLayout = "1.10.0"
 lottie = "6.0.0"
 ads = "23.0.0"
+navigation = "2.8.5"
+serializationJson = "1.7.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -73,6 +75,10 @@ androidx-compose-foundation-layout = { group = "androidx.compose.foundation", na
 lottie = { group = "com.airbnb.android", name= "lottie-compose", version.ref = "lottie"}
 # Google Mobile Ads
 ads = { group = "com.google.android.gms", name= "play-services-ads", version.ref = "ads" }
+# Navigation
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+# Kotlin Serialization
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serializationJson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -80,6 +86,7 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt-android-gradle-plugin = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
 [bundles]
 room = ["room-runtime", "room-ktx"]

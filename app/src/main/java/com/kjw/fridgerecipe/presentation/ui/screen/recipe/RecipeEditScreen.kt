@@ -43,7 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.R
-import com.kjw.fridgerecipe.presentation.navigation.DetailDestination
+import com.kjw.fridgerecipe.presentation.navigation.RecipeEditRoute
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.ErrorText
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.IngredientEditRow
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeBasicInfoForm
@@ -60,12 +60,12 @@ import com.kjw.fridgerecipe.presentation.viewmodel.RecipeEditViewModel
 @Composable
 fun RecipeEditScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToList: () -> Unit,
+    onNavigateToRecipeList: () -> Unit,
     viewModel: RecipeEditViewModel = hiltViewModel(),
     recipeId: Long,
     onShowSnackbar: (String, SnackbarType) -> Unit
 ) {
-    val isEditMode = recipeId != DetailDestination.RecipeEdit.DEFAULT_ID
+    val isEditMode = recipeId != RecipeEditRoute.DEFAULT_ID
     val uiState by viewModel.editUiState.collectAsState()
     val context = LocalContext.current
 
@@ -101,7 +101,7 @@ fun RecipeEditScreen(
         viewModel.navigationEvent.collect { event ->
             when (event) {
                 is RecipeEditViewModel.NavigationEvent.NavigateBack -> onNavigateBack()
-                is RecipeEditViewModel.NavigationEvent.NavigateToList -> onNavigateToList()
+                is RecipeEditViewModel.NavigationEvent.NavigateToList -> onNavigateToRecipeList()
             }
         }
     }

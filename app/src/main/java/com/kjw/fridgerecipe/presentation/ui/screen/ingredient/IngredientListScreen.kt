@@ -31,7 +31,7 @@ import com.kjw.fridgerecipe.presentation.viewmodel.IngredientListViewModel
 @Composable
 fun IngredientListScreen(
     viewModel: IngredientListViewModel = hiltViewModel(),
-    onIngredientClick: (Long) -> Unit
+    onNavigateToIngredientEdit: (Long) -> Unit
 ) {
     val categorizedIngredients by viewModel.categorizedIngredients.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -91,7 +91,7 @@ fun IngredientListScreen(
                                 displayType = ListDisplayType.GRID,
                                 selectedIngredientIds = emptySet(),
                                 onIngredientClick = { ingredient ->
-                                    ingredient.id?.let { onIngredientClick(it) }
+                                    ingredient.id?.let { onNavigateToIngredientEdit(it) }
                                 }
                             )
                         }

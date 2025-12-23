@@ -1,11 +1,13 @@
 package com.kjw.fridgerecipe.presentation.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.kjw.fridgerecipe.presentation.ui.screen.ingredient.IngredientEditScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.ingredient.IngredientListScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.home.HomeScreen
@@ -24,88 +26,69 @@ fun AppNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = MainTab.HOME.route,
+        startDestination = HomeRoute,
         modifier = modifier,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None }
     ) {
         // --- Main Tabs ---
-        composable(MainTab.HOME.route) {
+        composable<HomeRoute> {
             HomeScreen(
-                onNavigateToRecipeDetail = { recipeId ->
-                    navController.navigate(DetailDestination.RecipeDetail.createRoute(recipeId))
-                },
-                onNavigateToIngredientAdd = {
-                    navController.navigate(DetailDestination.IngredientEdit.createRoute())
-                },
+                onNavigateToRecipeDetail = { id -> navController.navigate(RecipeDetailRoute(id)) },
+                onNavigateToIngredientEdit = { navController.navigate(IngredientEditRoute()) },
                 onShowAd = onShowAd,
                 onShowSnackbar = onShowSnackbar
             )
         }
-        composable(MainTab.INGREDIENTS.route) {
+
+        composable<IngredientListRoute> {
             IngredientListScreen(
-                onIngredientClick = { ingredientId ->
-                    navController.navigate(DetailDestination.IngredientEdit.createRoute(ingredientId))
-                }
+                onNavigateToIngredientEdit = { id -> navController.navigate(IngredientEditRoute(id)) }
             )
         }
-        composable(MainTab.RECIPES.route) {
+
+        composable<RecipeListRoute> {
             RecipeListScreen(
-                onRecipeClick = { recipeId ->
-                    navController.navigate(DetailDestination.RecipeDetail.createRoute(recipeId))
-                }
+                onNavigateToRecipeDetail = { id -> navController.navigate(RecipeDetailRoute(id)) }
             )
         }
 
         // --- Details ---
-        composable(
-            route = DetailDestination.IngredientEdit.route,
-            arguments = DetailDestination.IngredientEdit.arguments
-        ) { backStackEntry ->
-            val ingredientId = backStackEntry.arguments?.getLong(DetailDestination.IngredientEdit.ARG_ID)
-                ?: DetailDestination.IngredientEdit.DEFAULT_ID
+        composable<IngredientEditRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<IngredientEditRoute>()
 
             IngredientEditScreen(
                 onNavigateBack = { navController.popBackStack() },
-                ingredientId = ingredientId,
+                ingredientId = route.ingredientId,
                 onShowSnackbar = onShowSnackbar
             )
         }
 
-        composable(
-            route = DetailDestination.RecipeDetail.route,
-            arguments = DetailDestination.RecipeDetail.arguments
-        ) { backStackEntry ->
-            val recipeId = backStackEntry.arguments?.getLong(DetailDestination.RecipeDetail.ARG_ID)
+        composable<RecipeDetailRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<RecipeDetailRoute>()
 
-            if (recipeId != null) {
-                RecipeDetailScreen(
-                    onNavigateToRecipeEdit = { id ->
-                        navController.navigate(DetailDestination.RecipeEdit.createRoute(id))
-                    },
-                    recipeId = recipeId
-                )
-            } else {
-                LaunchedEffect(Unit) { navController.popBackStack() }
-            }
+            RecipeDetailScreen(
+                onNavigateToRecipeEdit = { id -> navController.navigate(RecipeEditRoute(id)) },
+                recipeId = route.recipeId
+            )
         }
 
-        composable(
-            route = DetailDestination.RecipeEdit.route,
-            arguments = DetailDestination.RecipeEdit.arguments
-        ) { backStackEntry ->
-            val recipeId = backStackEntry.arguments?.getLong(DetailDestination.RecipeEdit.ARG_ID)
-                ?: DetailDestination.RecipeEdit.DEFAULT_ID
+        composable<RecipeEditRoute> { backStackEntry ->
+            val route = backStackEntry.toRoute<RecipeEditRoute>()
 
             RecipeEditScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToList = {
-                    navController.popBackStack(route = MainTab.RECIPES.route, inclusive = false)
+                onNavigateToRecipeList = {
+                    navController.popBackStack<RecipeListRoute>(inclusive = false)
                 },
-                recipeId = recipeId,
+                recipeId = route.recipeId,
                 onShowSnackbar = onShowSnackbar
             )
         }
 
-        composable(DetailDestination.Settings.route) {
+        composable<SettingsRoute> {
             SettingsScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onShowSnackbar = onShowSnackbar
