@@ -16,14 +16,12 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -63,7 +61,6 @@ import com.kjw.fridgerecipe.presentation.navigation.MainTab
 import com.kjw.fridgerecipe.presentation.navigation.RecipeDetailRoute
 import com.kjw.fridgerecipe.presentation.navigation.RecipeEditRoute
 import com.kjw.fridgerecipe.presentation.navigation.SettingsRoute
-import com.kjw.fridgerecipe.presentation.ui.components.common.AppBottomNavigationBar
 import com.kjw.fridgerecipe.presentation.util.CustomSnackbarVisuals
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.worker.ExpirationCheckWorker
@@ -208,47 +205,15 @@ fun MainAppScreen(
                         }
                     }
                 )
-            },
-            bottomBar = {
-                if (currentTab != null) {
-                    AppBottomNavigationBar(
-                        currentTab = currentTab,
-                        onTabSelected = { tab -> navigateToMainTab(tab) }
-                    )
-                }
-            },
-            floatingActionButton = {
-                when (currentTab) {
-                    MainTab.INGREDIENTS -> {
-                        ExtendedFloatingActionButton(
-                            onClick = { navController.navigate(IngredientEditRoute()) },
-                            icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                            text = { Text(stringResource(R.string.fab_add_ingredient)) },
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-
-                    MainTab.RECIPES -> {
-                        ExtendedFloatingActionButton(
-                            onClick = { navController.navigate(RecipeEditRoute()) },
-                            icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                            text = { Text(stringResource(R.string.fab_add_recipe)) },
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-
-                    else -> {}
-                }
             }
         ) { paddingValues ->
 
             AppNavHost(
                 navController = navController,
-                modifier = Modifier.padding(paddingValues),
+                modifier = Modifier.padding(top = paddingValues.calculateTopPadding()),
                 onShowSnackbar = showSnackbar,
-                onShowAd = onShowAd
+                onShowAd = onShowAd,
+                onNavigateToMainTab = { tab -> navigateToMainTab(tab) }
             )
         }
 

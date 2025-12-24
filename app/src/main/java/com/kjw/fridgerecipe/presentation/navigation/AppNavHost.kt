@@ -22,7 +22,8 @@ fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     onShowSnackbar: (String, SnackbarType) -> Unit,
-    onShowAd: (onReward: () -> Unit) -> Unit
+    onShowAd: (onReward: () -> Unit) -> Unit,
+    onNavigateToMainTab: (MainTab) -> Unit
 ) {
     NavHost(
         navController = navController,
@@ -39,19 +40,23 @@ fun AppNavHost(
                 onNavigateToRecipeDetail = { id -> navController.navigate(RecipeDetailRoute(id)) },
                 onNavigateToIngredientEdit = { navController.navigate(IngredientEditRoute()) },
                 onShowAd = onShowAd,
-                onShowSnackbar = onShowSnackbar
+                onShowSnackbar = onShowSnackbar,
+                onNavigateToMainTab = onNavigateToMainTab
             )
         }
 
         composable<IngredientListRoute> {
             IngredientListScreen(
-                onNavigateToIngredientEdit = { id -> navController.navigate(IngredientEditRoute(id)) }
+                onNavigateToIngredientEdit = { id -> navController.navigate(IngredientEditRoute(id)) },
+                onNavigateToMainTab = onNavigateToMainTab
             )
         }
 
         composable<RecipeListRoute> {
             RecipeListScreen(
-                onNavigateToRecipeDetail = { id -> navController.navigate(RecipeDetailRoute(id)) }
+                onNavigateToRecipeDetail = { id -> navController.navigate(RecipeDetailRoute(id)) },
+                onNavigateToRecipeEdit = { navController.navigate(RecipeEditRoute()) },
+                onNavigateToMainTab = onNavigateToMainTab
             )
         }
 

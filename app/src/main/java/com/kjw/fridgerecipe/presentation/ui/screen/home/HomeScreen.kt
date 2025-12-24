@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -32,6 +35,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -52,6 +57,8 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.StorageType
+import com.kjw.fridgerecipe.presentation.navigation.MainTab
+import com.kjw.fridgerecipe.presentation.ui.components.common.AppBottomNavigationBar
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
 import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
@@ -71,7 +78,8 @@ fun HomeScreen(
     onNavigateToRecipeDetail: (Long) -> Unit,
     onNavigateToIngredientEdit: () -> Unit,
     onShowAd: (onReward: () -> Unit) -> Unit,
-    onShowSnackbar: (String, SnackbarType) -> Unit
+    onShowSnackbar: (String, SnackbarType) -> Unit,
+    onNavigateToMainTab: (MainTab) -> Unit
 ) {
     val uiState by homeViewModel.homeUiState.collectAsState()
     val context = LocalContext.current
@@ -120,237 +128,250 @@ fun HomeScreen(
     }
 
     LoadingContent(isLoading = uiState.isIngredientLoading) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            LazyColumn(
+        Scaffold(
+            bottomBar = {
+                AppBottomNavigationBar(
+                    currentTab = MainTab.HOME,
+                    onTabSelected = onNavigateToMainTab
+                )
+            },
+            contentWindowInsets = ScaffoldDefaults.contentWindowInsets.exclude(WindowInsets.statusBars),
+            containerColor = MaterialTheme.colorScheme.background
+        ) { innerPadding ->
+            Column(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .fillMaxSize()
+                    .padding(innerPadding)
             ) {
-                item { Spacer(modifier = Modifier.height(8.dp)) }
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    item { Spacer(modifier = Modifier.height(8.dp)) }
 
-                item {
-                    Text(
-                        text = stringResource(R.string.home_title_fridge),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-
-                    IngredientStatusLegend(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                    )
-                }
-
-                items(StorageType.entries) { storageType ->
-                    val items = uiState.storageIngredients[storageType] ?: emptyList()
-
-                    if (items.isNotEmpty()) {
-                        StorageSection(
-                            title = storageType.label,
-                            items = items,
-                            displayType = ListDisplayType.ROW,
-                            modifier = Modifier.padding(vertical = 8.dp),
-                            selectedIngredientIds = uiState.selectedIngredientIds,
-                            onIngredientClick = { ingredient ->
-                                ingredient.id?.let { homeViewModel.toggleIngredientSelection(it) }
-                            }
-                        )
-                    }
-                }
-
-                if (uiState.storageIngredients.values.all { it.isEmpty() }) {
                     item {
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                            ),
+                        Text(
+                            text = stringResource(R.string.home_title_fridge),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+
+                        IngredientStatusLegend(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 24.dp)
-                                .clickable { onNavigateToIngredientEdit() }
-                        ) {
-                            Column(
+                                .padding(vertical = 4.dp)
+                        )
+                    }
+
+                    items(StorageType.entries) { storageType ->
+                        val items = uiState.storageIngredients[storageType] ?: emptyList()
+
+                        if (items.isNotEmpty()) {
+                            StorageSection(
+                                title = storageType.label,
+                                items = items,
+                                displayType = ListDisplayType.ROW,
+                                modifier = Modifier.padding(vertical = 8.dp),
+                                selectedIngredientIds = uiState.selectedIngredientIds,
+                                onIngredientClick = { ingredient ->
+                                    ingredient.id?.let { homeViewModel.toggleIngredientSelection(it) }
+                                }
+                            )
+                        }
+                    }
+
+                    if (uiState.storageIngredients.values.all { it.isEmpty() }) {
+                        item {
+                            Card(
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                ),
                                 modifier = Modifier
-                                    .padding(24.dp)
-                                    .fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally
+                                    .fillMaxWidth()
+                                    .padding(vertical = 24.dp)
+                                    .clickable { onNavigateToIngredientEdit() }
                             ) {
-                                Icon(
-                                    Icons.Filled.Add,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(32.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(stringResource(R.string.home_empty_title), style = MaterialTheme.typography.titleMedium)
-                                Text(stringResource(R.string.home_empty_desc), style = MaterialTheme.typography.bodyMedium)
+                                Column(
+                                    modifier = Modifier
+                                        .padding(24.dp)
+                                        .fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Add,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(32.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(stringResource(R.string.home_empty_title), style = MaterialTheme.typography.titleMedium)
+                                    Text(stringResource(R.string.home_empty_desc), style = MaterialTheme.typography.bodyMedium)
+                                }
                             }
                         }
                     }
-                }
 
-                item { Spacer(modifier = Modifier.height(32.dp)) }
+                    item { Spacer(modifier = Modifier.height(32.dp)) }
 
-                item {
-                    Text(
-                        text = stringResource(R.string.home_filter_title),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                    item {
+                        Text(
+                            text = stringResource(R.string.home_filter_title),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                    Card(
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
+                        Card(
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
 
-                            TimeSliderSection(
-                                currentFilter = uiState.filterState.timeLimit,
-                                onValueChange = { homeViewModel.onTimeFilterChanged(it) }
-                            )
+                                TimeSliderSection(
+                                    currentFilter = uiState.filterState.timeLimit,
+                                    onValueChange = { homeViewModel.onTimeFilterChanged(it) }
+                                )
 
-                            Spacer(modifier = Modifier.height(20.dp))
+                                Spacer(modifier = Modifier.height(20.dp))
 
-                            val selectedLevelOption = levelFilterOptions.find { it.value == uiState.filterState.level }
+                                val selectedLevelOption = levelFilterOptions.find { it.value == uiState.filterState.level }
 
-                            FilterSection(
-                                title = stringResource(R.string.home_filter_level),
-                                options = levelFilterOptions,
-                                selectedOption = selectedLevelOption,
-                                onOptionSelected = { option ->
-                                    homeViewModel.onLevelFilterChanged(option.value)
-                                },
-                                itemLabel = { it.label.asString(context) }
-                            )
+                                FilterSection(
+                                    title = stringResource(R.string.home_filter_level),
+                                    options = levelFilterOptions,
+                                    selectedOption = selectedLevelOption,
+                                    onOptionSelected = { option ->
+                                        homeViewModel.onLevelFilterChanged(option.value)
+                                    },
+                                    itemLabel = { it.label.asString(context) }
+                                )
 
-                            Spacer(modifier = Modifier.height(20.dp))
+                                Spacer(modifier = Modifier.height(20.dp))
 
-                            val selectedCategoryOption = categoryFilterOptions.find { it.value == uiState.filterState.category }
-                                ?: categoryFilterOptions.first()
+                                val selectedCategoryOption = categoryFilterOptions.find { it.value == uiState.filterState.category }
+                                    ?: categoryFilterOptions.first()
 
-                            FilterSection(
-                                title = stringResource(R.string.home_filter_category),
-                                options = categoryFilterOptions,
-                                selectedOption = selectedCategoryOption,
-                                onOptionSelected = { option ->
-                                    homeViewModel.onCategoryFilterChanged(option.value)
-                                },
-                                itemLabel = { it.label.asString(context) }
-                            )
+                                FilterSection(
+                                    title = stringResource(R.string.home_filter_category),
+                                    options = categoryFilterOptions,
+                                    selectedOption = selectedCategoryOption,
+                                    onOptionSelected = { option ->
+                                        homeViewModel.onCategoryFilterChanged(option.value)
+                                    },
+                                    itemLabel = { it.label.asString(context) }
+                                )
 
-                            Spacer(modifier = Modifier.height(20.dp))
+                                Spacer(modifier = Modifier.height(20.dp))
 
-                            val selectedUtensilOption = utensilFilterOptions.find { it.value == uiState.filterState.utensil }
-                                ?: utensilFilterOptions.first()
+                                val selectedUtensilOption = utensilFilterOptions.find { it.value == uiState.filterState.utensil }
+                                    ?: utensilFilterOptions.first()
 
-                            FilterSection(
-                                title = stringResource(R.string.home_filter_utensil),
-                                options = utensilFilterOptions,
-                                selectedOption = selectedUtensilOption,
-                                onOptionSelected = { option ->
-                                    homeViewModel.onUtensilFilterChanged(option.value)
-                                },
-                                itemLabel = { it.label.asString(context) }
-                            )
+                                FilterSection(
+                                    title = stringResource(R.string.home_filter_utensil),
+                                    options = utensilFilterOptions,
+                                    selectedOption = selectedUtensilOption,
+                                    onOptionSelected = { option ->
+                                        homeViewModel.onUtensilFilterChanged(option.value)
+                                    },
+                                    itemLabel = { it.label.asString(context) }
+                                )
 
-                            Spacer(modifier = Modifier.height(16.dp))
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                            Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                Spacer(modifier = Modifier.height(8.dp))
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = stringResource(R.string.home_filter_only_selected_title),
-                                        style = MaterialTheme.typography.titleSmall
-                                    )
-                                    Text(
-                                        text = stringResource(R.string.home_filter_only_selected_desc),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = stringResource(R.string.home_filter_only_selected_title),
+                                            style = MaterialTheme.typography.titleSmall
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.home_filter_only_selected_desc),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    Switch(
+                                        checked = uiState.filterState.useOnlySelected,
+                                        onCheckedChange = { homeViewModel.onUseOnlySelectedIngredientsChanged(it) }
                                     )
                                 }
-                                Switch(
-                                    checked = uiState.filterState.useOnlySelected,
-                                    onCheckedChange = { homeViewModel.onUseOnlySelectedIngredientsChanged(it) }
-                                )
                             }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
-            }
 
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-                shadowElevation = 16.dp,
-                tonalElevation = 8.dp
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                    shadowElevation = 16.dp,
+                    tonalElevation = 8.dp
                 ) {
-                    val buttonText = when {
-                        uiState.isRecipeLoading -> stringResource(R.string.home_btn_loading)
-                        uiState.selectedIngredientIds.isEmpty() -> stringResource(R.string.home_btn_select_ingredient)
-                        uiState.recommendedRecipe == null -> stringResource(R.string.home_btn_recommend)
-                        else -> stringResource(R.string.home_btn_recommend_another)
-                    }
-
-                    Text(
-                        text = stringResource(R.string.ticket_count_format, uiState.remainingTickets, 3),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (uiState.remainingTickets > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-
-                    Button(
-                        onClick = { homeViewModel.checkIngredientConflicts() },
-                        enabled = uiState.selectedIngredientIds.isNotEmpty() && !uiState.isRecipeLoading,
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        )
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        if (uiState.isRecipeLoading) {
-                            CircularProgressIndicator(
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(24.dp),
-                                strokeWidth = 2.dp
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                        } else {
-                            Icon(Icons.Default.AutoAwesome, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
+                        val buttonText = when {
+                            uiState.isRecipeLoading -> stringResource(R.string.home_btn_loading)
+                            uiState.selectedIngredientIds.isEmpty() -> stringResource(R.string.home_btn_select_ingredient)
+                            uiState.recommendedRecipe == null -> stringResource(R.string.home_btn_recommend)
+                            else -> stringResource(R.string.home_btn_recommend_another)
                         }
+
                         Text(
-                            text = buttonText,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            text = stringResource(R.string.ticket_count_format, uiState.remainingTickets, 3),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = if (uiState.remainingTickets > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
+
+                        Button(
+                            onClick = { homeViewModel.checkIngredientConflicts() },
+                            enabled = uiState.selectedIngredientIds.isNotEmpty() && !uiState.isRecipeLoading,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            )
+                        ) {
+                            if (uiState.isRecipeLoading) {
+                                CircularProgressIndicator(
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                            } else {
+                                Icon(Icons.Default.AutoAwesome, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                            }
+                            Text(
+                                text = buttonText,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }

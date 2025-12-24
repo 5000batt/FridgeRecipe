@@ -4,14 +4,24 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SoupKitchen
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -21,6 +31,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.CategoryType
+import com.kjw.fridgerecipe.presentation.navigation.IngredientEditRoute
+import com.kjw.fridgerecipe.presentation.navigation.MainTab
+import com.kjw.fridgerecipe.presentation.ui.components.common.AppBottomNavigationBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonSearchBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.EmptyStateView
 import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
@@ -32,68 +45,90 @@ import com.kjw.fridgerecipe.presentation.viewmodel.IngredientListViewModel
 @Composable
 fun IngredientListScreen(
     viewModel: IngredientListViewModel = hiltViewModel(),
-    onNavigateToIngredientEdit: (Long) -> Unit
+    onNavigateToIngredientEdit: (Long) -> Unit,
+    onNavigateToMainTab: (MainTab) -> Unit
 ) {
     val categorizedIngredients by viewModel.categorizedIngredients.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
     LoadingContent(isLoading = isLoading) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-        ) {
-            CommonSearchBar(
-                query = searchQuery,
-                onQueryChange = { viewModel.onSearchQueryChanged(it) },
-                placeholderText = stringResource(R.string.ingredient_search_placeholder),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            if (categorizedIngredients.isEmpty()) {
-                if (searchQuery.isNotBlank()) {
-                    EmptyStateView(
-                        icon = Icons.Default.Search,
-                        title = stringResource(R.string.ingredient_search_empty_title, searchQuery),
-                        message = stringResource(R.string.ingredient_search_empty_desc)
-                    )
-                }
-                else {
-                    EmptyStateView(
-                        icon = Icons.Default.SoupKitchen,
-                        title = stringResource(R.string.ingredient_empty_title),
-                        message = stringResource(R.string.ingredient_empty_desc)
-                    )
-                }
-            } else {
-                IngredientStatusLegend(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp, bottom = 4.dp)
+        Scaffold(
+            bottomBar = {
+                AppBottomNavigationBar(
+                    currentTab = MainTab.INGREDIENTS,
+                    onTabSelected = onNavigateToMainTab
+                )
+            },
+            floatingActionButton = {
+                ExtendedFloatingActionButton(
+                    onClick = { onNavigateToIngredientEdit(IngredientEditRoute.DEFAULT_ID) },
+                    icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                    text = { Text(stringResource(R.string.fab_add_ingredient)) },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            },
+            contentWindowInsets = ScaffoldDefaults.contentWindowInsets.exclude(WindowInsets.statusBars),
+            containerColor = MaterialTheme.colorScheme.background
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp) // 기존 패딩 유지
+            ) {
+                CommonSearchBar(
+                    query = searchQuery,
+                    onQueryChange = { viewModel.onSearchQueryChanged(it) },
+                    placeholderText = stringResource(R.string.ingredient_search_placeholder),
+                    modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                if (categorizedIngredients.isEmpty()) {
+                    if (searchQuery.isNotBlank()) {
+                        EmptyStateView(
+                            icon = Icons.Default.Search,
+                            title = stringResource(R.string.ingredient_search_empty_title, searchQuery),
+                            message = stringResource(R.string.ingredient_search_empty_desc)
+                        )
+                    }
+                    else {
+                        EmptyStateView(
+                            icon = Icons.Default.SoupKitchen,
+                            title = stringResource(R.string.ingredient_empty_title),
+                            message = stringResource(R.string.ingredient_empty_desc)
+                        )
+                    }
+                } else {
+                    IngredientStatusLegend(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp, bottom = 4.dp)
+                    )
 
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(bottom = 80.dp),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    CategoryType.entries.forEach { categoryType ->
-                        val items = categorizedIngredients[categoryType] ?: emptyList()
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                        if (items.isNotEmpty()) {
-                            item {
-                                StorageSection(
-                                    title = categoryType.label,
-                                    items = items,
-                                    displayType = ListDisplayType.GRID,
-                                    selectedIngredientIds = emptySet(),
-                                    onIngredientClick = { ingredient ->
-                                        ingredient.id?.let { onNavigateToIngredientEdit(it) }
-                                    }
-                                )
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(bottom = 80.dp),
+                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        CategoryType.entries.forEach { categoryType ->
+                            val items = categorizedIngredients[categoryType] ?: emptyList()
+
+                            if (items.isNotEmpty()) {
+                                item {
+                                    StorageSection(
+                                        title = categoryType.label,
+                                        items = items,
+                                        displayType = ListDisplayType.GRID,
+                                        selectedIngredientIds = emptySet(),
+                                        onIngredientClick = { ingredient ->
+                                            ingredient.id?.let { onNavigateToIngredientEdit(it) }
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
