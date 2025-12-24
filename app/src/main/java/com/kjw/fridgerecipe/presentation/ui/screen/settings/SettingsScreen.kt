@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -97,6 +98,7 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .navigationBarsPadding()
                 .verticalScroll(rememberScrollState())
         ) {
             SettingsSectionTitle(stringResource(R.string.settings_section_notification))
