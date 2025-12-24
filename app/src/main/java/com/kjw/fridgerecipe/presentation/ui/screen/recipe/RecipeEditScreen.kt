@@ -14,15 +14,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -41,7 +37,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.R
@@ -49,6 +44,7 @@ import com.kjw.fridgerecipe.presentation.navigation.RecipeEditRoute
 import com.kjw.fridgerecipe.presentation.ui.components.common.BottomActionBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.common.ConfirmDialog
+import com.kjw.fridgerecipe.presentation.ui.components.common.FridgeBottomButton
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.ErrorText
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.IngredientEditRow
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeBasicInfoForm
@@ -154,44 +150,27 @@ fun RecipeEditScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Button(
+                            FridgeBottomButton(
+                                text = stringResource(R.string.recipe_edit_btn_delete),
                                 onClick = { viewModel.onDeleteDialogShow() },
-                                modifier = Modifier.weight(1f).height(56.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
-                                ),
-                                shape = RoundedCornerShape(16.dp)
-                            ) {
-                                Icon(Icons.Default.Delete, contentDescription = null)
-                                Spacer(Modifier.width(4.dp))
-                                Text(stringResource(R.string.recipe_edit_btn_delete))
-                            }
+                                modifier = Modifier.weight(1f),
+                                icon = { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.recipe_edit_btn_delete)) },
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                            )
 
-                            Button(
+                            FridgeBottomButton(
+                                text = stringResource(R.string.recipe_edit_btn_complete),
                                 onClick = { viewModel.onSaveOrUpdateRecipe(isEditMode = true) },
-                                modifier = Modifier.weight(1f).height(56.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            ) {
-                                Text(stringResource(R.string.recipe_edit_btn_complete), fontWeight = FontWeight.Bold)
-                            }
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                     } else {
-                        Button(
+                        FridgeBottomButton(
+                            text = stringResource(R.string.recipe_edit_btn_save),
                             onClick = { viewModel.onSaveOrUpdateRecipe(isEditMode = false) },
-                            modifier = Modifier.fillMaxWidth().height(56.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        ) {
-                            Text(stringResource(R.string.recipe_edit_btn_save), fontSize = MaterialTheme.typography.titleMedium.fontSize, fontWeight = FontWeight.Bold)
-                        }
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             },

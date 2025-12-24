@@ -17,20 +17,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -40,7 +34,6 @@ import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -65,6 +58,7 @@ import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLe
 import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.common.ConfirmDialog
 import com.kjw.fridgerecipe.presentation.ui.components.common.ErrorDialog
+import com.kjw.fridgerecipe.presentation.ui.components.common.FridgeBottomButton
 import com.kjw.fridgerecipe.presentation.ui.components.home.FilterSection
 import com.kjw.fridgerecipe.presentation.ui.components.home.RecipeLoadingScreen
 import com.kjw.fridgerecipe.presentation.ui.components.home.TimeSliderSection
@@ -345,35 +339,20 @@ fun HomeScreen(
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
 
-                        Button(
+                        FridgeBottomButton(
+                            text = buttonText,
                             onClick = { homeViewModel.checkIngredientConflicts() },
-                            enabled = uiState.selectedIngredientIds.isNotEmpty() && !uiState.isRecipeLoading,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            )
-                        ) {
-                            if (uiState.isRecipeLoading) {
-                                CircularProgressIndicator(
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    modifier = Modifier.size(24.dp),
-                                    strokeWidth = 2.dp
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                            } else {
-                                Icon(Icons.Default.AutoAwesome, contentDescription = null)
-                                Spacer(modifier = Modifier.width(8.dp))
+                            isEnabled = uiState.selectedIngredientIds.isNotEmpty() && !uiState.isRecipeLoading,
+                            isLoading = uiState.isRecipeLoading,
+                            modifier = Modifier.fillMaxWidth(),
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            icon = {
+                                if (!uiState.isRecipeLoading) {
+                                    Icon(Icons.Default.AutoAwesome, contentDescription = null)
+                                }
                             }
-                            Text(
-                                text = buttonText,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        )
                     }
                 }
             }
