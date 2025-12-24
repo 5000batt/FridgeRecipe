@@ -3,10 +3,8 @@ package com.kjw.fridgerecipe.presentation.ui.screen.recipe
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,6 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonSearchBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.EmptyStateView
+import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeListItem
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeListViewModel
 
@@ -31,40 +30,37 @@ fun RecipeListScreen(
     viewModel: RecipeListViewModel = hiltViewModel(),
     onNavigateToRecipeDetail: (Long) -> Unit
 ) {
-    val filteredRecipes by viewModel.savedRecipes.collectAsState()
+    val recipeList by viewModel.savedRecipes.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
-    val rawSavedRecipes by viewModel.rawSavedRecipes.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-    ) {
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        CommonSearchBar(
-            query = searchQuery,
-            onQueryChange = { viewModel.onSearchQueryChanged(it) },
-            placeholderText = stringResource(R.string.recipe_search_placeholder),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (rawSavedRecipes.isEmpty()) {
-            EmptyStateView(
-                icon = Icons.Default.SoupKitchen,
-                title = stringResource(R.string.recipe_empty_title),
-                message = stringResource(R.string.recipe_empty_desc)
+    LoadingContent(isLoading = isLoading) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+        ) {
+            CommonSearchBar(
+                query = searchQuery,
+                onQueryChange = { viewModel.onSearchQueryChanged(it) },
+                placeholderText = stringResource(R.string.recipe_search_placeholder),
+                modifier = Modifier.fillMaxWidth()
             )
-        } else {
-            if (filteredRecipes.isEmpty() && searchQuery.isNotBlank()) {
-                EmptyStateView(
-                    icon = Icons.Default.Search,
-                    title = stringResource(R.string.recipe_search_empty_title, searchQuery),
-                    message = stringResource(R.string.recipe_search_empty_desc)
-                )
+
+            if (recipeList.isEmpty()) {
+                if (searchQuery.isNotBlank()) {
+                    EmptyStateView(
+                        icon = Icons.Default.Search,
+                        title = stringResource(R.string.recipe_search_empty_title, searchQuery),
+                        message = stringResource(R.string.recipe_search_empty_desc)
+                    )
+                } else {
+                    EmptyStateView(
+                        icon = Icons.Default.SoupKitchen,
+                        title = stringResource(R.string.recipe_empty_title),
+                        message = stringResource(R.string.recipe_empty_desc)
+                    )
+                }
             } else {
                 LazyColumn(
                     modifier = Modifier.weight(1f),
@@ -72,7 +68,7 @@ fun RecipeListScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(
-                        items = filteredRecipes,
+                        items = recipeList,
                         key = { it.id ?: 0 }
                     ) { recipe ->
                         RecipeListItem(

@@ -45,6 +45,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.presentation.navigation.IngredientEditRoute
+import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IconSelectionSection
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientDetailFields
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientInputFields
@@ -65,6 +66,7 @@ fun IngredientEditScreen(
 ) {
     val isEditMode = ingredientId != IngredientEditRoute.DEFAULT_ID
     val uiState by viewModel.editUiState.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
     val context = LocalContext.current
 
     val iconListState = rememberLazyListState()
@@ -126,85 +128,105 @@ fun IngredientEditScreen(
                 iconListState.scrollToItem(index)
                 hasScrolledToInitialSelection = true
             }
+            viewModel.onReadyToDisplay()
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    LoadingContent(isLoading = isLoading) {
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Spacer(modifier = Modifier.height(8.dp))
-
-            IconSelectionSection(
-                selectedIconCategory = uiState.selectedIconCategory,
-                selectedIcon = uiState.selectedIcon,
-                currentIcons = currentIcons,
-                iconListState = iconListState,
-                onIconCategorySelected = { viewModel.onIconCategorySelected(it) },
-                onIconSelected = { viewModel.onIconSelected(it) }
-            )
-
-            IngredientInputFields(
-                name = uiState.name,
-                nameError = uiState.nameError?.asString(),
-                amount = uiState.amount,
-                amountError = uiState.amountError?.asString(),
-                selectedUnit = uiState.selectedUnit,
-                nameFocusRequester = nameFocusRequester,
-                amountFocusRequester = amountFocusRequester,
-                onNameChanged = { viewModel.onNameChanged(it) },
-                onAmountChanged = { viewModel.onAmountChanged(it) },
-                onUnitChanged = { viewModel.onUnitChanged(it) }
-            )
-
-            IngredientDetailFields(
-                selectedCategory = uiState.selectedCategory,
-                selectedStorage = uiState.selectedStorage,
-                selectedDate = uiState.selectedDate,
-                onCategoryChanged = { viewModel.onCategoryChanged(it) },
-                onStorageChanged = { viewModel.onStorageChanged(it) },
-                onDatePickerShow = { viewModel.onDatePickerDialogShow() }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-        }
-
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-            shadowElevation = 16.dp,
-            tonalElevation = 8.dp
+            modifier = Modifier.fillMaxSize()
         ) {
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .weight(1f)
                     .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                if (isEditMode) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Button(
-                            onClick = { viewModel.onDeleteDialogShow() },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer,
-                                contentColor = MaterialTheme.colorScheme.onErrorContainer
-                            ),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier.height(56.dp)
-                        ) {
-                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.ingredient_edit_btn_delete))
-                        }
+                Spacer(modifier = Modifier.height(8.dp))
 
+                IconSelectionSection(
+                    selectedIconCategory = uiState.selectedIconCategory,
+                    selectedIcon = uiState.selectedIcon,
+                    currentIcons = currentIcons,
+                    iconListState = iconListState,
+                    onIconCategorySelected = { viewModel.onIconCategorySelected(it) },
+                    onIconSelected = { viewModel.onIconSelected(it) }
+                )
+
+                IngredientInputFields(
+                    name = uiState.name,
+                    nameError = uiState.nameError?.asString(),
+                    amount = uiState.amount,
+                    amountError = uiState.amountError?.asString(),
+                    selectedUnit = uiState.selectedUnit,
+                    nameFocusRequester = nameFocusRequester,
+                    amountFocusRequester = amountFocusRequester,
+                    onNameChanged = { viewModel.onNameChanged(it) },
+                    onAmountChanged = { viewModel.onAmountChanged(it) },
+                    onUnitChanged = { viewModel.onUnitChanged(it) }
+                )
+
+                IngredientDetailFields(
+                    selectedCategory = uiState.selectedCategory,
+                    selectedStorage = uiState.selectedStorage,
+                    selectedDate = uiState.selectedDate,
+                    onCategoryChanged = { viewModel.onCategoryChanged(it) },
+                    onStorageChanged = { viewModel.onStorageChanged(it) },
+                    onDatePickerShow = { viewModel.onDatePickerDialogShow() }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                shadowElevation = 16.dp,
+                tonalElevation = 8.dp
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                ) {
+                    if (isEditMode) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Button(
+                                onClick = { viewModel.onDeleteDialogShow() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                ),
+                                shape = RoundedCornerShape(16.dp),
+                                modifier = Modifier.height(56.dp)
+                            ) {
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.ingredient_edit_btn_delete))
+                            }
+
+                            Button(
+                                onClick = { viewModel.onSaveOrUpdateIngredient(isEditMode = true) },
+                                modifier = Modifier.weight(1f).height(56.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.ingredient_edit_btn_complete),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    } else {
                         Button(
-                            onClick = { viewModel.onSaveOrUpdateIngredient(isEditMode = true) },
-                            modifier = Modifier.weight(1f).height(56.dp),
+                            onClick = { viewModel.onSaveOrUpdateIngredient(isEditMode = false) },
+                            modifier = Modifier.fillMaxWidth().height(56.dp),
                             shape = RoundedCornerShape(16.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -212,27 +234,11 @@ fun IngredientEditScreen(
                             )
                         ) {
                             Text(
-                                text = stringResource(R.string.ingredient_edit_btn_complete),
+                                text = stringResource(R.string.ingredient_edit_btn_save),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                    }
-                } else {
-                    Button(
-                        onClick = { viewModel.onSaveOrUpdateIngredient(isEditMode = false) },
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    ) {
-                        Text(
-                            text = stringResource(R.string.ingredient_edit_btn_save),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
                     }
                 }
             }

@@ -16,16 +16,21 @@ class RecipeDetailViewModel @Inject constructor(
     private val getSavedRecipeByIdUseCase: GetSavedRecipeByIdUseCase
 ) : ViewModel() {
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     private val _recipe = MutableStateFlow<Recipe?>(null)
     val recipe: StateFlow<Recipe?> = _recipe.asStateFlow()
 
     fun loadRecipe(id: Long) {
         viewModelScope.launch {
             _recipe.value = getSavedRecipeByIdUseCase(id)
+            _isLoading.value = false
         }
     }
 
     fun clearRecipe() {
         _recipe.value = null
+        _isLoading.value = true
     }
 }

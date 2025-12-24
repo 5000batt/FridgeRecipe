@@ -5,6 +5,9 @@ import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.StorageType
 
 data class HomeUiState(
+    // 재료 로딩 상태
+    val isIngredientLoading: Boolean = true,
+
     // 재료 데이터
     val storageIngredients: Map<StorageType, List<Ingredient>> = emptyMap(),
     val allIngredients: List<Ingredient> = emptyList(),

@@ -1,5 +1,6 @@
 package com.kjw.fridgerecipe.presentation.ui.components.common
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -22,7 +23,7 @@ fun CommonSearchBar(
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        modifier = modifier,
+        modifier = modifier.padding(vertical = 16.dp),
         placeholder = { Text(placeholderText) },
         singleLine = true,
         leadingIcon = {

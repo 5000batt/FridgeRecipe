@@ -49,10 +49,6 @@ class HomeViewModel @Inject constructor(
     private val _sideEffect = MutableSharedFlow<HomeSideEffect>()
     val sideEffect: SharedFlow<HomeSideEffect> = _sideEffect.asSharedFlow()
 
-    // 초기 데이터 로딩 완료 여부 체크
-    private val _isDataLoaded = MutableStateFlow(false)
-    val isDataLoaded: StateFlow<Boolean> = _isDataLoaded.asStateFlow()
-
     private val _seenRecipeIds = MutableStateFlow<Set<Long>>(emptySet())
     private var currentIngredientsQuery: String = ""
 
@@ -70,10 +66,10 @@ class HomeViewModel @Inject constructor(
                 _homeUiState.update {
                     it.copy(
                         allIngredients = ingredients,
-                        storageIngredients = grouped
+                        storageIngredients = grouped,
+                        isIngredientLoading = false
                     )
                 }
-                _isDataLoaded.value = true
             }
         }
     }

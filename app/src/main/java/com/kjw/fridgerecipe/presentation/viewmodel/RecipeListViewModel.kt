@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -18,19 +19,16 @@ class RecipeListViewModel @Inject constructor(
     getSavedRecipesUseCase: GetSavedRecipesUseCase
 ) : ViewModel() {
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    private val _rawSavedRecipesFlow = getSavedRecipesUseCase()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-    val rawSavedRecipes: StateFlow<List<Recipe>> = _rawSavedRecipesFlow
+    private val recipesFlow = getSavedRecipesUseCase()
 
     val savedRecipes: StateFlow<List<Recipe>> =
-        _searchQuery.combine(_rawSavedRecipesFlow) { query, recipes ->
+        combine(recipesFlow, _searchQuery) { recipes, query ->
             if (query.isBlank()) {
                 recipes
             } else {
@@ -38,7 +36,11 @@ class RecipeListViewModel @Inject constructor(
                     it.title.contains(query, ignoreCase = true)
                 }
             }
-        }.stateIn(
+        }
+        .onEach {
+            _isLoading.value = false
+        }
+        .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()

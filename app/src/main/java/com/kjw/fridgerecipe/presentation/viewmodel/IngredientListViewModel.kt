@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -20,10 +21,13 @@ class IngredientListViewModel @Inject constructor(
     getIngredientsUseCase: GetIngredientsUseCase
 ) : ViewModel() {
 
-    private val ingredientsFlow = getIngredientsUseCase()
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    private val ingredientsFlow = getIngredientsUseCase()
 
     val categorizedIngredients: StateFlow<Map<CategoryType, List<Ingredient>>> =
         combine(ingredientsFlow, _searchQuery) { ingredients, query ->
@@ -32,6 +36,9 @@ class IngredientListViewModel @Inject constructor(
             } else {
                 ingredients.filter { it.name.contains(query, ignoreCase = true) }
             }
+        }
+        .onEach {
+                _isLoading.value = false
         }
         .map { filteredList ->
             filteredList.groupBy { it.category }

@@ -47,6 +47,9 @@ class RecipeEditViewModel @Inject constructor(
         data object NavigateToList : NavigationEvent()
     }
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     private val _operationResultEvent = MutableSharedFlow<OperationResult>()
     val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
 
@@ -66,12 +69,14 @@ class RecipeEditViewModel @Inject constructor(
             val recipe = getSavedRecipeByIdUseCase(id)
             currentRecipe = recipe
             _editUiState.value = recipe?.toEditUiState() ?: RecipeEditUiState()
+            _isLoading.value = false
         }
     }
 
     fun clearState() {
         currentRecipe = null
         _editUiState.value = RecipeEditUiState()
+        _isLoading.value = false
     }
 
     fun onImageSelected(uri: Uri?) {

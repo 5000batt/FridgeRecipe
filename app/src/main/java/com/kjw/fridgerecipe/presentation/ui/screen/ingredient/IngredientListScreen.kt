@@ -24,6 +24,7 @@ import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonSearchBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.EmptyStateView
 import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
+import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientListViewModel
@@ -35,65 +36,65 @@ fun IngredientListScreen(
 ) {
     val categorizedIngredients by viewModel.categorizedIngredients.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-    ) {
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        CommonSearchBar(
-            query = searchQuery,
-            onQueryChange = { viewModel.onSearchQueryChanged(it) },
-            placeholderText = stringResource(R.string.ingredient_search_placeholder),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        IngredientStatusLegend(
+    LoadingContent(isLoading = isLoading) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp, bottom = 4.dp)
-        )
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+        ) {
+            CommonSearchBar(
+                query = searchQuery,
+                onQueryChange = { viewModel.onSearchQueryChanged(it) },
+                placeholderText = stringResource(R.string.ingredient_search_placeholder),
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        if (categorizedIngredients.isEmpty()) {
-            if (searchQuery.isNotBlank()) {
-                EmptyStateView(
-                    icon = Icons.Default.Search,
-                    title = stringResource(R.string.ingredient_search_empty_title, searchQuery),
-                    message = stringResource(R.string.ingredient_search_empty_desc)
+            if (categorizedIngredients.isEmpty()) {
+                if (searchQuery.isNotBlank()) {
+                    EmptyStateView(
+                        icon = Icons.Default.Search,
+                        title = stringResource(R.string.ingredient_search_empty_title, searchQuery),
+                        message = stringResource(R.string.ingredient_search_empty_desc)
+                    )
+                }
+                else {
+                    EmptyStateView(
+                        icon = Icons.Default.SoupKitchen,
+                        title = stringResource(R.string.ingredient_empty_title),
+                        message = stringResource(R.string.ingredient_empty_desc)
+                    )
+                }
+            } else {
+                IngredientStatusLegend(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp, bottom = 4.dp)
                 )
-            }
-            else {
-                EmptyStateView(
-                    icon = Icons.Default.SoupKitchen,
-                    title = stringResource(R.string.ingredient_empty_title),
-                    message = stringResource(R.string.ingredient_empty_desc)
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(bottom = 80.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                CategoryType.entries.forEach { categoryType ->
-                    val items = categorizedIngredients[categoryType] ?: emptyList()
 
-                    if (items.isNotEmpty()) {
-                        item {
-                            StorageSection(
-                                title = categoryType.label,
-                                items = items,
-                                displayType = ListDisplayType.GRID,
-                                selectedIngredientIds = emptySet(),
-                                onIngredientClick = { ingredient ->
-                                    ingredient.id?.let { onNavigateToIngredientEdit(it) }
-                                }
-                            )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(bottom = 80.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    CategoryType.entries.forEach { categoryType ->
+                        val items = categorizedIngredients[categoryType] ?: emptyList()
+
+                        if (items.isNotEmpty()) {
+                            item {
+                                StorageSection(
+                                    title = categoryType.label,
+                                    items = items,
+                                    displayType = ListDisplayType.GRID,
+                                    selectedIngredientIds = emptySet(),
+                                    onIngredientClick = { ingredient ->
+                                        ingredient.id?.let { onNavigateToIngredientEdit(it) }
+                                    }
+                                )
+                            }
                         }
                     }
                 }

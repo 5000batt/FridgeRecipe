@@ -10,7 +10,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -22,7 +21,6 @@ import com.google.android.gms.ads.MobileAds
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.presentation.ui.screen.MainAppScreen
 import com.kjw.fridgerecipe.presentation.util.RewardedAdManager
-import com.kjw.fridgerecipe.presentation.viewmodel.HomeViewModel
 import com.kjw.fridgerecipe.ui.theme.FridgeRecipeTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -31,17 +29,14 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val homeViewModel: HomeViewModel by viewModels()
     @Inject
     lateinit var settingsRepository: SettingsRepository
     private lateinit var rewardedAdManager: RewardedAdManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen().setKeepOnScreenCondition {
-            !homeViewModel.isDataLoaded.value
-        }
-
         super.onCreate(savedInstanceState)
+
+        installSplashScreen()
 
         MobileAds.initialize(this) {}
 

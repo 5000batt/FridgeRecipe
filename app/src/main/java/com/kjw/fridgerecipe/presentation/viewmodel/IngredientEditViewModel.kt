@@ -36,6 +36,9 @@ class IngredientEditViewModel @Inject constructor(
     private val delIngredientUseCase: DelIngredientUseCase
     ) : ViewModel() {
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     private val _operationResultEvent = MutableSharedFlow<OperationResult>()
     val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
 
@@ -55,12 +58,20 @@ class IngredientEditViewModel @Inject constructor(
             val ingredient = getIngredientByIdUseCase(id)
             editingIngredient = ingredient
             _editUiState.value = ingredient?.toEditUiState() ?: IngredientEditUiState()
+            if (ingredient == null) {
+                _isLoading.value = false
+            }
         }
+    }
+
+    fun onReadyToDisplay() {
+        _isLoading.value = false
     }
 
     fun clearState() {
         editingIngredient = null
         _editUiState.value = IngredientEditUiState()
+        _isLoading.value = false
     }
 
     fun onNameChanged(name: String) {

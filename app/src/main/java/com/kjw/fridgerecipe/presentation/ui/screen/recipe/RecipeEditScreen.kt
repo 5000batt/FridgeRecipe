@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.navigation.RecipeEditRoute
+import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.ErrorText
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.IngredientEditRow
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeBasicInfoForm
@@ -67,6 +68,7 @@ fun RecipeEditScreen(
 ) {
     val isEditMode = recipeId != RecipeEditRoute.DEFAULT_ID
     val uiState by viewModel.editUiState.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
     val context = LocalContext.current
 
     val listState = rememberLazyListState()
@@ -139,171 +141,177 @@ fun RecipeEditScreen(
         unfocusedBorderColor = MaterialTheme.colorScheme.outline
     )
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp)
+    LoadingContent(isLoading = isLoading) {
+        Column(
+            modifier = Modifier.fillMaxSize()
         ) {
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                RecipeImageSelector(
-                    imageUri = uiState.imageUri,
-                    onClick = {
-                        photoPickerLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
-                    }
-                )
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-
-                RecipeBasicInfoForm(
-                    title = uiState.title,
-                    onTitleChange = { viewModel.onTitleChanged(it) },
-                    titleError = uiState.titleError?.asString(),
-                    servings = uiState.servingsState,
-                    onServingsChange = { viewModel.onServingsChanged(it) },
-                    servingsError = uiState.servingsError?.asString(),
-                    time = uiState.timeState,
-                    onTimeChange = { viewModel.onTimeChanged(it) },
-                    timeError = uiState.timeError?.asString(),
-                    titleFocusRequester = titleFocusRequester,
-                    servingsFocusRequester = servingsFocusRequester,
-                    timeFocusRequester = timeFocusRequester,
-                    transparentColors = transparentColors
-                )
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                RecipeMetadataForm(
-                    selectedLevel = uiState.level,
-                    onLevelChange = { viewModel.onLevelChanged(it) },
-                    categoryState = uiState.categoryState,
-                    onCategoryChange = { viewModel.onCategoryChanged(it) },
-                    utensilState = uiState.utensilState,
-                    onUtensilChange = { viewModel.onUtensilChanged(it) },
-                    transparentColors = transparentColors
-                )
-            }
-
-            item {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.outlineVariant)
-
-                RecipeSectionHeader(
-                    title = stringResource(R.string.recipe_edit_section_ingredients),
-                    btnText = stringResource(R.string.recipe_edit_btn_add),
-                    onAddClick = { viewModel.onAddIngredient() }
-                )
-
-                if (uiState.ingredientsState.isNotEmpty()) {
-                    Text(
-                        text = stringResource(R.string.recipe_edit_guide_ingredients),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                    RecipeImageSelector(
+                        imageUri = uiState.imageUri,
+                        onClick = {
+                            photoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
                     )
                 }
 
-                if (uiState.ingredientsError != null) ErrorText(uiState.ingredientsError!!.asString())
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    RecipeBasicInfoForm(
+                        title = uiState.title,
+                        onTitleChange = { viewModel.onTitleChanged(it) },
+                        titleError = uiState.titleError?.asString(),
+                        servings = uiState.servingsState,
+                        onServingsChange = { viewModel.onServingsChanged(it) },
+                        servingsError = uiState.servingsError?.asString(),
+                        time = uiState.timeState,
+                        onTimeChange = { viewModel.onTimeChanged(it) },
+                        timeError = uiState.timeError?.asString(),
+                        titleFocusRequester = titleFocusRequester,
+                        servingsFocusRequester = servingsFocusRequester,
+                        timeFocusRequester = timeFocusRequester,
+                        transparentColors = transparentColors
+                    )
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    RecipeMetadataForm(
+                        selectedLevel = uiState.level,
+                        onLevelChange = { viewModel.onLevelChanged(it) },
+                        categoryState = uiState.categoryState,
+                        onCategoryChange = { viewModel.onCategoryChanged(it) },
+                        utensilState = uiState.utensilState,
+                        onUtensilChange = { viewModel.onUtensilChanged(it) },
+                        transparentColors = transparentColors
+                    )
+                }
+
+                item {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.outlineVariant)
+
+                    RecipeSectionHeader(
+                        title = stringResource(R.string.recipe_edit_section_ingredients),
+                        btnText = stringResource(R.string.recipe_edit_btn_add),
+                        onAddClick = { viewModel.onAddIngredient() }
+                    )
+
+                    if (uiState.ingredientsState.isNotEmpty()) {
+                        Text(
+                            text = stringResource(R.string.recipe_edit_guide_ingredients),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
+
+                    if (uiState.ingredientsError != null) ErrorText(uiState.ingredientsError!!.asString())
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                itemsIndexed(uiState.ingredientsState) { index, ingredient ->
+                    IngredientEditRow(
+                        isEssential = ingredient.isEssential,
+                        onEssentialChange = { viewModel.onIngredientEssentialChanged(index, it) },
+                        name = ingredient.name,
+                        onNameChange = { viewModel.onIngredientNameChanged(index, it) },
+                        quantity = ingredient.quantity,
+                        onQuantityChange = { viewModel.onIngredientQuantityChanged(index, it) },
+                        onRemoveClick = { viewModel.onRemoveIngredient(index) },
+                        transparentColors = transparentColors
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                item {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.outlineVariant)
+
+                    RecipeSectionHeader(
+                        title = stringResource(R.string.recipe_edit_section_steps),
+                        btnText = stringResource(R.string.recipe_edit_btn_add_step),
+                        onAddClick = { viewModel.onAddStep() }
+                    )
+
+                    if (uiState.stepsError != null) ErrorText(uiState.stepsError!!.asString())
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                itemsIndexed(uiState.stepsState) { index, step ->
+                    StepEditRow(
+                        index = index,
+                        description = step.description,
+                        onDescriptionChange = { viewModel.onStepDescriptionChanged(index, it) },
+                        onRemoveClick = { viewModel.onRemoveStep(index) },
+                        transparentColors = transparentColors
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                item { Spacer(modifier = Modifier.height(24.dp)) }
             }
-
-            itemsIndexed(uiState.ingredientsState) { index, ingredient ->
-                IngredientEditRow(
-                    isEssential = ingredient.isEssential,
-                    onEssentialChange = { viewModel.onIngredientEssentialChanged(index, it) },
-                    name = ingredient.name,
-                    onNameChange = { viewModel.onIngredientNameChanged(index, it) },
-                    quantity = ingredient.quantity,
-                    onQuantityChange = { viewModel.onIngredientQuantityChanged(index, it) },
-                    onRemoveClick = { viewModel.onRemoveIngredient(index) },
-                    transparentColors = transparentColors
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            item {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.outlineVariant)
-
-                RecipeSectionHeader(
-                    title = stringResource(R.string.recipe_edit_section_steps),
-                    btnText = stringResource(R.string.recipe_edit_btn_add_step),
-                    onAddClick = { viewModel.onAddStep() }
-                )
-
-                if (uiState.stepsError != null) ErrorText(uiState.stepsError!!.asString())
-
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            itemsIndexed(uiState.stepsState) { index, step ->
-                StepEditRow(
-                    index = index,
-                    description = step.description,
-                    onDescriptionChange = { viewModel.onStepDescriptionChanged(index, it) },
-                    onRemoveClick = { viewModel.onRemoveStep(index) },
-                    transparentColors = transparentColors
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            item { Spacer(modifier = Modifier.height(24.dp)) }
-        }
-
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-            shadowElevation = 16.dp,
-            tonalElevation = 8.dp
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                shadowElevation = 16.dp,
+                tonalElevation = 8.dp
             ) {
-                if (isEditMode) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Button(
-                            onClick = { viewModel.onDeleteDialogShow() },
-                            modifier = Modifier.weight(1f).height(56.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer),
-                            shape = RoundedCornerShape(16.dp)
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                ) {
+                    if (isEditMode) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Icon(Icons.Default.Delete, contentDescription = null)
-                            Spacer(Modifier.width(4.dp))
-                            Text(stringResource(R.string.recipe_edit_btn_delete))
-                        }
+                            Button(
+                                onClick = { viewModel.onDeleteDialogShow() },
+                                modifier = Modifier.weight(1f).height(56.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.errorContainer, contentColor = MaterialTheme.colorScheme.onErrorContainer),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Icon(Icons.Default.Delete, contentDescription = null)
+                                Spacer(Modifier.width(4.dp))
+                                Text(stringResource(R.string.recipe_edit_btn_delete))
+                            }
 
+                            Button(
+                                onClick = { viewModel.onSaveOrUpdateRecipe(isEditMode = true) },
+                                modifier = Modifier.weight(1f).height(56.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
+                            ) {
+                                Text(stringResource(R.string.recipe_edit_btn_complete), fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    } else {
                         Button(
-                            onClick = { viewModel.onSaveOrUpdateRecipe(isEditMode = true) },
-                            modifier = Modifier.weight(1f).height(56.dp),
+                            onClick = { viewModel.onSaveOrUpdateRecipe(isEditMode = false) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
                             shape = RoundedCornerShape(16.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
                         ) {
-                            Text(stringResource(R.string.recipe_edit_btn_complete), fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.recipe_edit_btn_save), fontSize = MaterialTheme.typography.titleMedium.fontSize, fontWeight = FontWeight.Bold)
                         }
-                    }
-                } else {
-                    Button(
-                        onClick = { viewModel.onSaveOrUpdateRecipe(isEditMode = false) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
-                    ) {
-                        Text(stringResource(R.string.recipe_edit_btn_save), fontSize = MaterialTheme.typography.titleMedium.fontSize, fontWeight = FontWeight.Bold)
                     }
                 }
             }
