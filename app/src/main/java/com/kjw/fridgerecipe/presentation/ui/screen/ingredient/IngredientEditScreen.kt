@@ -190,7 +190,10 @@ fun IngredientEditScreen(
                         currentIcons = currentIcons,
                         iconListState = iconListState,
                         onIconCategorySelected = { viewModel.onIconCategorySelected(it) },
-                        onIconSelected = { viewModel.onIconSelected(it) }
+                        onIconSelected = { icon ->
+                            viewModel.onIconSelected(icon)
+                            viewModel.onCategoryChanged(icon.category)
+                        }
                     )
 
                     IngredientInputFields(
