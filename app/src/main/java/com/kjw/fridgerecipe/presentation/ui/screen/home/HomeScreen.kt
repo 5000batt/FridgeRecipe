@@ -63,6 +63,8 @@ import com.kjw.fridgerecipe.presentation.ui.components.ingredient.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
 import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
 import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
+import com.kjw.fridgerecipe.presentation.ui.components.common.ConfirmDialog
+import com.kjw.fridgerecipe.presentation.ui.components.common.ErrorDialog
 import com.kjw.fridgerecipe.presentation.ui.components.home.FilterSection
 import com.kjw.fridgerecipe.presentation.ui.components.home.RecipeLoadingScreen
 import com.kjw.fridgerecipe.presentation.ui.components.home.TimeSliderSection
@@ -395,77 +397,34 @@ fun HomeScreen(
     if (uiState.showConflictDialog) {
         val conflictNames = uiState.conflictIngredients.joinToString(", ")
 
-        AlertDialog(
-            onDismissRequest = { homeViewModel.dismissConflictDialog() },
-            title = { Text(text = stringResource(R.string.home_dialog_conflict_title)) },
-            text = {
-                Text(
-                    text = stringResource(R.string.home_dialog_conflict_msg, conflictNames),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = { homeViewModel.onConfirmConflict() }) {
-                    Text(stringResource(R.string.home_dialog_conflict_btn_yes), fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { homeViewModel.dismissConflictDialog() }) {
-                    Text(stringResource(R.string.btn_no))
-                }
-            },
-            containerColor = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(16.dp)
+        ConfirmDialog(
+            title = stringResource(R.string.home_dialog_conflict_title),
+            message = stringResource(R.string.home_dialog_conflict_msg, conflictNames),
+            confirmText = stringResource(R.string.home_dialog_conflict_btn_yes),
+            dismissText = stringResource(R.string.btn_no),
+            confirmColor = MaterialTheme.colorScheme.primary,
+            onConfirm = { homeViewModel.onConfirmConflict() },
+            onDismiss = { homeViewModel.dismissConflictDialog() }
         )
     }
 
     uiState.errorDialogState?.let { errorState ->
-        AlertDialog(
-            onDismissRequest = { homeViewModel.dismissErrorDialog() },
-            title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.ErrorOutline,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(errorState.title.asString(context))
-                }
-            },
-            text = {
-                Text(
-                    text = errorState.message.asString(context),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = { homeViewModel.dismissErrorDialog() }) {
-                    Text(stringResource(R.string.btn_confirm))
-                }
-            },
-            containerColor = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(16.dp)
+        ErrorDialog(
+            title = errorState.title.asString(context),
+            message = errorState.message.asString(context),
+            onDismiss = { homeViewModel.dismissErrorDialog() }
         )
     }
 
     if (uiState.showAdDialog) {
-        AlertDialog(
-            onDismissRequest = { homeViewModel.dismissAdDialog() },
-            title = { Text(text = stringResource(R.string.ticket_dialog_empty_title)) },
-            text = { Text(text = stringResource(R.string.ticket_dialog_empty_msg), style = MaterialTheme.typography.bodyMedium) },
-            confirmButton = {
-                TextButton(onClick = { onShowAd { homeViewModel.onAdWatched() } }) {
-                    Text(stringResource(R.string.ticket_dialog_btn_charge), fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { homeViewModel.dismissAdDialog() }) {
-                    Text(stringResource(R.string.ticket_dialog_btn_next_time))
-                }
-            },
-            containerColor = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(16.dp)
+        ConfirmDialog(
+            title = stringResource(R.string.ticket_dialog_empty_title),
+            message = stringResource(R.string.ticket_dialog_empty_msg),
+            confirmText = stringResource(R.string.ticket_dialog_btn_charge),
+            dismissText = stringResource(R.string.ticket_dialog_btn_next_time),
+            confirmColor = MaterialTheme.colorScheme.primary,
+            onConfirm = { onShowAd { homeViewModel.onAdWatched() } },
+            onDismiss = { homeViewModel.dismissAdDialog() }
         )
     }
 }

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -18,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
@@ -29,7 +27,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -51,7 +48,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.presentation.navigation.IngredientEditRoute
+import com.kjw.fridgerecipe.presentation.ui.components.common.BottomActionBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
+import com.kjw.fridgerecipe.presentation.ui.components.common.ConfirmDialog
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IconSelectionSection
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientDetailFields
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientInputFields
@@ -141,55 +140,27 @@ fun IngredientEditScreen(
     LoadingContent(isLoading = isLoading) {
         Scaffold(
             bottomBar = {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-                    shadowElevation = 16.dp,
-                    tonalElevation = 8.dp
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .navigationBarsPadding()
-                            .padding(16.dp)
-                    ) {
-                        if (isEditMode) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Button(
-                                    onClick = { viewModel.onDeleteDialogShow() },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.errorContainer,
-                                        contentColor = MaterialTheme.colorScheme.onErrorContainer
-                                    ),
-                                    shape = RoundedCornerShape(16.dp),
-                                    modifier = Modifier.height(56.dp)
-                                ) {
-                                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.ingredient_edit_btn_delete))
-                                }
-
-                                Button(
-                                    onClick = { viewModel.onSaveOrUpdateIngredient(isEditMode = true) },
-                                    modifier = Modifier.weight(1f).height(56.dp),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.ingredient_edit_btn_complete),
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                        } else {
+                BottomActionBar {
+                    if (isEditMode) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
                             Button(
-                                onClick = { viewModel.onSaveOrUpdateIngredient(isEditMode = false) },
-                                modifier = Modifier.fillMaxWidth().height(56.dp),
+                                onClick = { viewModel.onDeleteDialogShow() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                ),
+                                shape = RoundedCornerShape(16.dp),
+                                modifier = Modifier.height(56.dp)
+                            ) {
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.ingredient_edit_btn_delete))
+                            }
+
+                            Button(
+                                onClick = { viewModel.onSaveOrUpdateIngredient(isEditMode = true) },
+                                modifier = Modifier.weight(1f).height(56.dp),
                                 shape = RoundedCornerShape(16.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -197,11 +168,27 @@ fun IngredientEditScreen(
                                 )
                             ) {
                                 Text(
-                                    text = stringResource(R.string.ingredient_edit_btn_save),
+                                    text = stringResource(R.string.ingredient_edit_btn_complete),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
+                        }
+                    } else {
+                        Button(
+                            onClick = { viewModel.onSaveOrUpdateIngredient(isEditMode = false) },
+                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        ) {
+                            Text(
+                                text = stringResource(R.string.ingredient_edit_btn_save),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }
@@ -307,28 +294,15 @@ fun IngredientEditScreen(
     }
 
     if (uiState.showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { viewModel.onDeleteDialogDismiss() },
-            title = { Text(stringResource(R.string.ingredient_edit_dialog_delete_title)) },
-            text = {
-                val targetName = uiState.selectedIngredientName
-                    ?: stringResource(R.string.ingredient_edit_dialog_delete_msg_default)
-                Text(stringResource(R.string.ingredient_edit_dialog_delete_msg, targetName))
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = { viewModel.onDeleteIngredient() }
-                ) {
-                    Text(stringResource(R.string.ingredient_edit_btn_delete), color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { viewModel.onDeleteDialogDismiss() }
-                ) {
-                    Text(stringResource(R.string.btn_cancel))
-                }
-            }
+        val targetName = uiState.selectedIngredientName
+            ?: stringResource(R.string.ingredient_edit_dialog_delete_msg_default)
+
+        ConfirmDialog(
+            title = stringResource(R.string.ingredient_edit_dialog_delete_title),
+            message = stringResource(R.string.ingredient_edit_dialog_delete_msg, targetName),
+            confirmText = stringResource(R.string.ingredient_edit_btn_delete),
+            onConfirm = { viewModel.onDeleteIngredient() },
+            onDismiss = { viewModel.onDeleteDialogDismiss() }
         )
     }
 }

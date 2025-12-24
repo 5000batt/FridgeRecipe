@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
@@ -22,7 +21,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,9 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -50,7 +46,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.navigation.RecipeEditRoute
+import com.kjw.fridgerecipe.presentation.ui.components.common.BottomActionBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
+import com.kjw.fridgerecipe.presentation.ui.components.common.ConfirmDialog
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.ErrorText
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.IngredientEditRow
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeBasicInfoForm
@@ -150,63 +148,49 @@ fun RecipeEditScreen(
     LoadingContent(isLoading = isLoading) {
         Scaffold(
             bottomBar = {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-                    shadowElevation = 16.dp,
-                    tonalElevation = 8.dp
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .navigationBarsPadding()
-                            .padding(16.dp)
-                    ) {
-                        if (isEditMode) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Button(
-                                    onClick = { viewModel.onDeleteDialogShow() },
-                                    modifier = Modifier.weight(1f).height(56.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.errorContainer,
-                                        contentColor = MaterialTheme.colorScheme.onErrorContainer
-                                    ),
-                                    shape = RoundedCornerShape(16.dp)
-                                ) {
-                                    Icon(Icons.Default.Delete, contentDescription = null)
-                                    Spacer(Modifier.width(4.dp))
-                                    Text(stringResource(R.string.recipe_edit_btn_delete))
-                                }
-
-                                Button(
-                                    onClick = { viewModel.onSaveOrUpdateRecipe(isEditMode = true) },
-                                    modifier = Modifier.weight(1f).height(56.dp),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                ) {
-                                    Text(stringResource(R.string.recipe_edit_btn_complete), fontWeight = FontWeight.Bold)
-                                }
-                            }
-                        } else {
+                BottomActionBar {
+                    if (isEditMode) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
                             Button(
-                                onClick = { viewModel.onSaveOrUpdateRecipe(isEditMode = false) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(56.dp),
+                                onClick = { viewModel.onDeleteDialogShow() },
+                                modifier = Modifier.weight(1f).height(56.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                ),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Icon(Icons.Default.Delete, contentDescription = null)
+                                Spacer(Modifier.width(4.dp))
+                                Text(stringResource(R.string.recipe_edit_btn_delete))
+                            }
+
+                            Button(
+                                onClick = { viewModel.onSaveOrUpdateRecipe(isEditMode = true) },
+                                modifier = Modifier.weight(1f).height(56.dp),
                                 shape = RoundedCornerShape(16.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             ) {
-                                Text(stringResource(R.string.recipe_edit_btn_save), fontSize = MaterialTheme.typography.titleMedium.fontSize, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.recipe_edit_btn_complete), fontWeight = FontWeight.Bold)
                             }
+                        }
+                    } else {
+                        Button(
+                            onClick = { viewModel.onSaveOrUpdateRecipe(isEditMode = false) },
+                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        ) {
+                            Text(stringResource(R.string.recipe_edit_btn_save), fontSize = MaterialTheme.typography.titleMedium.fontSize, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -344,21 +328,12 @@ fun RecipeEditScreen(
     }
 
     if (uiState.showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { viewModel.onDeleteDialogDismiss() },
-            title = { Text(stringResource(R.string.recipe_edit_dialog_delete_title)) },
-            text = {
-                val title = uiState.title
-                Text(stringResource(R.string.recipe_edit_dialog_delete_msg, title))
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = { viewModel.onDeleteRecipe() }
-                ) { Text(stringResource(R.string.recipe_edit_btn_delete), color = MaterialTheme.colorScheme.error) }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.onDeleteDialogDismiss() }) { Text(stringResource(R.string.btn_cancel)) }
-            }
+        ConfirmDialog(
+            title = stringResource(R.string.recipe_edit_dialog_delete_title),
+            message = stringResource(R.string.recipe_edit_dialog_delete_msg, uiState.title),
+            confirmText = stringResource(R.string.recipe_edit_btn_delete),
+            onConfirm = { viewModel.onDeleteRecipe() },
+            onDismiss = { viewModel.onDeleteDialogDismiss() }
         )
     }
 }

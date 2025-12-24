@@ -148,7 +148,7 @@
     <string name="recipe_edit_btn_save">레시피 저장</string>
 
     <string name="recipe_edit_dialog_delete_title">레시피 삭제</string>
-    <string name="recipe_edit_dialog_delete_msg">정말로 \'%1$s\' 레시피를 삭제하시겠습니까?</string>
+    <string name="recipe_edit_dialog_delete_msg">정말로 \'%1$s\' 레시피를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.</string>
 
     <!--  Settings  -->
     <string name="settings_title">설정</string>

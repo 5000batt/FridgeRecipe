@@ -26,7 +26,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -36,7 +35,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
@@ -45,7 +43,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,6 +53,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.kjw.fridgerecipe.R
+import com.kjw.fridgerecipe.presentation.ui.components.common.ConfirmDialog
 import com.kjw.fridgerecipe.presentation.ui.components.settings.SettingsClickableItem
 import com.kjw.fridgerecipe.presentation.ui.components.settings.SettingsInfoItem
 import com.kjw.fridgerecipe.presentation.ui.components.settings.SettingsSectionTitle
@@ -257,66 +255,39 @@ fun SettingsScreen(
     }
 
     if (uiState.showResetIngredientsDialog) {
-        AlertDialog(
-            onDismissRequest = { viewModel.dismissResetIngredientsDialog() },
-            title = { Text(stringResource(R.string.settings_dialog_reset_ingredients_title)) },
-            text = { Text(stringResource(R.string.settings_dialog_reset_ingredients_msg)) },
-            confirmButton = {
-                TextButton(onClick = { viewModel.resetIngredients() }) {
-                    Text(stringResource(R.string.settings_btn_delete_data), color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.dismissResetIngredientsDialog() }) {
-                    Text(stringResource(R.string.btn_cancel))
-                }
-            }
+        ConfirmDialog(
+            title = stringResource(R.string.settings_dialog_reset_ingredients_title),
+            message = stringResource(R.string.settings_dialog_reset_ingredients_msg),
+            confirmText = stringResource(R.string.settings_btn_delete_data),
+            onConfirm = { viewModel.resetIngredients() },
+            onDismiss = { viewModel.dismissResetIngredientsDialog() }
         )
     }
 
     if (uiState.showResetRecipesDialog) {
-        AlertDialog(
-            onDismissRequest = { viewModel.dismissResetRecipesDialog() },
-            title = { Text(stringResource(R.string.settings_dialog_reset_recipes_title)) },
-            text = { Text(stringResource(R.string.settings_dialog_reset_recipes_msg)) },
-            confirmButton = {
-                TextButton(onClick = { viewModel.resetRecipes() }) {
-                    Text(stringResource(R.string.settings_btn_delete_data), color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.dismissResetRecipesDialog() }) {
-                    Text(stringResource(R.string.btn_cancel))
-                }
-            }
+        ConfirmDialog(
+            title = stringResource(R.string.settings_dialog_reset_recipes_title),
+            message = stringResource(R.string.settings_dialog_reset_recipes_msg),
+            confirmText = stringResource(R.string.settings_btn_delete_data),
+            onConfirm = { viewModel.resetRecipes() },
+            onDismiss = { viewModel.dismissResetRecipesDialog() }
         )
     }
 
     if (uiState.showPermissionDialog) {
-        AlertDialog(
-            onDismissRequest = { viewModel.dismissPermissionDialog() },
-            title = { Text(stringResource(R.string.settings_dialog_permission_title)) },
-            text = { Text(stringResource(R.string.settings_dialog_permission_msg)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.dismissPermissionDialog()
-                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                            data = Uri.fromParts("package", context.packageName, null)
-                        }
-                        context.startActivity(intent)
-                    }
-                ) {
-                    Text(stringResource(R.string.settings_btn_go_to_settings), fontWeight = FontWeight.Bold)
+        ConfirmDialog(
+            title = stringResource(R.string.settings_dialog_permission_title),
+            message = stringResource(R.string.settings_dialog_permission_msg),
+            confirmText = stringResource(R.string.settings_btn_go_to_settings),
+            confirmColor = MaterialTheme.colorScheme.primary,
+            onConfirm = {
+                viewModel.dismissPermissionDialog()
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", context.packageName, null)
                 }
+                context.startActivity(intent)
             },
-            dismissButton = {
-                TextButton(onClick = { viewModel.dismissPermissionDialog() }) {
-                    Text(stringResource(R.string.btn_cancel))
-                }
-            },
-            containerColor = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(16.dp)
+            onDismiss = { viewModel.dismissPermissionDialog() }
         )
     }
 }

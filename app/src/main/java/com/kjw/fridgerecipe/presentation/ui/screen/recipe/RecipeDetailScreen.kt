@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kjw.fridgerecipe.R
+import com.kjw.fridgerecipe.presentation.ui.components.common.BottomActionBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.IngredientListItem
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeInfoRow
@@ -84,36 +85,22 @@ fun RecipeDetailScreen(
         recipe?.let { currentRecipe ->
             Scaffold(
                 bottomBar = {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-                        shadowElevation = 16.dp,
-                        tonalElevation = 8.dp
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .navigationBarsPadding()
-                                .padding(16.dp)
+                    BottomActionBar {
+                        Button(
+                            onClick = { currentRecipe.id?.let { onNavigateToRecipeEdit(it) } },
+                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
                         ) {
-                            Button(
-                                onClick = { currentRecipe.id?.let { onNavigateToRecipeEdit(it) } },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(56.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            ) {
-                                Icon(Icons.Default.Edit, contentDescription = null)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = stringResource(R.string.recipe_detail_btn_edit),
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                            Icon(Icons.Default.Edit, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.recipe_detail_btn_edit),
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 },
