@@ -1,4 +1,4 @@
-package com.kjw.fridgerecipe.presentation.ui.components.recipe
+package com.kjw.fridgerecipe.presentation.ui.components.recipe.list
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
@@ -45,7 +45,7 @@ fun RecipeListItem(
     onRecipeClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier
+        modifier = Modifier.Companion
             .fillMaxWidth()
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -57,70 +57,70 @@ fun RecipeListItem(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Row(
-            modifier = Modifier
+            modifier = Modifier.Companion
                 .fillMaxWidth()
                 .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Companion.CenterVertically
         ) {
             if (recipe.imageUri != null) {
                 AsyncImage(
                     model = recipe.imageUri,
                     contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
+                    contentScale = ContentScale.Companion.Crop,
+                    modifier = Modifier.Companion
                         .size(100.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                 )
             } else {
                 Box(
-                    modifier = Modifier
+                    modifier = Modifier.Companion
                         .size(100.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Companion.Center
                 ) {
                     Icon(
                         Icons.Default.SoupKitchen,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.Companion.size(40.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.Companion.width(16.dp))
 
             Column(
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .weight(1f)
                     .height(100.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = recipe.title,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Companion.Bold),
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Companion.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(top = 4.dp)
+                    modifier = Modifier.Companion.padding(top = 4.dp)
                 )
 
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment = Alignment.Companion.CenterVertically,
                     horizontalArrangement = Arrangement.Start
                 ) {
                     RecipeInfoChip(icon = Icons.Default.AccessTime, text = recipe.time)
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.Companion.width(8.dp))
 
                     Box(
-                        modifier = Modifier
+                        modifier = Modifier.Companion
                             .size(2.dp)
                             .background(MaterialTheme.colorScheme.outline, CircleShape)
                     )
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.Companion.width(8.dp))
 
                     RecipeInfoChip(
                         icon = Icons.Default.SignalCellularAlt,
@@ -137,15 +137,15 @@ private fun RecipeInfoChip(
     icon: ImageVector,
     text: String
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(verticalAlignment = Alignment.Companion.CenterVertically) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size(14.dp),
+            modifier = Modifier.Companion.size(14.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Spacer(modifier = Modifier.width(4.dp))
+        Spacer(modifier = Modifier.Companion.width(4.dp))
 
         Text(
             text = text,

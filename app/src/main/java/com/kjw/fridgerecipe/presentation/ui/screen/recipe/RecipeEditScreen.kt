@@ -44,14 +44,14 @@ import com.kjw.fridgerecipe.presentation.navigation.RecipeEditRoute
 import com.kjw.fridgerecipe.presentation.ui.components.common.BottomActionBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.common.ConfirmDialog
+import com.kjw.fridgerecipe.presentation.ui.components.common.ErrorText
 import com.kjw.fridgerecipe.presentation.ui.components.common.FridgeBottomButton
-import com.kjw.fridgerecipe.presentation.ui.components.recipe.ErrorText
-import com.kjw.fridgerecipe.presentation.ui.components.recipe.IngredientEditRow
-import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeBasicInfoForm
-import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeImageSelector
-import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeMetadataForm
-import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeSectionHeader
-import com.kjw.fridgerecipe.presentation.ui.components.recipe.StepEditRow
+import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.IngredientEditRow
+import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.RecipeMetadataForm
+import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.RecipeBasicInfoForm
+import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.RecipeImageSelector
+import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.RecipeSectionHeader
+import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.StepEditRow
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.ui.model.RecipeValidationField
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
@@ -134,13 +134,6 @@ fun RecipeEditScreen(
         }
     }
 
-    val transparentColors = OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = Color.Transparent,
-        unfocusedContainerColor = Color.Transparent,
-        focusedBorderColor = MaterialTheme.colorScheme.primary,
-        unfocusedBorderColor = MaterialTheme.colorScheme.outline
-    )
-
     LoadingContent(isLoading = isLoading) {
         Scaffold(
             bottomBar = {
@@ -217,8 +210,7 @@ fun RecipeEditScreen(
                             timeError = uiState.timeError?.asString(),
                             titleFocusRequester = titleFocusRequester,
                             servingsFocusRequester = servingsFocusRequester,
-                            timeFocusRequester = timeFocusRequester,
-                            transparentColors = transparentColors
+                            timeFocusRequester = timeFocusRequester
                         )
                     }
 
@@ -231,8 +223,7 @@ fun RecipeEditScreen(
                             categoryState = uiState.categoryState,
                             onCategoryChange = { viewModel.onCategoryChanged(it) },
                             utensilState = uiState.utensilState,
-                            onUtensilChange = { viewModel.onUtensilChanged(it) },
-                            transparentColors = transparentColors
+                            onUtensilChange = { viewModel.onUtensilChanged(it) }
                         )
                     }
 
@@ -267,8 +258,7 @@ fun RecipeEditScreen(
                             onNameChange = { viewModel.onIngredientNameChanged(index, it) },
                             quantity = ingredient.quantity,
                             onQuantityChange = { viewModel.onIngredientQuantityChanged(index, it) },
-                            onRemoveClick = { viewModel.onRemoveIngredient(index) },
-                            transparentColors = transparentColors
+                            onRemoveClick = { viewModel.onRemoveIngredient(index) }
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -293,8 +283,7 @@ fun RecipeEditScreen(
                             index = index,
                             description = step.description,
                             onDescriptionChange = { viewModel.onStepDescriptionChanged(index, it) },
-                            onRemoveClick = { viewModel.onRemoveStep(index) },
-                            transparentColors = transparentColors
+                            onRemoveClick = { viewModel.onRemoveStep(index) }
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))

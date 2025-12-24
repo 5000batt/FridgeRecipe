@@ -1,4 +1,4 @@
-package com.kjw.fridgerecipe.presentation.ui.components.ingredient
+package com.kjw.fridgerecipe.presentation.ui.components.common
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,7 +28,7 @@ fun StorageSection(
     items: List<Ingredient>,
     displayType: ListDisplayType,
     selectedIngredientIds: Set<Long>,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.Companion,
     onIngredientClick: (Ingredient) -> Unit
 ) {
     val configuration = LocalConfiguration.current
@@ -46,7 +46,7 @@ fun StorageSection(
         Text(
             text = stringResource(R.string.storage_section_title_format, title, items.size),
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.Companion.padding(bottom = 8.dp)
         )
 
         if (items.isEmpty()) {
@@ -56,7 +56,7 @@ fun StorageSection(
                 ListDisplayType.ROW -> {
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.heightIn(min = 80.dp, max = 100.dp)
+                        modifier = Modifier.Companion.heightIn(min = 80.dp, max = 100.dp)
                     ) {
                         items(items) { ingredient ->
                             IngredientChip(
@@ -72,7 +72,7 @@ fun StorageSection(
                     if (items.size <= singleRowMaxItems) {
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.heightIn(min = 80.dp, max = 100.dp)
+                            modifier = Modifier.Companion.heightIn(min = 80.dp, max = 100.dp)
                         ) {
                             items(items) { ingredient ->
                                 IngredientChip(
@@ -87,7 +87,7 @@ fun StorageSection(
                             rows = GridCells.Fixed(singleRowMaxItems),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier
+                            modifier = Modifier.Companion
                                 .heightIn(min = 100.dp, max = 208.dp)
                                 .fillMaxWidth()
                         ) {

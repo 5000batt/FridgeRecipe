@@ -43,9 +43,9 @@ import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.ui.components.common.BottomActionBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.FridgeBottomButton
 import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
-import com.kjw.fridgerecipe.presentation.ui.components.recipe.IngredientListItem
-import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeInfoRow
-import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeStepItem
+import com.kjw.fridgerecipe.presentation.ui.components.recipe.detail.IngredientListItem
+import com.kjw.fridgerecipe.presentation.ui.components.recipe.detail.RecipeInfoRow
+import com.kjw.fridgerecipe.presentation.ui.components.recipe.detail.RecipeStepItem
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeDetailViewModel

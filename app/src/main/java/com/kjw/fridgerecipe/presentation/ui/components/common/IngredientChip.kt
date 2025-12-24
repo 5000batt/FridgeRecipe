@@ -1,4 +1,4 @@
-package com.kjw.fridgerecipe.presentation.ui.components.ingredient
+package com.kjw.fridgerecipe.presentation.ui.components.common
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -31,6 +31,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private val DateFormatter = DateTimeFormatter.ofPattern("y.MM.dd")
+
 @Composable
 fun IngredientChip(
     ingredient: Ingredient,
@@ -47,7 +48,7 @@ fun IngredientChip(
     }
 
     Card(
-        modifier = Modifier
+        modifier = Modifier.Companion
             .size(width = 100.dp, height = 100.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -62,32 +63,32 @@ fun IngredientChip(
         border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Column(
-            modifier = Modifier
+            modifier = Modifier.Companion
                 .fillMaxSize()
                 .padding(vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.Companion.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             IngredientIconImage(ingredient)
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.Companion.height(4.dp))
 
             Text(
                 text = ingredient.name,
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(horizontal = 4.dp),
+                modifier = Modifier.Companion.padding(horizontal = 4.dp),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Companion.Ellipsis
             )
 
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.Companion.height(2.dp))
 
             Text(
                 text = ingredient.expirationDate.format(DateFormatter),
                 style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.padding(horizontal = 4.dp),
+                modifier = Modifier.Companion.padding(horizontal = 4.dp),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Companion.Ellipsis
             )
         }
     }
@@ -100,7 +101,7 @@ fun IngredientIconImage(ingredient: Ingredient) {
     Image(
         painter = imagePainter,
         contentDescription = ingredient.emoticon.label + " 아이콘",
-        modifier = Modifier.size(48.dp),
-        contentScale = ContentScale.Fit
+        modifier = Modifier.Companion.size(48.dp),
+        contentScale = ContentScale.Companion.Fit
     )
 }

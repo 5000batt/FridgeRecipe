@@ -35,7 +35,7 @@ import com.kjw.fridgerecipe.presentation.ui.components.common.AppBottomNavigatio
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonSearchBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.EmptyStateView
 import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
-import com.kjw.fridgerecipe.presentation.ui.components.recipe.RecipeListItem
+import com.kjw.fridgerecipe.presentation.ui.components.recipe.list.RecipeListItem
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeListViewModel
 
 @Composable

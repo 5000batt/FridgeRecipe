@@ -54,14 +54,14 @@ import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.presentation.navigation.MainTab
 import com.kjw.fridgerecipe.presentation.ui.components.common.AppBottomNavigationBar
-import com.kjw.fridgerecipe.presentation.ui.components.ingredient.StorageSection
+import com.kjw.fridgerecipe.presentation.ui.components.common.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
 import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
 import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.common.ConfirmDialog
 import com.kjw.fridgerecipe.presentation.ui.components.common.ErrorDialog
 import com.kjw.fridgerecipe.presentation.ui.components.common.FridgeBottomButton
-import com.kjw.fridgerecipe.presentation.ui.components.home.FilterSection
+import com.kjw.fridgerecipe.presentation.ui.components.home.FilterChipSection
 import com.kjw.fridgerecipe.presentation.ui.components.home.RecipeLoadingScreen
 import com.kjw.fridgerecipe.presentation.ui.components.home.TimeSliderSection
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants
@@ -241,8 +241,9 @@ fun HomeScreen(
                                 Spacer(modifier = Modifier.height(20.dp))
 
                                 val selectedLevelOption = levelFilterOptions.find { it.value == uiState.filterState.level }
+                                    ?: levelFilterOptions.first()
 
-                                FilterSection(
+                                FilterChipSection(
                                     title = stringResource(R.string.home_filter_level),
                                     options = levelFilterOptions,
                                     selectedOption = selectedLevelOption,
@@ -257,7 +258,7 @@ fun HomeScreen(
                                 val selectedCategoryOption = categoryFilterOptions.find { it.value == uiState.filterState.category }
                                     ?: categoryFilterOptions.first()
 
-                                FilterSection(
+                                FilterChipSection(
                                     title = stringResource(R.string.home_filter_category),
                                     options = categoryFilterOptions,
                                     selectedOption = selectedCategoryOption,
@@ -272,7 +273,7 @@ fun HomeScreen(
                                 val selectedUtensilOption = utensilFilterOptions.find { it.value == uiState.filterState.utensil }
                                     ?: utensilFilterOptions.first()
 
-                                FilterSection(
+                                FilterChipSection(
                                     title = stringResource(R.string.home_filter_utensil),
                                     options = utensilFilterOptions,
                                     selectedOption = selectedUtensilOption,
