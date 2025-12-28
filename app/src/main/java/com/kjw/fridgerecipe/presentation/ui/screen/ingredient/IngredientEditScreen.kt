@@ -4,13 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,7 +20,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -45,6 +41,7 @@ import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.presentation.navigation.IngredientEditRoute
 import com.kjw.fridgerecipe.presentation.ui.components.common.BottomActionBar
+import com.kjw.fridgerecipe.presentation.ui.components.common.CommonTopBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.common.ConfirmDialog
 import com.kjw.fridgerecipe.presentation.ui.components.common.FridgeBottomButton
@@ -136,6 +133,16 @@ fun IngredientEditScreen(
 
     LoadingContent(isLoading = isLoading) {
         Scaffold(
+            topBar = {
+                CommonTopBar(
+                    title = if (isEditMode) {
+                        stringResource(R.string.title_ingredient_edit)
+                    } else {
+                        stringResource(R.string.title_ingredient_add)
+                    },
+                    onNavigateBack = onNavigateBack
+                )
+            },
             bottomBar = {
                 BottomActionBar {
                     if (isEditMode) {
@@ -148,7 +155,8 @@ fun IngredientEditScreen(
                                 onClick = { viewModel.onDeleteDialogShow() },
                                 icon = { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.ingredient_edit_btn_delete)) },
                                 containerColor = MaterialTheme.colorScheme.errorContainer,
-                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.weight(1f)
                             )
 
                             FridgeBottomButton(
@@ -167,7 +175,6 @@ fun IngredientEditScreen(
                 }
             },
             containerColor = MaterialTheme.colorScheme.background,
-            contentWindowInsets = ScaffoldDefaults.contentWindowInsets.exclude(WindowInsets.statusBars)
         ) { innerPadding ->
             Column(
                 modifier = Modifier

@@ -5,14 +5,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -23,7 +20,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -41,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.ui.components.common.BottomActionBar
+import com.kjw.fridgerecipe.presentation.ui.components.common.CommonTopBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.FridgeBottomButton
 import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.detail.IngredientListItem
@@ -53,6 +50,7 @@ import com.kjw.fridgerecipe.presentation.viewmodel.RecipeDetailViewModel
 @Composable
 fun RecipeDetailScreen(
     onNavigateToRecipeEdit: (Long) -> Unit,
+    onNavigateBack: () -> Unit,
     viewModel: RecipeDetailViewModel = hiltViewModel(),
     recipeId: Long
 ) {
@@ -79,6 +77,12 @@ fun RecipeDetailScreen(
     LoadingContent(isLoading = isLoading) {
         recipe?.let { currentRecipe ->
             Scaffold(
+                topBar = {
+                    CommonTopBar(
+                        title = stringResource(R.string.title_recipe_detail),
+                        onNavigateBack = onNavigateBack
+                    )
+                },
                 bottomBar = {
                     BottomActionBar {
                         FridgeBottomButton(
@@ -90,7 +94,6 @@ fun RecipeDetailScreen(
                     }
                 },
                 containerColor = MaterialTheme.colorScheme.background,
-                contentWindowInsets = ScaffoldDefaults.contentWindowInsets.exclude(WindowInsets.statusBars)
             ) { innerPadding ->
                 Column(
                     modifier = Modifier

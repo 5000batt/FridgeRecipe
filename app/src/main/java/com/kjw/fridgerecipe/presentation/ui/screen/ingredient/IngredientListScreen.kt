@@ -4,13 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -20,7 +17,6 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -33,8 +29,9 @@ import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.presentation.navigation.IngredientEditRoute
 import com.kjw.fridgerecipe.presentation.navigation.MainTab
-import com.kjw.fridgerecipe.presentation.ui.components.common.AppBottomNavigationBar
+import com.kjw.fridgerecipe.presentation.ui.components.common.BottomNavigationBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonSearchBar
+import com.kjw.fridgerecipe.presentation.ui.components.common.CommonTopBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.EmptyStateView
 import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
 import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
@@ -46,6 +43,7 @@ import com.kjw.fridgerecipe.presentation.viewmodel.IngredientListViewModel
 fun IngredientListScreen(
     viewModel: IngredientListViewModel = hiltViewModel(),
     onNavigateToIngredientEdit: (Long) -> Unit,
+    onNavigateToSettings: () -> Unit,
     onNavigateToMainTab: (MainTab) -> Unit
 ) {
     val categorizedIngredients by viewModel.categorizedIngredients.collectAsState()
@@ -54,8 +52,14 @@ fun IngredientListScreen(
 
     LoadingContent(isLoading = isLoading) {
         Scaffold(
+            topBar = {
+                CommonTopBar(
+                    title = stringResource(MainTab.INGREDIENTS.titleResId),
+                    onSettingClick = onNavigateToSettings
+                )
+            },
             bottomBar = {
-                AppBottomNavigationBar(
+                BottomNavigationBar(
                     currentTab = MainTab.INGREDIENTS,
                     onTabSelected = onNavigateToMainTab
                 )
@@ -69,14 +73,13 @@ fun IngredientListScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             },
-            contentWindowInsets = ScaffoldDefaults.contentWindowInsets.exclude(WindowInsets.statusBars),
             containerColor = MaterialTheme.colorScheme.background
         ) { innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(horizontal = 16.dp) // 기존 패딩 유지
+                    .padding(horizontal = 16.dp)
             ) {
                 CommonSearchBar(
                     query = searchQuery,

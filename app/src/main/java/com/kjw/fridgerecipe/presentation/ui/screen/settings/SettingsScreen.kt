@@ -8,7 +8,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,7 +32,7 @@ import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -54,6 +52,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.kjw.fridgerecipe.R
+import com.kjw.fridgerecipe.presentation.ui.components.common.CommonTopBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.ConfirmDialog
 import com.kjw.fridgerecipe.presentation.ui.components.settings.SettingsClickableItem
 import com.kjw.fridgerecipe.presentation.ui.components.settings.SettingsInfoItem
@@ -89,16 +88,19 @@ fun SettingsScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        color = MaterialTheme.colorScheme.background
-    ) {
+    Scaffold(
+        topBar = {
+            CommonTopBar(
+                title = stringResource(R.string.title_settings),
+                onNavigateBack = onNavigateBack
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .navigationBarsPadding()
+                .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
             SettingsSectionTitle(stringResource(R.string.settings_section_notification))

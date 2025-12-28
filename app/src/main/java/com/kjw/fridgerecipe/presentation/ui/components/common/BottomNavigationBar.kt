@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.presentation.navigation.MainTab
 
 @Composable
-fun AppBottomNavigationBar(
+fun BottomNavigationBar(
     currentTab: MainTab?,
     onTabSelected: (MainTab) -> Unit
 ) {

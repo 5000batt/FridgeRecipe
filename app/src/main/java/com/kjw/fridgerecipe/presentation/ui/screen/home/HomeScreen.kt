@@ -25,11 +25,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
@@ -50,10 +52,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.presentation.navigation.MainTab
-import com.kjw.fridgerecipe.presentation.ui.components.common.AppBottomNavigationBar
+import com.kjw.fridgerecipe.presentation.ui.components.common.BottomNavigationBar
+import com.kjw.fridgerecipe.presentation.ui.components.common.CommonTopBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.StorageSection
 import com.kjw.fridgerecipe.presentation.ui.model.ListDisplayType
 import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
@@ -67,6 +73,7 @@ import com.kjw.fridgerecipe.presentation.ui.components.home.TimeSliderSection
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.presentation.viewmodel.HomeViewModel
+import com.kjw.fridgerecipe.worker.ExpirationCheckWorker
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,6 +82,7 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
     onNavigateToRecipeDetail: (Long) -> Unit,
     onNavigateToIngredientEdit: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     onShowAd: (onReward: () -> Unit) -> Unit,
     onShowSnackbar: (String, SnackbarType) -> Unit,
     onNavigateToMainTab: (MainTab) -> Unit
@@ -127,8 +135,26 @@ fun HomeScreen(
 
     LoadingContent(isLoading = uiState.isIngredientLoading) {
         Scaffold(
+            topBar = {
+                CommonTopBar(
+                    title = stringResource(MainTab.HOME.titleResId),
+                    onSettingClick = onNavigateToSettings,
+                    actions = {
+                        if (BuildConfig.DEBUG) {
+                            val testMsg = stringResource(R.string.msg_notification_test)
+                            IconButton(onClick = {
+                                val testRequest = OneTimeWorkRequestBuilder<ExpirationCheckWorker>().build()
+                                WorkManager.getInstance(context).enqueue(testRequest)
+                                onShowSnackbar(testMsg, SnackbarType.SUCCESS)
+                            }) {
+                                Icon(Icons.Default.BugReport, contentDescription = stringResource(R.string.desc_notification_test))
+                            }
+                        }
+                    }
+                )
+            },
             bottomBar = {
-                AppBottomNavigationBar(
+                BottomNavigationBar(
                     currentTab = MainTab.HOME,
                     onTabSelected = onNavigateToMainTab
                 )

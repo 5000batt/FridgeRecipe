@@ -7,10 +7,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
+import com.kjw.fridgerecipe.R
 
 @Composable
 fun LoadingContent(
@@ -18,6 +24,8 @@ fun LoadingContent(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading))
+
     Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Box(
             modifier = Modifier
@@ -38,6 +46,11 @@ fun LoadingContent(
                     modifier = Modifier.size(48.dp),
                     color = MaterialTheme.colorScheme.primary
                 )
+                /*LottieAnimation(
+                    composition = composition,
+                    iterations = LottieConstants.IterateForever,
+                    modifier = Modifier.size(200.dp)
+                )*/
             }
         }
     }
