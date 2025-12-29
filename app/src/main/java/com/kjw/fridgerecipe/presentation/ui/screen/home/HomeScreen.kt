@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,6 +47,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,6 +59,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.R
+import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.presentation.navigation.MainTab
 import com.kjw.fridgerecipe.presentation.ui.components.common.BottomNavigationBar
@@ -173,15 +177,37 @@ fun HomeScreen(
                         .padding(horizontal = 16.dp),
                     contentPadding = PaddingValues(bottom = 120.dp)
                 ) {
-                    item { Spacer(modifier = Modifier.height(8.dp)) }
-
                     item {
+                        Spacer(modifier = Modifier.height(8.dp))
+
                         Text(
                             text = stringResource(R.string.home_title_fridge),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground
                         )
+
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(vertical = 12.dp)
+                        ) {
+                            item {
+                                FilterChip(
+                                    selected = uiState.selectedCategory == null,
+                                    onClick = { homeViewModel.onCategorySelect(null) },
+                                    label = {
+                                        Text(text = stringResource(R.string.home_category_all))
+                                    }
+                                )
+                            }
+                            items(CategoryType.entries) { category ->
+                                FilterChip(
+                                    selected = uiState.selectedCategory == category,
+                                    onClick = { homeViewModel.onCategorySelect(category) },
+                                    label = { Text(category.label) }
+                                )
+                            }
+                        }
 
                         IngredientStatusLegend(
                             modifier = Modifier
@@ -231,14 +257,44 @@ fun HomeScreen(
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    Text(stringResource(R.string.home_empty_title), style = MaterialTheme.typography.titleMedium)
+                                    Text(
+                                        text = if (uiState.selectedCategory != null)
+                                            stringResource(R.string.home_category_empty_ingredient) else stringResource(R.string.home_empty_title),
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
                                     Text(stringResource(R.string.home_empty_desc), style = MaterialTheme.typography.bodyMedium)
                                 }
                             }
                         }
                     }
 
-                    item { Spacer(modifier = Modifier.height(32.dp)) }
+                    item {
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        HorizontalDivider(
+                            thickness = 10.dp,
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            // LazyColumn 여백 채우기
+                            modifier = Modifier.layout { measurable, constraints ->
+                                val paddingPx = 16.dp.roundToPx()
+                                val totalPadding = paddingPx * 2
+                                val newWidth = constraints.maxWidth + totalPadding
+
+                                val placeable = measurable.measure(
+                                    constraints.copy(
+                                        minWidth = newWidth,
+                                        maxWidth = newWidth
+                                    )
+                                )
+
+                                layout(placeable.width, placeable.height) {
+                                    placeable.place(x = 0, y = 0)
+                                }
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
 
                     item {
                         Text(

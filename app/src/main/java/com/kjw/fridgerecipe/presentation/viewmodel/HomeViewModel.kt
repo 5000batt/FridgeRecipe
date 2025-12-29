@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.data.repository.TicketRepository
+import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
@@ -52,6 +53,9 @@ class HomeViewModel @Inject constructor(
     private val _seenRecipeIds = MutableStateFlow<Set<Long>>(emptySet())
     private var currentIngredientsQuery: String = ""
 
+    // 현재 선택된 카테고리 필터
+    private var currentCategoryFilter: CategoryType? = null
+
     init {
         loadIngredients()
         observeTickets()
@@ -62,15 +66,44 @@ class HomeViewModel @Inject constructor(
     private fun loadIngredients() {
         viewModelScope.launch {
             getIngredientsUseCase().collect { ingredients ->
-                val grouped = ingredients.groupBy { it.storageLocation }
                 _homeUiState.update {
                     it.copy(
                         allIngredients = ingredients,
-                        storageIngredients = grouped,
                         isIngredientLoading = false
                     )
                 }
+                updateDisplayedIngredients()
             }
+        }
+    }
+
+    // 카테고리 칩 선택
+    fun onCategorySelect(category: CategoryType?) {
+        currentCategoryFilter = category
+        _homeUiState.update { it.copy(selectedCategory = category) }
+        updateDisplayedIngredients()
+    }
+
+    // 필터링 및 정렬 로직 통합
+    private fun updateDisplayedIngredients() {
+        val all = _homeUiState.value.allIngredients
+        val category = currentCategoryFilter
+
+        // 카테고리 필터링
+        val filtered = if (category == null) {
+            all
+        } else {
+            all.filter { it.category == category }
+        }
+
+        // 정렬 (소비기한 임박한 순서: 오름차순)
+        val sorted = filtered.sortedBy { it.expirationDate }
+
+        // 보관 장소별 그룹화
+        val grouped = sorted.groupBy { it.storageLocation }
+
+        _homeUiState.update {
+            it.copy(storageIngredients = grouped)
         }
     }
 

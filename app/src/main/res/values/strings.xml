@@ -40,17 +40,18 @@
     <string name="desc_notification_test">알림 테스트</string>
 
     <!--  Home  -->
-    <string name="home_title_fridge">🥕 나의 냉장고</string>
+    <string name="home_title_fridge">🥕 냉장고 재료</string>
     <string name="home_empty_title">냉장고가 비어있어요!</string>
     <string name="home_empty_desc">터치해서 재료를 채워보세요.</string>
-    <string name="ticket_count_format">오늘의 무료 레시피: %1$d / %2$d회</string>
+    <string name="home_category_empty_ingredient">해당 카테고리의 재료가 없어요</string>
+    <string name="home_category_all">전체</string>
 
     <string name="home_btn_loading">레시피 생성 중…</string>
     <string name="home_btn_select_ingredient">재료를 먼저 선택해주세요</string>
     <string name="home_btn_recommend">맞춤 레시피 추천 받기</string>
     <string name="home_btn_recommend_another">다른 레시피 추천 받기</string>
 
-    <string name="home_filter_title">🍳 레시피 조건 설정</string>
+    <string name="home_filter_title">🍳 레시피 조건</string>
     <string name="home_filter_time">조리 시간</string>
     <string name="home_filter_level">난이도</string>
     <string name="home_filter_category">음식 종류</string>
@@ -66,6 +67,7 @@
     <string name="ticket_dialog_empty_msg">오늘 제공된 무료 이용권 3장을 모두 사용하셨어요!\n\n내일 다시 이용해 주세요!</string>
     <string name="ticket_dialog_btn_charge">광고 보고 충전 (+1)</string>
     <string name="ticket_dialog_btn_next_time">다음에 할게요</string>
+    <string name="ticket_count_format">오늘의 무료 레시피: %1$d / %2$d회</string>
 
     <!--  IngredientList  -->
     <string name="ingredient_search_placeholder">어떤 재료를 찾으시나요?</string>

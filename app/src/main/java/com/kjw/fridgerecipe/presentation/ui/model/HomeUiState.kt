@@ -1,5 +1,6 @@
 package com.kjw.fridgerecipe.presentation.ui.model
 
+import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.StorageType
@@ -24,4 +25,7 @@ data class HomeUiState(
     val conflictIngredients: List<String> = emptyList(),
     val errorDialogState: ErrorDialogState? = null,
     val showAdDialog: Boolean = false,
+
+    // 현재 선택된 카테고리
+    val selectedCategory: CategoryType? = null
 )
