@@ -3,12 +3,9 @@ package com.kjw.fridgerecipe.presentation.ui.screen.ingredient
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
@@ -33,6 +30,7 @@ import com.kjw.fridgerecipe.presentation.ui.components.common.BottomNavigationBa
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonSearchBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonTopBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.EmptyStateView
+import com.kjw.fridgerecipe.presentation.ui.components.common.FadeScrollLazyColumn
 import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientStatusLegend
 import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.common.StorageSection
@@ -110,11 +108,12 @@ fun IngredientListScreen(
                             .padding(top = 8.dp, bottom = 4.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    LazyColumn(
+                    FadeScrollLazyColumn(
                         modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(bottom = 80.dp),
+                        contentPadding = PaddingValues(
+                            top = 8.dp,
+                            bottom = 80.dp
+                        ),
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         CategoryType.entries.forEach { categoryType ->
