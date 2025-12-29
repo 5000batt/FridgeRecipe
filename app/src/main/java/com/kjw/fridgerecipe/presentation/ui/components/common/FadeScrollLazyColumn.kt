@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -22,6 +23,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -36,6 +38,7 @@ fun FadeScrollLazyColumn(
     content: LazyListScope.() -> Unit
 ) {
     val density = LocalDensity.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val topGradientAlpha by remember(state, density, gradientHeight) {
         derivedStateOf {
@@ -48,6 +51,12 @@ fun FadeScrollLazyColumn(
             } else {
                 (scrollOffset / heightPx).coerceIn(0f, 1f)
             }
+        }
+    }
+
+    LaunchedEffect(state.isScrollInProgress) {
+        if (state.isScrollInProgress) {
+            keyboardController?.hide()
         }
     }
 

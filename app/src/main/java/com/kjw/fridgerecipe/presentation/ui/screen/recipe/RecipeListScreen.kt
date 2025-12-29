@@ -7,15 +7,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SoupKitchen
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,6 +25,7 @@ import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.navigation.MainTab
 import com.kjw.fridgerecipe.presentation.navigation.RecipeEditRoute
 import com.kjw.fridgerecipe.presentation.ui.components.common.BottomNavigationBar
+import com.kjw.fridgerecipe.presentation.ui.components.common.CommonFloatingActionButton
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonSearchBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonTopBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.EmptyStateView
@@ -46,6 +45,7 @@ fun RecipeListScreen(
     val recipeList by viewModel.savedRecipes.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val listState = rememberLazyListState()
 
     LoadingContent(isLoading = isLoading) {
         Scaffold(
@@ -62,12 +62,11 @@ fun RecipeListScreen(
                 )
             },
             floatingActionButton = {
-                ExtendedFloatingActionButton(
-                    onClick = { onNavigateToRecipeEdit(RecipeEditRoute.DEFAULT_ID) },
-                    icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                    text = { Text(stringResource(R.string.fab_add_recipe)) },
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                CommonFloatingActionButton(
+                    text = stringResource(R.string.fab_add_recipe),
+                    icon = Icons.Filled.Add,
+                    state = listState,
+                    onClick = { onNavigateToRecipeEdit(RecipeEditRoute.DEFAULT_ID) }
                 )
             },
             containerColor = MaterialTheme.colorScheme.background
@@ -106,6 +105,7 @@ fun RecipeListScreen(
                             top = 8.dp,
                             bottom = 80.dp
                         ),
+                        state = listState,
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(

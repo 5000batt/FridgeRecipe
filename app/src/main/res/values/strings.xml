@@ -14,6 +14,8 @@
     <string name="option_time_60">60분 이내</string>
     <string name="option_time_over_60">60분 초과</string>
 
+    <string name="search_clear">검색어 지우기</string>
+
     <!--  MainApp  -->
     <string name="title_home">냉파고</string>
     <string name="title_ingredient_list">재료 목록</string>
