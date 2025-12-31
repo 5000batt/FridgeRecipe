@@ -65,6 +65,12 @@
     <string name="home_dialog_conflict_msg">선택하신 재료 중 \'%1$s\'은(는)\n설정에서 \'제외할 재료\'로 지정되어 있습니다.\n\n그래도 해당 재료를 포함하여 레시피를 추천받으시겠습니까?</string>
     <string name="home_dialog_conflict_btn_yes">네, 포함할게요</string>
 
+    <string name="home_dialog_check_ingredient_title">선택한 재료 확인</string>
+    <string name="home_dialog_check_ingredient_desc">다음 재료들로 레시피를 추천받으시겠습니까?</string>
+    <string name="home_dialog_check_ingredient_warning">주의: 식재료가 아닌 단어가 포함될 경우, 엉뚱한 레시피가 생성될 수 있습니다.</string>
+    <string name="home_dialog_check_ingredient_do_not_show">이 메시지 다시 보지 않기</string>
+    <string name="home_dialog_check_ingredient_btn_confirm">네, 추천해주세요</string>
+
     <string name="ticket_dialog_empty_title">무료 이용권 소진 🎫</string>
     <string name="ticket_dialog_empty_msg">오늘 제공된 무료 이용권 3장을 모두 사용하셨어요!\n\n내일 다시 이용해 주세요!</string>
     <string name="ticket_dialog_btn_charge">광고 보고 충전 (+1)</string>

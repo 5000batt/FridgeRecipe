@@ -24,6 +24,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val THEME_MODE = intPreferencesKey("theme_mode") // 0: 시스템, 1: 라이트, 2: 다크
         val NOTIFICATION_ENABLED = booleanPreferencesKey("notification_enabled")
         val EXCLUDED_INGREDIENTS = stringSetPreferencesKey("excluded_ingredients")
+        val INGREDIENT_CHECK_SKIP = booleanPreferencesKey("ingredient_check_skip")
     }
 
     override val themeMode: Flow<Int> = context.dataStore.data
@@ -56,6 +57,17 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setExcludedIngredients(ingredients: Set<String>) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.EXCLUDED_INGREDIENTS] = ingredients
+        }
+    }
+
+    override val isIngredientCheckSkip: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.INGREDIENT_CHECK_SKIP] ?: false
+        }
+
+    override suspend fun setIngredientCheckSkip(isSkip: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.INGREDIENT_CHECK_SKIP] = isSkip
         }
     }
 

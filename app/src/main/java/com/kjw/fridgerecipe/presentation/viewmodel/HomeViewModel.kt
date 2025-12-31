@@ -60,6 +60,7 @@ class HomeViewModel @Inject constructor(
         loadIngredients()
         observeTickets()
         checkTicketReset()
+        observeSettings()
     }
 
     // 재료 로드
@@ -123,6 +124,15 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // 재료 확인 설정값 확인
+    private fun observeSettings() {
+        viewModelScope.launch {
+            settingsRepository.isIngredientCheckSkip.collect { isSkip ->
+                _homeUiState.update { it.copy(isIngredientCheckSkip = isSkip) }
+            }
+        }
+    }
+
     // 재료 선택
     fun toggleIngredientSelection(id: Long) {
         _homeUiState.update { currentState ->
@@ -130,6 +140,33 @@ class HomeViewModel @Inject constructor(
             val newIds = if (id in currentIds) currentIds - id else currentIds + id
             currentState.copy(selectedIngredientIds = newIds)
         }
+    }
+
+    // 레시피 추천 버튼
+    fun onRecommendButtonClick() {
+        val uiState = _homeUiState.value
+
+        if (uiState.selectedIngredientIds.isEmpty()) return
+
+        if (uiState.isIngredientCheckSkip) {
+            checkIngredientConflicts()
+        } else {
+            _homeUiState.update { it.copy(showIngredientCheckDialog = true) }
+        }
+    }
+
+    // 재료 확인
+    fun onConfirmIngredientCheck(doNotShowAgain: Boolean) {
+        _homeUiState.update { it.copy(showIngredientCheckDialog = false) }
+
+        // 다시 보지 않기 체크
+        if (doNotShowAgain) {
+            viewModelScope.launch {
+                settingsRepository.setIngredientCheckSkip(true)
+            }
+        }
+
+        checkIngredientConflicts()
     }
 
     // 제외 재료 충돌 확인
@@ -334,6 +371,10 @@ class HomeViewModel @Inject constructor(
 
     fun dismissErrorDialog() {
         _homeUiState.update { it.copy(errorDialogState = null) }
+    }
+
+    fun dismissIngredientCheckDialog() {
+        _homeUiState.update { it.copy(showIngredientCheckDialog = false) }
     }
 
     fun dismissConflictDialog() {

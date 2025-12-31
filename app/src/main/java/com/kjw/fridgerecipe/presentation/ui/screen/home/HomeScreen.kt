@@ -71,6 +71,7 @@ import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.common.ConfirmDialog
 import com.kjw.fridgerecipe.presentation.ui.components.common.ErrorDialog
 import com.kjw.fridgerecipe.presentation.ui.components.common.FridgeBottomButton
+import com.kjw.fridgerecipe.presentation.ui.components.common.IngredientCheckDialog
 import com.kjw.fridgerecipe.presentation.ui.components.home.FilterChipSection
 import com.kjw.fridgerecipe.presentation.ui.components.home.RecipeLoadingScreen
 import com.kjw.fridgerecipe.presentation.ui.components.home.TimeSliderSection
@@ -427,7 +428,7 @@ fun HomeScreen(
 
                         FridgeBottomButton(
                             text = buttonText,
-                            onClick = { homeViewModel.checkIngredientConflicts() },
+                            onClick = { homeViewModel.onRecommendButtonClick() },
                             isEnabled = uiState.selectedIngredientIds.isNotEmpty() && !uiState.isRecipeLoading,
                             isLoading = uiState.isRecipeLoading,
                             modifier = Modifier.fillMaxWidth(),
@@ -457,6 +458,19 @@ fun HomeScreen(
         ) {
             RecipeLoadingScreen()
         }
+    }
+
+    if (uiState.showIngredientCheckDialog) {
+        val selectedIngredients = uiState.allIngredients.filter { it.id in uiState.selectedIngredientIds }
+        val ingredientNames = selectedIngredients.joinToString(", ") { it.name }
+
+        IngredientCheckDialog(
+            ingredientNames = ingredientNames,
+            onDismiss = { homeViewModel.dismissIngredientCheckDialog() },
+            onConfirm = { doNotShowChecked ->
+                homeViewModel.onConfirmIngredientCheck(doNotShowChecked)
+            }
+        )
     }
 
     if (uiState.showConflictDialog) {

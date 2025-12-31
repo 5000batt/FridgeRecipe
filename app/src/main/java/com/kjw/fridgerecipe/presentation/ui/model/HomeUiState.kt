@@ -27,5 +27,9 @@ data class HomeUiState(
     val showAdDialog: Boolean = false,
 
     // 현재 선택된 카테고리
-    val selectedCategory: CategoryType? = null
+    val selectedCategory: CategoryType? = null,
+
+    // 재료 확인 관련
+    val showIngredientCheckDialog: Boolean = false,
+    val isIngredientCheckSkip: Boolean = false
 )
