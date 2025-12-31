@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.SoupKitchen
@@ -20,6 +22,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -75,7 +78,9 @@ fun RecipeDetailScreen(
     }
 
     LoadingContent(isLoading = isLoading) {
-        recipe?.let { currentRecipe ->
+        recipe?.let { matchData ->
+            val currentRecipe = matchData.recipe
+
             Scaffold(
                 topBar = {
                     CommonTopBar(
@@ -147,12 +152,33 @@ fun RecipeDetailScreen(
                                     getCategoryLabel(categoryFilter)
                                 }
 
-                                Text(
-                                    text = displayCategory,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = displayCategory,
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+                                    Surface(
+                                        color = if (matchData.isCookable) MaterialTheme.colorScheme.primaryContainer
+                                        else MaterialTheme.colorScheme.surfaceVariant,
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.padding(start = 8.dp)
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.recipe_match_rate_format, matchData.matchPercentage),
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (matchData.isCookable) MaterialTheme.colorScheme.onPrimaryContainer
+                                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                        )
+                                    }
+                                }
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -177,13 +203,19 @@ fun RecipeDetailScreen(
                                     fontWeight = FontWeight.Bold
                                 )
 
-                                Spacer(modifier = Modifier.height(16.dp))
                             }
                         }
 
                         items(currentRecipe.ingredients) { ingredient ->
+                            val isMissing = matchData.missingIngredients.any { missingName ->
+                                ingredient.name.contains(missingName)
+                            }
+
                             Box(modifier = Modifier.padding(horizontal = 24.dp)) {
-                                IngredientListItem(ingredient)
+                                IngredientListItem(
+                                    ingredient = ingredient,
+                                    isMissing = isMissing
+                                )
                             }
                         }
 
@@ -198,7 +230,6 @@ fun RecipeDetailScreen(
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Bold
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
                             }
                         }
 

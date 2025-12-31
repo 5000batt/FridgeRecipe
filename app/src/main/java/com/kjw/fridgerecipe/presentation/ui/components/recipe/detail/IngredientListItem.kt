@@ -22,7 +22,10 @@ import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 
 @Composable
-fun IngredientListItem(ingredient: RecipeIngredient) {
+fun IngredientListItem(
+    ingredient: RecipeIngredient,
+    isMissing: Boolean = false
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -50,16 +53,24 @@ fun IngredientListItem(ingredient: RecipeIngredient) {
         Text(
             text = ingredient.name,
             style = MaterialTheme.typography.bodyLarge,
-            fontWeight = if (ingredient.isEssential) FontWeight.Bold else FontWeight.Normal,
-            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = if (isMissing) FontWeight.Bold else FontWeight.Normal,
+            color = if (isMissing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
+
+        if (isMissing) {
+            Text(
+                text = stringResource(R.string.recipe_detail_missing),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
 
         Text(
             text = ingredient.quantity,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.primary
+            color = if (isMissing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
         )
     }
 }

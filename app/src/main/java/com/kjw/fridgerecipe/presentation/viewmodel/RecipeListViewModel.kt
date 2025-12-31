@@ -2,8 +2,9 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kjw.fridgerecipe.domain.model.Recipe
+import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipesUseCase
+import com.kjw.fridgerecipe.presentation.ui.model.RecipeWithMatch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,8 +17,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RecipeListViewModel @Inject constructor(
-    getSavedRecipesUseCase: GetSavedRecipesUseCase
+    getSavedRecipesUseCase: GetSavedRecipesUseCase,
+    private val getIngredientsUseCase: GetIngredientsUseCase
 ) : ViewModel() {
+
+    enum class SortType { LATEST, OLDEST, MATCH_RATE }
 
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -25,28 +29,73 @@ class RecipeListViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    private val recipesFlow = getSavedRecipesUseCase()
+    private val _sortType = MutableStateFlow(SortType.LATEST)
+    val sortType: StateFlow<SortType> = _sortType.asStateFlow()
 
-    val savedRecipes: StateFlow<List<Recipe>> =
-        combine(recipesFlow, _searchQuery) { recipes, query ->
-            if (query.isBlank()) {
-                recipes
+    val recipeList: StateFlow<List<RecipeWithMatch>> = combine(
+        getSavedRecipesUseCase(),
+        getIngredientsUseCase(),
+        _searchQuery,
+        _sortType
+    ) { recipes, myIngredients, query, sort ->
+        val myIngredientsNames = myIngredients.map { it.name.trim() }.toSet()
+
+        val mappedList = recipes.map { recipe ->
+            val essentialIngredients = recipe.ingredients.filter { it.isEssential }
+
+            val targetIngredients = if (essentialIngredients.isNotEmpty()) {
+                essentialIngredients
             } else {
-                recipes.filter {
-                    it.title.contains(query, ignoreCase = true)
-                }
+                recipe.ingredients
             }
+
+            val missing = targetIngredients.filter { recipeIngredient ->
+                myIngredientsNames.none { myName -> recipeIngredient.name.contains(myName) }
+            }.map { it.name }
+
+            val totalCount = targetIngredients.size
+            val matchCount = totalCount - missing.size
+            val percentage = if (totalCount > 0) (matchCount * 100 / totalCount) else 0
+
+            RecipeWithMatch(
+                recipe = recipe,
+                matchCount = matchCount,
+                totalCount = totalCount,
+                matchPercentage = percentage,
+                isCookable = percentage == 100,
+                missingIngredients = missing
+            )
         }
-        .onEach {
-            _isLoading.value = false
+
+        val filteredList = if (query.isBlank()) {
+            mappedList
+        } else {
+            mappedList.filter { it.recipe.title.contains(query, ignoreCase = true) }
         }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+
+        when (sort) {
+            SortType.LATEST -> filteredList.sortedByDescending { it.recipe.id }
+            SortType.OLDEST -> filteredList.sortedBy { it.recipe.id }
+            SortType.MATCH_RATE -> filteredList.sortedWith(
+                compareByDescending<RecipeWithMatch> { it.matchPercentage }
+                    .thenByDescending { it.recipe.id }
+            )
+        }
+    }
+    .onEach {
+        _isLoading.value = false
+    }
+    .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
 
     fun onSearchQueryChanged(newQuery: String) {
         _searchQuery.value = newQuery
+    }
+
+    fun onSortTypeChanged(type: SortType) {
+        _sortType.value = type
     }
 }

@@ -19,12 +19,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material.icons.filled.SoupKitchen
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -33,15 +35,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.Recipe
 
 @Composable
 fun RecipeListItem(
     recipe: Recipe,
+    matchPercentage: Int? = null,
+    isCookable: Boolean = false,
     onRecipeClick: () -> Unit
 ) {
     Card(
@@ -106,11 +112,46 @@ fun RecipeListItem(
                     modifier = Modifier.Companion.padding(top = 4.dp)
                 )
 
+                if (matchPercentage != null) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Surface(
+                        color = if (isCookable) MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.recipe_match_rate_format, matchPercentage),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (isCookable) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+
                 Row(
                     verticalAlignment = Alignment.Companion.CenterVertically,
                     horizontalArrangement = Arrangement.Start
                 ) {
-                    RecipeInfoChip(icon = Icons.Default.AccessTime, text = recipe.time)
+                    RecipeInfoChip(
+                        icon = Icons.Default.Person,
+                        text = recipe.servings
+                    )
+
+                    Spacer(modifier = Modifier.Companion.width(8.dp))
+
+                    Box(
+                        modifier = Modifier.Companion
+                            .size(2.dp)
+                            .background(MaterialTheme.colorScheme.outline, CircleShape)
+                    )
+
+                    Spacer(modifier = Modifier.Companion.width(8.dp))
+
+                    RecipeInfoChip(
+                        icon = Icons.Default.AccessTime,
+                        text = recipe.time
+                    )
 
                     Spacer(modifier = Modifier.Companion.width(8.dp))
 

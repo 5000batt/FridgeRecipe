@@ -3,6 +3,7 @@ package com.kjw.fridgerecipe.presentation.ui.screen.recipe
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,9 +13,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SoupKitchen
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -42,10 +47,14 @@ fun RecipeListScreen(
     onNavigateToSettings: () -> Unit,
     onNavigateToMainTab: (MainTab) -> Unit
 ) {
-    val recipeList by viewModel.savedRecipes.collectAsState()
+    val recipeList by viewModel.recipeList.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    val listState = rememberLazyListState()
+    val sortType by viewModel.sortType.collectAsState()
+    val listState = androidx.compose.runtime.key(sortType) {
+        rememberLazyListState()
+    }
+
 
     LoadingContent(isLoading = isLoading) {
         Scaffold(
@@ -84,6 +93,29 @@ fun RecipeListScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val sortOptions = listOf(
+                        RecipeListViewModel.SortType.LATEST to R.string.recipe_sort_latest,
+                        RecipeListViewModel.SortType.OLDEST to R.string.recipe_sort_oldest,
+                        RecipeListViewModel.SortType.MATCH_RATE to R.string.recipe_sort_match_rate,
+                    )
+
+                    sortOptions.forEach { (type, labelRes) ->
+                        FilterChip(
+                            selected = sortType == type,
+                            onClick = { viewModel.onSortTypeChanged(type) },
+                            label = { Text(stringResource(labelRes)) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        )
+                    }
+                }
+
                 if (recipeList.isEmpty()) {
                     if (searchQuery.isNotBlank()) {
                         EmptyStateView(
@@ -110,12 +142,14 @@ fun RecipeListScreen(
                     ) {
                         items(
                             items = recipeList,
-                            key = { it.id ?: 0 }
-                        ) { recipe ->
+                            key = { it.recipe.id ?: 0 }
+                        ) { item ->
                             RecipeListItem(
-                                recipe = recipe,
+                                recipe = item.recipe,
+                                matchPercentage = item.matchPercentage,
+                                isCookable = item.isCookable,
                                 onRecipeClick = {
-                                    recipe.id?.let { id ->
+                                    item.recipe.id?.let { id ->
                                         onNavigateToRecipeDetail(id)
                                     }
                                 }
