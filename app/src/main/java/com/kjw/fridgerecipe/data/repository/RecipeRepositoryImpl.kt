@@ -89,10 +89,8 @@ class RecipeRepositoryImpl @Inject constructor(
             contents = listOf(GeminiRequest.Content(parts = listOf(GeminiRequest.Part(text = prompt))))
         )
 
-        val apiKey = BuildConfig.API_KEY
-
         try {
-            val geminiResponse = apiService.getGeminiRecipe(apiKey = apiKey, request = geminiRequest)
+            val geminiResponse = apiService.getGeminiRecipe(request = geminiRequest)
             var aiResponseText = geminiResponse.candidates?.firstOrNull()
                                     ?.content?.parts?.firstOrNull()?.text
 
