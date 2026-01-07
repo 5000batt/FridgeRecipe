@@ -247,9 +247,14 @@ class HomeViewModel @Inject constructor(
                     }
                 )
 
-                _homeUiState.update { it.copy(recommendedRecipe = newRecipe) }
-
                 if (newRecipe != null) {
+                    _homeUiState.update {
+                        it.copy(
+                            recommendedRecipe = newRecipe,
+                            isRecipeLoading = false
+                        )
+                    }
+
                     newRecipe.id?.let { recipeId ->
                         _seenRecipeIds.value = _seenRecipeIds.value + recipeId
                         _sideEffect.emit(HomeSideEffect.NavigateToRecipeDetail(recipeId))
@@ -387,6 +392,15 @@ class HomeViewModel @Inject constructor(
                 isRecipeLoading = false,
                 selectedIngredientIds = emptySet(),
                 filterState = RecipeFilterState(),
+                recommendedRecipe = null
+            )
+        }
+    }
+
+    fun clearRecommendedRecipe() {
+        _homeUiState.update { state ->
+            state.copy(
+                isRecipeLoading = false,
                 recommendedRecipe = null
             )
         }

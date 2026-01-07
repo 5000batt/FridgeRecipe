@@ -100,15 +100,12 @@ fun HomeScreen(
     val utensilFilterOptions = RecipeConstants.UTENSIL_FILTER_OPTIONS
 
     LaunchedEffect(Unit) {
-        if (uiState.isRecipeLoading && uiState.recommendedRecipe != null) {
-            homeViewModel.resetHomeState()
-        }
+        homeViewModel.clearRecommendedRecipe()
 
         homeViewModel.sideEffect.collect { event ->
             when (event) {
                 is HomeViewModel.HomeSideEffect.NavigateToRecipeDetail -> {
                     onNavigateToRecipeDetail(event.recipeId)
-                    delay(400)
                     homeViewModel.resetHomeState()
                 }
                 is HomeViewModel.HomeSideEffect.ShowSnackbar -> {
