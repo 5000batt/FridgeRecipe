@@ -32,6 +32,18 @@ class RecipeRepositoryImpl @Inject constructor(
         return if (value == FILTER_ANY || value.isNullOrBlank()) null else value
     }
 
+    // Json 문자열만 추출
+    private fun extractJsonOrThrow(text: String): String {
+        val startIndex = text.indexOf('{')
+        val endIndex = text.lastIndexOf('}')
+
+        if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex) {
+            throw GeminiException.ParsingError()
+        }
+
+        return text.substring(startIndex, endIndex + 1)
+    }
+
     override suspend fun getAiRecipes(
         ingredients: List<Ingredient>,
         ingredientsQuery: String,
@@ -47,49 +59,17 @@ class RecipeRepositoryImpl @Inject constructor(
         val safeCategory = sanitizeFilter(categoryFilter)
         val safeUtensil = sanitizeFilter(utensilFilter)
 
-        val ingredientDetails = ingredients.joinToString(", ") { "${it.name} (${it.amount}${it.unit.label})" }
+        val prompt = createRecipePrompt(
+            ingredients = ingredients,
+            timeFilter = safeTime,
+            levelFilter = levelFilter,
+            categoryFilter = safeCategory,
+            utensilFilter = safeUtensil,
+            useOnlySelected = useOnlySelected,
+            excludedIngredients = excludedIngredients
+        )
 
-        val constraints = buildList {
-            add("필수 재료: [$ingredientDetails]")
-            safeTime?.let { add("조리 시간: $it") }
-            levelFilter?.let { add("난이도: ${it.label}") }
-            if (levelFilter == null) {
-                add("난이도는 반드시 '초급', '중급', '고급' 중에서만 선택해.")
-            }
-            safeCategory?.let { add("음식 종류: $it") }
-            safeUtensil?.let { add("조리 도구: $it (필수 사용)") }
-
-            if (useOnlySelected) {
-                add("제약: 소금, 후추, 물 같은 기본 양념을 제외하고, 명시된 '필수 재료' 외에 다른 재료는 절대 사용하지 마.")
-            }
-            if (excludedIngredients.isNotEmpty()) {
-                val excludedString = excludedIngredients.joinToString(", ")
-                add("제외 재료: [$excludedString] (이 재료들은 레시피에 절대 사용하지 마.")
-            }
-        }.joinToString("\n")
-
-        val prompt = """
-        다음 제약 조건에 맞는 음식 레시피 1개만 추천해줘.
-        $constraints
-        (만약 특정 조건이 '상관없음'이나 null이면, 그 조건은 자유롭게 결정해.)
-
-        응답은 반드시 아래 JSON 형식과 정확히 일치해야 하며, 다른 설명이나 마크다운(` ``` `)을 포함하지 마.
-        
-        [중요] ingredients 리스트에서, 위 '필수 재료' 목록에 포함된 재료를 사용했다면 "isEssential": true 로 설정하고, 소금/물 등 기본 양념이나 추가된 재료는 false로 설정해.
-
-        {
-          "recipe": { 
-              "title": "요리 이름",
-              "info": { "servings": "X인분", "time": "X분", "level": "난이도" },
-              "ingredients": [ 
-                  { "name": "재료명", "quantity": "수량", "isEssential": true } 
-              ],
-              "steps": [ { "number": 1, "description": "조리법 1" } ]
-          }
-        }
-        """.trimIndent()
-
-        Log.d("RecipeUseCase", "프롬프트 내용 : $prompt")
+        Log.d("RecipeRepo", "프롬프트 내용 : $prompt")
 
         val geminiRequest = GeminiRequest(
             contents = listOf(GeminiRequest.Content(parts = listOf(GeminiRequest.Part(text = prompt))))
@@ -107,16 +87,11 @@ class RecipeRepositoryImpl @Inject constructor(
                 throw GeminiException.ParsingError()
             }
 
-            Log.e("RecipeRepo", "AI 원본 응답: $aiResponseText")
+            Log.d("RecipeRepo", "AI 원본 응답: $aiResponseText")
 
-            aiResponseText = aiResponseText
-                .trim()
-                .removePrefix("```json")
-                .removePrefix("```")
-                .removeSuffix("```")
-                .trim()
+            val jsonString = extractJsonOrThrow(aiResponseText)
 
-            val recipeResponse = gson.fromJson(aiResponseText, AiRecipeResponse::class.java)
+            val recipeResponse = gson.fromJson(jsonString, AiRecipeResponse::class.java)
             val domainRecipe = recipeResponse.recipe.toDomainModel()
 
             val searchMetadata = RecipeSearchMetadata(
@@ -153,6 +128,54 @@ class RecipeRepositoryImpl @Inject constructor(
             Log.e("RecipeRepo", "AI 레시피 호출 실패", e)
             throw mapToGeminiException(e)
         }
+    }
+
+    private fun createRecipePrompt(
+        ingredients: List<Ingredient>,
+        timeFilter: String?,
+        levelFilter: LevelType?,
+        categoryFilter: String?,
+        utensilFilter: String?,
+        useOnlySelected: Boolean,
+        excludedIngredients: List<String>
+    ): String {
+        val ingredientDetails = ingredients.joinToString(", ") { "${it.name} (${it.amount}${it.unit.label})" }
+
+        val constraints = buildList {
+            add("필수 재료: [$ingredientDetails]")
+            timeFilter?.let { add("조리 시간: $it") }
+            levelFilter?.let { add("난이도: ${it.label}") } ?: add("난이도는 '초급', '중급', '고급' 중 선택.")
+            categoryFilter?.let { add("음식 종류: $it") }
+            utensilFilter?.let { add("조리 도구: $it (필수 사용)") }
+
+            if (useOnlySelected) {
+                add("제약: 소금, 후추, 물 등 기본 양념 외에 '필수 재료' 목록에 없는 재료는 절대 사용 금지.")
+            }
+            if (excludedIngredients.isNotEmpty()) {
+                add("제외 재료: [${excludedIngredients.joinToString(", ")}] (이 재료들은 절대 사용 금지).")
+            }
+        }.joinToString("\n")
+
+        return """
+            다음 제약 조건에 맞는 음식 레시피 1개만 추천해줘.
+            $constraints
+            (조건이 없거나 '상관없음'이면 AI가 알맞게 결정해.)
+
+            응답은 반드시 아래 JSON 형식만 출력해 (마크다운, 설명 금지).
+            
+            [중요] ingredients 리스트에서, 위 '필수 재료' 목록에 포함된 재료를 사용했다면 "isEssential": true 로 설정하고, 소금/물 등 기본 양념이나 추가된 재료는 false로 설정해.
+
+            {
+              "recipe": { 
+                  "title": "요리 이름",
+                  "info": { "servings": "X인분", "time": "X분", "level": "난이도" },
+                  "ingredients": [ 
+                      { "name": "재료명", "quantity": "수량", "isEssential": true } 
+                  ],
+                  "steps": [ { "number": 1, "description": "조리법 1" } ]
+              }
+            }
+        """.trimIndent()
     }
 
     private fun mapToGeminiException(e: Exception): GeminiException {
