@@ -2,12 +2,12 @@ package com.kjw.fridgerecipe.data.repository
 
 import android.util.Log
 import retrofit2.HttpException
-import com.google.gson.Gson
 import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.data.local.dao.RecipeDao
 import com.kjw.fridgerecipe.data.remote.AiRecipeResponse
 import com.kjw.fridgerecipe.data.remote.ApiService
 import com.kjw.fridgerecipe.data.remote.GeminiRequest
+import com.kjw.fridgerecipe.data.remote.RecipePromptGenerator
 import com.kjw.fridgerecipe.data.repository.mapper.toDomainModel
 import com.kjw.fridgerecipe.data.repository.mapper.toEntity
 import com.kjw.fridgerecipe.domain.model.GeminiException
@@ -19,14 +19,21 @@ import com.kjw.fridgerecipe.domain.repository.RecipeRepository
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.Json
 import okio.IOException
 import javax.inject.Inject
 
 class RecipeRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
-    private val gson: Gson,
-    private val recipeDao: RecipeDao
+    private val recipeDao: RecipeDao,
+    private val promptGenerator: RecipePromptGenerator
 ) : RecipeRepository {
+
+    private val jsonParser = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+        coerceInputValues = true
+    }
 
     private fun sanitizeFilter(value: String?): String? {
         return if (value == FILTER_ANY || value.isNullOrBlank()) null else value
@@ -34,6 +41,13 @@ class RecipeRepositoryImpl @Inject constructor(
 
     // Json 문자열만 추출
     private fun extractJsonOrThrow(text: String): String {
+        val codeBlockRegex = Regex("```(?:json)?\\s*(\\{.*?\\})\\s*```", RegexOption.DOT_MATCHES_ALL)
+        val matchResult = codeBlockRegex.find(text)
+
+        if (matchResult != null) {
+            return matchResult.groupValues[1]
+        }
+
         val startIndex = text.indexOf('{')
         val endIndex = text.lastIndexOf('}')
 
@@ -59,7 +73,7 @@ class RecipeRepositoryImpl @Inject constructor(
         val safeCategory = sanitizeFilter(categoryFilter)
         val safeUtensil = sanitizeFilter(utensilFilter)
 
-        val prompt = createRecipePrompt(
+        val prompt = promptGenerator.createRecipePrompt(
             ingredients = ingredients,
             timeFilter = safeTime,
             levelFilter = levelFilter,
@@ -91,7 +105,7 @@ class RecipeRepositoryImpl @Inject constructor(
 
             val jsonString = extractJsonOrThrow(aiResponseText)
 
-            val recipeResponse = gson.fromJson(jsonString, AiRecipeResponse::class.java)
+            val recipeResponse = jsonParser.decodeFromString<AiRecipeResponse>(jsonString)
             val domainRecipe = recipeResponse.recipe.toDomainModel()
 
             val searchMetadata = RecipeSearchMetadata(
@@ -130,54 +144,6 @@ class RecipeRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun createRecipePrompt(
-        ingredients: List<Ingredient>,
-        timeFilter: String?,
-        levelFilter: LevelType?,
-        categoryFilter: String?,
-        utensilFilter: String?,
-        useOnlySelected: Boolean,
-        excludedIngredients: List<String>
-    ): String {
-        val ingredientDetails = ingredients.joinToString(", ") { "${it.name} (${it.amount}${it.unit.label})" }
-
-        val constraints = buildList {
-            add("필수 재료: [$ingredientDetails]")
-            timeFilter?.let { add("조리 시간: $it") }
-            levelFilter?.let { add("난이도: ${it.label}") } ?: add("난이도는 '초급', '중급', '고급' 중 선택.")
-            categoryFilter?.let { add("음식 종류: $it") }
-            utensilFilter?.let { add("조리 도구: $it (필수 사용)") }
-
-            if (useOnlySelected) {
-                add("제약: 소금, 후추, 물 등 기본 양념 외에 '필수 재료' 목록에 없는 재료는 절대 사용 금지.")
-            }
-            if (excludedIngredients.isNotEmpty()) {
-                add("제외 재료: [${excludedIngredients.joinToString(", ")}] (이 재료들은 절대 사용 금지).")
-            }
-        }.joinToString("\n")
-
-        return """
-            다음 제약 조건에 맞는 음식 레시피 1개만 추천해줘.
-            $constraints
-            (조건이 없거나 '상관없음'이면 AI가 알맞게 결정해.)
-
-            응답은 반드시 아래 JSON 형식만 출력해 (마크다운, 설명 금지).
-            
-            [중요] ingredients 리스트에서, 위 '필수 재료' 목록에 포함된 재료를 사용했다면 "isEssential": true 로 설정하고, 소금/물 등 기본 양념이나 추가된 재료는 false로 설정해.
-
-            {
-              "recipe": { 
-                  "title": "요리 이름",
-                  "info": { "servings": "X인분", "time": "X분", "level": "난이도" },
-                  "ingredients": [ 
-                      { "name": "재료명", "quantity": "수량", "isEssential": true } 
-                  ],
-                  "steps": [ { "number": 1, "description": "조리법 1" } ]
-              }
-            }
-        """.trimIndent()
-    }
-
     private fun mapToGeminiException(e: Exception): GeminiException {
         return when (e) {
             is HttpException -> {
@@ -189,7 +155,7 @@ class RecipeRepositoryImpl @Inject constructor(
                     else -> GeminiException.Unknown(e.code())
                 }
             }
-            is com.google.gson.JsonSyntaxException,
+            is kotlinx.serialization.SerializationException,
             is IllegalStateException -> GeminiException.ParsingError()
             is IOException -> GeminiException.ServerOverloaded()
             else -> GeminiException.Unknown(-1)
