@@ -88,7 +88,6 @@ dependencies {
 
     // Retrofit
     implementation(libs.retrofit)
-    implementation(libs.retrofit.gson)
 
     // OkHttp
     implementation(libs.okhttp)
@@ -116,7 +115,10 @@ dependencies {
     // Google Mobile Ads
     implementation(libs.ads)
 
-    // Navigation Compose & Serialization
+    // Navigation Compose
     implementation(libs.androidx.navigation.compose)
+
+    // Serialization
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.retrofit.kotlinx.serialization.json)
 }

@@ -2,7 +2,6 @@ package com.kjw.fridgerecipe.data.repository
 
 import android.util.Log
 import retrofit2.HttpException
-import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.data.local.dao.RecipeDao
 import com.kjw.fridgerecipe.data.remote.AiRecipeResponse
 import com.kjw.fridgerecipe.data.remote.ApiService

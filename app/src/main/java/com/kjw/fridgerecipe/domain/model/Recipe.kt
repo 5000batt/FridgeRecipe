@@ -1,5 +1,8 @@
 package com.kjw.fridgerecipe.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class LevelType(val label: String) {
     BEGINNER("초급"),
     INTERMEDIATE("중급"),
@@ -13,12 +16,14 @@ enum class LevelType(val label: String) {
     }
 }
 
+@Serializable
 data class RecipeIngredient(
     val name: String,
     val quantity: String,
     val isEssential: Boolean
 )
 
+@Serializable
 data class RecipeStep(
     val number: Int,
     val description: String

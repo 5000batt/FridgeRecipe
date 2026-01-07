@@ -1,34 +1,50 @@
 package com.kjw.fridgerecipe.data.local.converter
 
 import androidx.room.TypeConverter
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 import com.kjw.fridgerecipe.domain.model.RecipeStep
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class RecipeTypeConverters {
 
-    private val gson = Gson()
+    private val json = Json {
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+        isLenient = true
+    }
 
     @TypeConverter
     fun fromIngredientList(value: List<RecipeIngredient>?): String? {
-        return gson.toJson(value)
+        return value?.let { json.encodeToString(it) }
     }
 
     @TypeConverter
     fun toIngredientList(value: String?): List<RecipeIngredient>? {
-        val listType = object : TypeToken<List<RecipeIngredient>>() {}.type
-        return gson.fromJson(value, listType)
+        return value?.let {
+            try {
+                json.decodeFromString<List<RecipeIngredient>>(it)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        }
     }
 
     @TypeConverter
     fun fromStepList(value: List<RecipeStep>?): String? {
-        return gson.toJson(value)
+        return value?.let { json.encodeToString(it) }
     }
 
     @TypeConverter
     fun toStepList(value: String?): List<RecipeStep>? {
-        val listType = object : TypeToken<List<RecipeStep>>() {}.type
-        return gson.fromJson(value, listType)
+        return value?.let {
+            try {
+                json.decodeFromString<List<RecipeStep>>(it)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        }
     }
 }

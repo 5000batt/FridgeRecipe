@@ -26,6 +26,7 @@ lottie = "6.0.0"
 ads = "23.0.0"
 navigation = "2.8.5"
 serializationJson = "1.7.3"
+retrofitKotlinxSerializationJson = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,7 +55,6 @@ androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navig
 androidx-core-splash = { group = "androidx.core", name = "core-splashscreen", version.ref = "splash"}
 # Retrofit
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit"}
-retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit"}
 # OkHttp
 okhttp = { group = "com.squareup.okhttp3", name= "logging-interceptor", version.ref = "okhttp"}
 # WorkManager
@@ -79,6 +79,7 @@ ads = { group = "com.google.android.gms", name= "play-services-ads", version.ref
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 # Kotlin Serialization
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serializationJson" }
+retrofit-kotlinx-serialization-json = { group = "com.jakewharton.retrofit", name = "retrofit2-kotlinx-serialization-converter", version.ref = "retrofitKotlinxSerializationJson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
