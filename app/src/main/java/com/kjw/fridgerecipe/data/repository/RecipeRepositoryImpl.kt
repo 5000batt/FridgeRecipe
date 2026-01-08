@@ -39,22 +39,24 @@ class RecipeRepositoryImpl @Inject constructor(
     }
 
     // Json 문자열만 추출
-    private fun extractJsonOrThrow(text: String): String {
-        val codeBlockRegex = Regex("```(?:json)?\\s*(\\{.*?\\})\\s*```", RegexOption.DOT_MATCHES_ALL)
+    private fun extractJsonString(text: String): String {
+        val codeBlockRegex = Regex("```(?:json)?\\s*([\\s\\S]*?)\\s*```")
         val matchResult = codeBlockRegex.find(text)
 
-        if (matchResult != null) {
-            return matchResult.groupValues[1]
+        val rawJson = if (matchResult != null) {
+            matchResult.groupValues[1]
+        } else {
+            text
         }
 
-        val startIndex = text.indexOf('{')
-        val endIndex = text.lastIndexOf('}')
+        val startIndex = rawJson.indexOf('{')
+        val endIndex = rawJson.lastIndexOf('}')
 
         if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex) {
             throw GeminiException.ParsingError()
         }
 
-        return text.substring(startIndex, endIndex + 1)
+        return rawJson.substring(startIndex, endIndex + 1)
     }
 
     override suspend fun getAiRecipes(
@@ -100,8 +102,7 @@ class RecipeRepositoryImpl @Inject constructor(
 
             Log.d("RecipeRepo", "AI 원본 응답: $aiResponseText")
 
-            val jsonString = extractJsonOrThrow(aiResponseText)
-
+            val jsonString = extractJsonString(aiResponseText)
             val recipeResponse = jsonParser.decodeFromString<AiRecipeResponse>(jsonString)
             val domainRecipe = recipeResponse.recipe.toDomainModel()
 
@@ -114,22 +115,7 @@ class RecipeRepositoryImpl @Inject constructor(
                 useOnlySelected = useOnlySelected
             )
 
-            val existingEntity = recipeDao.findExistingRecipe(
-                title = domainRecipe.title,
-                ingredientsQuery = ingredientsQuery
-            )
-
-            val savedId = if (existingEntity != null) {
-                Log.d("RecipeRepo", "기존 레시피 발견 (업데이트 안 함): ${domainRecipe.title} (ID: ${existingEntity.id})")
-                existingEntity.id
-            } else {
-                Log.d("RecipeRepo", "새 레시피 삽입: ${domainRecipe.title}")
-
-                val newRecipe = domainRecipe.copy(
-                    searchMetadata = searchMetadata
-                )
-                recipeDao.insertRecipe(newRecipe.toEntity())
-            }
+            val savedId = saveOrUpdateRecipe(domainRecipe, ingredientsQuery, searchMetadata)
 
             return domainRecipe.copy(
                 id = savedId,
@@ -138,6 +124,26 @@ class RecipeRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.e("RecipeRepo", "AI 레시피 호출 실패", e)
             throw mapToGeminiException(e)
+        }
+    }
+
+    private suspend fun saveOrUpdateRecipe(
+        domainRecipe: Recipe,
+        ingredientsQuery: String,
+        metadata: RecipeSearchMetadata
+    ): Long {
+        val existingEntity = recipeDao.findExistingRecipe(
+            title = domainRecipe.title,
+            ingredientsQuery = ingredientsQuery
+        )
+
+        return if (existingEntity != null) {
+            Log.d("RecipeRepo", "기존 레시피 발견 (업데이트 안 함): ${domainRecipe.title} (ID: ${existingEntity.id})")
+            existingEntity.id ?: throw IllegalStateException("기존 레시피의 ID가 누락되었습니다.")
+        } else {
+            Log.d("RecipeRepo", "새 레시피 삽입: ${domainRecipe.title}")
+            val newRecipe = domainRecipe.copy(searchMetadata = metadata)
+            recipeDao.insertRecipe(newRecipe.toEntity())
         }
     }
 

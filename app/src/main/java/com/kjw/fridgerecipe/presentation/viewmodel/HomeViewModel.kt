@@ -9,6 +9,7 @@ import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
+import com.kjw.fridgerecipe.domain.model.TicketException
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.domain.usecase.CheckIngredientConflictsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
@@ -239,8 +240,13 @@ class HomeViewModel @Inject constructor(
                     excludedIngredients = finalExcludedList,
                     onAiCall = {
                         if (_homeUiState.value.remainingTickets <= 0) {
-                            _homeUiState.update { it.copy(showAdDialog = true, isRecipeLoading = false) }
-                            throw Exception("Ticket Exhausted")
+                            _homeUiState.update {
+                                it.copy(
+                                    showAdDialog = true,
+                                    isRecipeLoading = false
+                                )
+                            }
+                            throw TicketException.Exhausted
                         }
                         ticketRepository.useTicket()
                         isTicketUsed = true
@@ -281,6 +287,9 @@ class HomeViewModel @Inject constructor(
                     }
                 }
 
+            } catch (e: TicketException.Exhausted) {
+                Log.d("HomeViewModel", "티켓 소진으로 인한 중단")
+                return@launch
             } catch (e: GeminiException) {
                 ticketRepository.addTicket(1)
                 val errorState = when (e) {
@@ -310,7 +319,6 @@ class HomeViewModel @Inject constructor(
                     it.copy(isRecipeLoading = false, errorDialogState = errorState)
                 }
             } catch (e: Exception) {
-                if (e.message == "Ticket Exhausted") return@launch
                 if (isTicketUsed) ticketRepository.addTicket(1)
                 _homeUiState.update {
                     it.copy(
