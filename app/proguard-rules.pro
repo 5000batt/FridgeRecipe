@@ -1,21 +1,35 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# 제네릭 및 라인 넘버 유지
+-keepattributes Signature
+-keepattributes SourceFile,LineNumberTable
+-keepattributes *Annotation*
+-keepattributes EnclosingMethod
+-keepattributes InnerClasses
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Kotlin 메타데이터 유지
+-keep class kotlin.Metadata { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# 코루틴 Continuation 유지
+-keep class kotlin.coroutines.Continuation
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Retrofit & OkHttp 규칙
+-dontwarn retrofit2.**
+-keep class retrofit2.** { *; }
+-keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
+-keep interface com.kjw.fridgerecipe.data.remote.ApiService { *; }
+
+# Kotlinx Serialization 규칙
+-keepclassmembers class * {
+    @kotlinx.serialization.Serializable <init>(...);
+}
+-keepclassmembers class * {
+    static ** Companion;
+}
+-keepclassmembers class * {
+    static ** serializer();
+}
+# 생성된 Serializer 클래스 보호
+-keep class **$$serializer { *; }
+
+# 앱 데이터 모델 보호
+-keep class com.kjw.fridgerecipe.data.remote.** { *; }
+-keep class com.kjw.fridgerecipe.domain.model.** { *; }
