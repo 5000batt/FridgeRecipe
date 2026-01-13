@@ -9,6 +9,12 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+val properties = Properties()
+val localPropertiesFile = project.rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    properties.load(localPropertiesFile.reader())
+}
+
 android {
     namespace = "com.kjw.fridgerecipe"
     compileSdk = 36
@@ -22,23 +28,31 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        val properties = Properties()
-        properties.load(project.rootProject.file("local.properties").reader())
-
-        buildConfigField(
-            "String",
-            "API_KEY",
-            "\"${properties.getProperty("apiKey")}\""
-        )
+        buildConfigField("String", "API_KEY", "\"${properties.getProperty("apiKey") ?: ""}\"")
     }
 
     buildTypes {
+        debug {
+            // AdMob 테스트용
+            resValue("string", "admob_app_id", "ca-app-pub-3940256099942544~3347511713")
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
+            buildConfigField("String", "ADMOB_REWARD_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
+        }
+
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            val appId = properties.getProperty("admob_app_id") ?: error("local.properties에 admob_app_id가 없습니다.")
+            val bannerId = properties.getProperty("admob_banner_id") ?: error("local.properties에 admob_banner_id가 없습니다.")
+            val rewardId = properties.getProperty("admob_reward_id") ?: error("local.properties에 admob_reward_id가 없습니다.")
+
+            resValue("string", "admob_app_id", appId)
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"$bannerId\"")
+            buildConfigField("String", "ADMOB_REWARD_ID", "\"$rewardId\"")
         }
     }
     compileOptions {

@@ -23,6 +23,8 @@ import com.kjw.fridgerecipe.presentation.ui.screen.MainAppScreen
 import com.kjw.fridgerecipe.presentation.util.RewardedAdManager
 import com.kjw.fridgerecipe.ui.theme.FridgeRecipeTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,7 +40,9 @@ class MainActivity : ComponentActivity() {
 
         installSplashScreen()
 
-        MobileAds.initialize(this) {}
+        CoroutineScope(Dispatchers.IO).launch {
+            MobileAds.initialize(this@MainActivity) {}
+        }
 
         rewardedAdManager = RewardedAdManager(this)
         rewardedAdManager.loadAd()

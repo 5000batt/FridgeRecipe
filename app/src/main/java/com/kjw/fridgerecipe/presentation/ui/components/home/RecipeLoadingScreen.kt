@@ -24,7 +24,6 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.google.android.gms.ads.AdSize
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.ui.components.common.AdMobBanner
 
@@ -74,9 +73,7 @@ fun RecipeLoadingScreen() {
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            AdMobBanner(
-                adSize = AdSize.MEDIUM_RECTANGLE
-            )
+            AdMobBanner()
 
             Spacer(modifier = Modifier.height(16.dp))
         }

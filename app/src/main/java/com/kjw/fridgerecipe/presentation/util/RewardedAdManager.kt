@@ -10,11 +10,12 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.OnUserEarnedRewardListener
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import com.kjw.fridgerecipe.BuildConfig
 
 class RewardedAdManager(private val context: Context) {
 
     private var rewardedAd: RewardedAd? = null
-    private val AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
+    private val AD_UNIT_ID = BuildConfig.ADMOB_REWARD_ID
 
     fun loadAd() {
         val adRequest = AdRequest.Builder().build()
