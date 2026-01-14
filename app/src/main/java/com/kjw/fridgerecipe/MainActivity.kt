@@ -34,7 +34,8 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
-    private lateinit var rewardedAdManager: RewardedAdManager
+    @Inject
+    lateinit var rewardedAdManager: RewardedAdManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +46,6 @@ class MainActivity : ComponentActivity() {
             MobileAds.initialize(this@MainActivity) {}
         }
 
-        rewardedAdManager = RewardedAdManager(this)
         rewardedAdManager.loadAd()
 
         enableEdgeToEdge()

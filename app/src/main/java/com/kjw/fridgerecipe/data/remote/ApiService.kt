@@ -3,6 +3,7 @@ package com.kjw.fridgerecipe.data.remote
 import kotlinx.serialization.Serializable
 import retrofit2.http.Body
 import retrofit2.http.POST
+import retrofit2.http.Url
 
 @Serializable
 data class AiRecipeResponse(
@@ -46,8 +47,9 @@ data class GeminiResponse(
 }
 
 interface ApiService {
-    @POST("v1beta/models/gemini-2.5-flash-lite:generateContent")
+    @POST
     suspend fun getGeminiRecipe(
+        @Url url: String,
         @Body request: GeminiRequest
     ): GeminiResponse
 }

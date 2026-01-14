@@ -1,6 +1,7 @@
 package com.kjw.fridgerecipe.data.repository
 
 import android.util.Log
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import retrofit2.HttpException
 import com.kjw.fridgerecipe.data.local.dao.RecipeDao
 import com.kjw.fridgerecipe.data.remote.AiRecipeResponse
@@ -25,7 +26,8 @@ import javax.inject.Inject
 class RecipeRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
     private val recipeDao: RecipeDao,
-    private val promptGenerator: RecipePromptGenerator
+    private val promptGenerator: RecipePromptGenerator,
+    private val remoteConfig: FirebaseRemoteConfig
 ) : RecipeRepository {
 
     private val jsonParser = Json {
@@ -57,6 +59,22 @@ class RecipeRepositoryImpl @Inject constructor(
         }
 
         return rawJson.substring(startIndex, endIndex + 1)
+    }
+
+    private fun getModelEndpoint(): String {
+        // 비동기로 최신 값 가져오기 시도
+        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("RecipeRepo", "Remote Config 업데이트 성공")
+            }
+        }
+
+        // 현재 캐시된 값 가져오기
+        val endpoint = remoteConfig.getString("gemini_model_endpoint")
+
+        return endpoint.ifBlank {
+            "v1beta/models/gemini-2.5-flash-lite:generateContent"
+        }
     }
 
     override suspend fun getAiRecipes(
@@ -91,7 +109,13 @@ class RecipeRepositoryImpl @Inject constructor(
         )
 
         try {
-            val geminiResponse = apiService.getGeminiRecipe(request = geminiRequest)
+            val currentEndpoint = getModelEndpoint()
+            Log.d("RecipeRepo", "사용 중인 모델 Endpoint: $currentEndpoint")
+
+            val geminiResponse = apiService.getGeminiRecipe(
+                url = currentEndpoint,
+                request = geminiRequest
+            )
             var aiResponseText = geminiResponse.candidates?.firstOrNull()
                                     ?.content?.parts?.firstOrNull()?.text
 
