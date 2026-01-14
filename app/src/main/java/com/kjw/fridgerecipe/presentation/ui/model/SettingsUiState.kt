@@ -2,7 +2,7 @@ package com.kjw.fridgerecipe.presentation.ui.model
 
 data class SettingsUiState(
     // 알림 설정
-    val isNotificationEnabled: Boolean = true,
+    val isNotificationEnabled: Boolean? = null,
     val expiryAlertDays: Int = 3,
 
     // 일반 설정

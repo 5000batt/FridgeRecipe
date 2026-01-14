@@ -10,8 +10,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -25,6 +27,9 @@ class SettingsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _internalState = MutableStateFlow(SettingsUiState())
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     val uiState: StateFlow<SettingsUiState> = combine(
         _internalState,
         settingsRepository.themeMode,
@@ -43,7 +48,11 @@ class SettingsViewModel @Inject constructor(
             isNotificationEnabled = isNotiEnabled,
             excludedIngredients = excludedSet.toList().sorted()
         )
-    }.stateIn(
+    }
+    .onEach {
+        _isLoading.value = false
+    }
+    .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = SettingsUiState()
