@@ -141,4 +141,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.config)
     implementation(libs.firebase.analytics)
+
+    // Gemini
+    implementation(libs.google.ai.client.generativeai)
 }
