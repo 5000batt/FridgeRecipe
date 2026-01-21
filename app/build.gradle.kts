@@ -18,7 +18,7 @@ if (localPropertiesFile.exists()) {
 
 android {
     namespace = "com.kjw.fridgerecipe"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.kjw.fridgerecipe"
@@ -101,12 +101,6 @@ dependencies {
     // Splash
     implementation(libs.androidx.core.splash)
 
-    // Retrofit
-    // implementation(libs.retrofit)
-
-    // OkHttp
-    // mplementation(libs.okhttp)
-
     // WorkManager
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.hilt.work)
@@ -135,7 +129,6 @@ dependencies {
 
     // Serialization
     implementation(libs.kotlinx.serialization.json)
-    // implementation(libs.retrofit.kotlinx.serialization.json)
 
     // Firebase
     implementation(platform(libs.firebase.bom))
