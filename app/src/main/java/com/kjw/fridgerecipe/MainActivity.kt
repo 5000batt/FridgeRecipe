@@ -18,14 +18,13 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import com.google.android.gms.ads.MobileAds
+import com.google.firebase.Firebase
+import com.google.firebase.remoteconfig.remoteConfig
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.presentation.ui.screen.MainAppScreen
 import com.kjw.fridgerecipe.presentation.util.RewardedAdManager
 import com.kjw.fridgerecipe.ui.theme.FridgeRecipeTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -42,9 +41,12 @@ class MainActivity : ComponentActivity() {
 
         installSplashScreen()
 
-        CoroutineScope(Dispatchers.IO).launch {
-            MobileAds.initialize(this@MainActivity) {}
-        }
+        Firebase.remoteConfig.fetchAndActivate()
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+
+                }
+            }
 
         rewardedAdManager.loadAd()
 

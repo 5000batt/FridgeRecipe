@@ -11,12 +11,6 @@
 # 코루틴 Continuation 유지
 -keep class kotlin.coroutines.Continuation
 
-# Retrofit & OkHttp 규칙
--dontwarn retrofit2.**
--keep class retrofit2.** { *; }
--keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
--keep interface com.kjw.fridgerecipe.data.remote.ApiService { *; }
-
 # Kotlinx Serialization 규칙
 -keepclassmembers class * {
     @kotlinx.serialization.Serializable <init>(...);

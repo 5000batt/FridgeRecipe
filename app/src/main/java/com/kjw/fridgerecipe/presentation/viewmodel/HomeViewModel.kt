@@ -309,6 +309,14 @@ class HomeViewModel @Inject constructor(
                         title = UiText.StringResource(R.string.error_title_parsing),
                         message = UiText.StringResource(R.string.error_msg_parsing)
                     )
+                    is GeminiException.NetworkError -> ErrorDialogState(
+                        title = UiText.StringResource(R.string.error_title_network),
+                        message = UiText.StringResource(R.string.error_msg_network)
+                    )
+                    is GeminiException.ResponseBlocked -> ErrorDialogState(
+                        title = UiText.StringResource(R.string.error_title_blocked),
+                        message = UiText.StringResource(R.string.error_msg_blocked)
+                    )
                     else -> ErrorDialogState(
                         title = UiText.StringResource(R.string.error_title_generic),
                         message = UiText.StringResource(R.string.error_msg_generic)

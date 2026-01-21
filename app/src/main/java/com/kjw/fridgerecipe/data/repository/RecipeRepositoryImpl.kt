@@ -1,12 +1,14 @@
 package com.kjw.fridgerecipe.data.repository
 
 import android.util.Log
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig
-import retrofit2.HttpException
+import com.google.firebase.ai.type.InvalidAPIKeyException
+import com.google.firebase.ai.type.PromptBlockedException
+import com.google.firebase.ai.type.QuotaExceededException
+import com.google.firebase.ai.type.ResponseStoppedException
+import com.google.firebase.ai.type.ServerException
 import com.kjw.fridgerecipe.data.local.dao.RecipeDao
 import com.kjw.fridgerecipe.data.remote.AiRecipeResponse
-import com.kjw.fridgerecipe.data.remote.ApiService
-import com.kjw.fridgerecipe.data.remote.GeminiRequest
+import com.kjw.fridgerecipe.data.remote.GeminiModelProvider
 import com.kjw.fridgerecipe.data.remote.RecipePromptGenerator
 import com.kjw.fridgerecipe.data.repository.mapper.toDomainModel
 import com.kjw.fridgerecipe.data.repository.mapper.toEntity
@@ -20,14 +22,12 @@ import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
-import okio.IOException
 import javax.inject.Inject
 
 class RecipeRepositoryImpl @Inject constructor(
-    private val apiService: ApiService,
     private val recipeDao: RecipeDao,
     private val promptGenerator: RecipePromptGenerator,
-    private val remoteConfig: FirebaseRemoteConfig
+    private val modelProvider: GeminiModelProvider
 ) : RecipeRepository {
 
     private val jsonParser = Json {
@@ -61,22 +61,6 @@ class RecipeRepositoryImpl @Inject constructor(
         return rawJson.substring(startIndex, endIndex + 1)
     }
 
-    private fun getModelEndpoint(): String {
-        // 비동기로 최신 값 가져오기 시도
-        remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Log.d("RecipeRepo", "Remote Config 업데이트 성공")
-            }
-        }
-
-        // 현재 캐시된 값 가져오기
-        val endpoint = remoteConfig.getString("gemini_model_endpoint")
-
-        return endpoint.ifBlank {
-            "v1beta/models/gemini-2.5-flash-lite:generateContent"
-        }
-    }
-
     override suspend fun getAiRecipes(
         ingredients: List<Ingredient>,
         ingredientsQuery: String,
@@ -104,20 +88,11 @@ class RecipeRepositoryImpl @Inject constructor(
 
         Log.d("RecipeRepo", "프롬프트 내용 : $prompt")
 
-        val geminiRequest = GeminiRequest(
-            contents = listOf(GeminiRequest.Content(parts = listOf(GeminiRequest.Part(text = prompt))))
-        )
-
         try {
-            val currentEndpoint = getModelEndpoint()
-            Log.d("RecipeRepo", "사용 중인 모델 Endpoint: $currentEndpoint")
+            val generativeModel = modelProvider.getModel()
 
-            val geminiResponse = apiService.getGeminiRecipe(
-                url = currentEndpoint,
-                request = geminiRequest
-            )
-            var aiResponseText = geminiResponse.candidates?.firstOrNull()
-                                    ?.content?.parts?.firstOrNull()?.text
+            val response = generativeModel.generateContent(prompt)
+            val aiResponseText = response.text
 
             if (aiResponseText == null) {
                 Log.e("RecipeRepo", "AI 응답이 비어있습니다.")
@@ -172,20 +147,57 @@ class RecipeRepositoryImpl @Inject constructor(
     }
 
     private fun mapToGeminiException(e: Exception): GeminiException {
+        var cause = e.cause
+
+        while (cause != null) {
+            if (cause is java.io.IOException ||
+                cause is java.net.UnknownHostException ||
+                cause is java.net.SocketTimeoutException ||
+                cause is java.net.ConnectException
+            ) {
+                return GeminiException.NetworkError()
+            }
+            cause = cause.cause
+        }
+
         return when (e) {
-            is HttpException -> {
-                when (e.code()) {
-                    400 -> GeminiException.InvalidRequest()
-                    401, 403 -> GeminiException.ApiKeyError()
-                    429 -> GeminiException.QuotaExceeded()
-                    503 -> GeminiException.ServerOverloaded()
-                    else -> GeminiException.Unknown(e.code())
+            // 1. API 키 오류 (403)
+            is InvalidAPIKeyException -> GeminiException.ApiKeyError()
+
+            // 2. 쿼터 초과 (429) - 무료 사용량 초과 등
+            is QuotaExceededException -> GeminiException.QuotaExceeded()
+
+            // 3. 안전 필터에 걸림 (성적, 혐오 표현 등)
+            is PromptBlockedException,
+            is ResponseStoppedException -> GeminiException.ResponseBlocked()
+
+            // 4. 서버 오류 (500, 503)
+            is ServerException -> GeminiException.ServerOverloaded()
+
+            // 5. 파싱 오류 (JSON 형식이 아님)
+            is kotlinx.serialization.SerializationException,
+            is IllegalArgumentException -> GeminiException.ParsingError()
+
+            // 6. 인터넷 연결 문제 (IOException)
+            // Firebase SDK도 내부적으로 네트워크 통신 시 IOException을 던집니다.
+            is java.io.IOException,
+            is java.net.UnknownHostException,
+            is java.net.SocketTimeoutException -> GeminiException.NetworkError()
+
+            // 7. 그 외 알 수 없는 오류
+            else -> {
+                // 혹시 SDK가 구체적인 Exception Class 대신 ServerException 안에 메시지로 에러를 줄 경우를 대비
+                val msg = e.message ?: ""
+
+                when {
+                    msg.contains("429") || msg.contains("Quota") -> GeminiException.QuotaExceeded()
+                    msg.contains("403") || msg.contains("API key") -> GeminiException.ApiKeyError()
+                    msg.contains("503") || msg.contains("Overloaded") -> GeminiException.ServerOverloaded()
+                    msg.contains("Failed to connect") || msg.contains("timeout") -> GeminiException.NetworkError()
+                    msg.contains("400") -> GeminiException.Unknown(400)
+                    else -> GeminiException.Unknown(-1)
                 }
             }
-            is kotlinx.serialization.SerializationException,
-            is IllegalStateException -> GeminiException.ParsingError()
-            is IOException -> GeminiException.ServerOverloaded()
-            else -> GeminiException.Unknown(-1)
         }
     }
 

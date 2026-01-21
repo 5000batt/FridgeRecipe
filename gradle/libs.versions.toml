@@ -28,8 +28,7 @@ navigation = "2.8.5"
 serializationJson = "1.7.3"
 retrofitKotlinxSerializationJson = "1.0.0"
 googleServices = "4.4.4"
-firebaseBom = "34.7.0"
-generativeai = "0.9.0"
+firebaseBom = "34.8.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -87,8 +86,9 @@ retrofit-kotlinx-serialization-json = { group = "com.jakewharton.retrofit", name
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-config = { group = "com.google.firebase", name = "firebase-config" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
-# gemini
-google-ai-client-generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
+firebase-ai = { group = "com.google.firebase", name = "firebase-ai" }
+firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "firebase-appcheck-playintegrity" }
+firebase-appcheck-debug = { group = "com.google.firebase", name = "firebase-appcheck-debug" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -102,10 +102,10 @@ dependencies {
     implementation(libs.androidx.core.splash)
 
     // Retrofit
-    implementation(libs.retrofit)
+    // implementation(libs.retrofit)
 
     // OkHttp
-    implementation(libs.okhttp)
+    // mplementation(libs.okhttp)
 
     // WorkManager
     implementation(libs.androidx.work.runtime)
@@ -135,13 +135,13 @@ dependencies {
 
     // Serialization
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.retrofit.kotlinx.serialization.json)
+    // implementation(libs.retrofit.kotlinx.serialization.json)
 
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.config)
     implementation(libs.firebase.analytics)
-
-    // Gemini
-    implementation(libs.google.ai.client.generativeai)
+    implementation(libs.firebase.ai)
+    implementation(libs.firebase.appcheck.playintegrity)
+    implementation(libs.firebase.appcheck.debug)
 }

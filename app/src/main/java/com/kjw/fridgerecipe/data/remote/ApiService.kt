@@ -1,9 +1,6 @@
 package com.kjw.fridgerecipe.data.remote
 
 import kotlinx.serialization.Serializable
-import retrofit2.http.Body
-import retrofit2.http.POST
-import retrofit2.http.Url
 
 @Serializable
 data class AiRecipeResponse(
@@ -23,33 +20,3 @@ data class RecipeDto(
     val ingredients: List<RecipeIngredientDto>?,
     val steps: List<RecipeStepDto>?
 )
-
-@Serializable
-data class GeminiRequest(
-    val contents: List<Content>
-) {
-    @Serializable
-    data class Content(val parts: List<Part>)
-    @Serializable
-    data class Part(val text: String)
-}
-
-@Serializable
-data class GeminiResponse(
-    val candidates: List<Candidate>?
-) {
-    @Serializable
-    data class Candidate(val content: Content?)
-    @Serializable
-    data class Content(val parts: List<Part>?)
-    @Serializable
-    data class Part(val text: String?)
-}
-
-interface ApiService {
-    @POST
-    suspend fun getGeminiRecipe(
-        @Url url: String,
-        @Body request: GeminiRequest
-    ): GeminiResponse
-}
