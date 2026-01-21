@@ -27,3 +27,13 @@
 # 앱 데이터 모델 보호
 -keep class com.kjw.fridgerecipe.data.remote.** { *; }
 -keep class com.kjw.fridgerecipe.domain.model.** { *; }
+
+# 릴리스 빌드에서 로그 제거 (Log.d, Log.v, Log.i 등)
+-assumenosideeffects class android.util.Log {
+    public static boolean isLoggable(java.lang.String, int);
+    public static int v(...);
+    public static int i(...);
+#    public static int w(...);
+    public static int d(...);
+#    public static int e(...);
+}
