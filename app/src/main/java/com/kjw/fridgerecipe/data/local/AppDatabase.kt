@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.data.local.converter.LocalDateConverter
 import com.kjw.fridgerecipe.data.local.converter.RecipeTypeConverters
 import com.kjw.fridgerecipe.data.local.dao.IngredientDao
@@ -22,7 +23,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
-@Database(entities = [IngredientEntity::class, RecipeEntity::class], version = 10, exportSchema = false)
+@Database(entities = [IngredientEntity::class, RecipeEntity::class], version = 10, exportSchema = true)
 @TypeConverters(LocalDateConverter::class, RecipeTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun ingredientDao(): IngredientDao
@@ -35,9 +36,11 @@ abstract class AppDatabase : RoomDatabase() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
 
-            applicationScope.launch {
-                val dao = ingredientDaoProvider.get()
-                seedDatabase(dao)
+            if (BuildConfig.DEBUG) {
+                applicationScope.launch {
+                    val dao = ingredientDaoProvider.get()
+                    seedDatabase(dao)
+                }
             }
         }
 
