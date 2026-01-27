@@ -136,5 +136,5 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.ai)
     implementation(libs.firebase.appcheck.playintegrity)
-    implementation(libs.firebase.appcheck.debug)
+    debugImplementation(libs.firebase.appcheck.debug)
 }
