@@ -20,6 +20,7 @@ import com.kjw.fridgerecipe.presentation.ui.model.RecipeFilterState
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import com.kjw.fridgerecipe.presentation.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -207,7 +208,12 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             var isTicketUsed = false
 
+            // 로딩 시작 시간 기록 및 최소 대기 시간 설정 (광고 유효 노출)
+            val startTime = System.currentTimeMillis()
+            val minLoadingTime = 3000L
+
             _homeUiState.update { it.copy(isRecipeLoading = true) }
+
             try {
                 // 선택한 재료 이름만 추출
                 val ingredientsQuery = selectedIngredients
@@ -252,6 +258,11 @@ class HomeViewModel @Inject constructor(
                         isTicketUsed = true
                     }
                 )
+
+                val elapsedTime = System.currentTimeMillis() - startTime
+                if (elapsedTime < minLoadingTime) {
+                    delay(minLoadingTime - elapsedTime)
+                }
 
                 if (newRecipe != null) {
                     _homeUiState.update {

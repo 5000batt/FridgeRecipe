@@ -29,7 +29,7 @@ import com.kjw.fridgerecipe.presentation.ui.components.common.AdMobBanner
 
 @Composable
 fun RecipeLoadingScreen() {
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading_chef))
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading_recipe))
 
     Box(
         modifier = Modifier
@@ -46,7 +46,7 @@ fun RecipeLoadingScreen() {
             LottieAnimation(
                 composition = composition,
                 iterations = LottieConstants.IterateForever,
-                modifier = Modifier.size(200.dp)
+                modifier = Modifier.size(300.dp)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
