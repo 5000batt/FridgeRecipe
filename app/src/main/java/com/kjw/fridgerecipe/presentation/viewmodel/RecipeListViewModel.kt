@@ -4,7 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipesUseCase
-import com.kjw.fridgerecipe.presentation.ui.model.RecipeWithMatch
+import com.kjw.fridgerecipe.domain.model.RecipeWithMatch
+import com.kjw.fridgerecipe.domain.usecase.CalculateRecipeMatchUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class RecipeListViewModel @Inject constructor(
     getSavedRecipesUseCase: GetSavedRecipesUseCase,
-    private val getIngredientsUseCase: GetIngredientsUseCase
+    private val getIngredientsUseCase: GetIngredientsUseCase,
+    private val calculateRecipeMatchUseCase: CalculateRecipeMatchUseCase
 ) : ViewModel() {
 
     enum class SortType { LATEST, OLDEST, MATCH_RATE }
@@ -37,34 +39,9 @@ class RecipeListViewModel @Inject constructor(
         getIngredientsUseCase(),
         _searchQuery,
         _sortType
-    ) { recipes, myIngredients, query, sort ->
-        val myIngredientsNames = myIngredients.map { it.name.trim() }.toSet()
-
+    ) { recipes, ingredients, query, sort ->
         val mappedList = recipes.map { recipe ->
-            val essentialIngredients = recipe.ingredients.filter { it.isEssential }
-
-            val targetIngredients = if (essentialIngredients.isNotEmpty()) {
-                essentialIngredients
-            } else {
-                recipe.ingredients
-            }
-
-            val missing = targetIngredients.filter { recipeIngredient ->
-                myIngredientsNames.none { myName -> recipeIngredient.name.contains(myName) }
-            }.map { it.name }
-
-            val totalCount = targetIngredients.size
-            val matchCount = totalCount - missing.size
-            val percentage = if (totalCount > 0) (matchCount * 100 / totalCount) else 0
-
-            RecipeWithMatch(
-                recipe = recipe,
-                matchCount = matchCount,
-                totalCount = totalCount,
-                matchPercentage = percentage,
-                isCookable = percentage == 100,
-                missingIngredients = missing
-            )
+            calculateRecipeMatchUseCase(recipe, ingredients)
         }
 
         val filteredList = if (query.isBlank()) {

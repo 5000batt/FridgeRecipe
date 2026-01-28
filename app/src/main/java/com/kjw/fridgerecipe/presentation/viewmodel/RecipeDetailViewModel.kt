@@ -4,7 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipeByIdUseCase
-import com.kjw.fridgerecipe.presentation.ui.model.RecipeWithMatch
+import com.kjw.fridgerecipe.domain.model.RecipeWithMatch
+import com.kjw.fridgerecipe.domain.usecase.CalculateRecipeMatchUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,7 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class RecipeDetailViewModel @Inject constructor(
     private val getSavedRecipeByIdUseCase: GetSavedRecipeByIdUseCase,
-    private val getIngredientsUseCase: GetIngredientsUseCase
+    private val getIngredientsUseCase: GetIngredientsUseCase,
+    private val calculateRecipeMatchUseCase: CalculateRecipeMatchUseCase
 ) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(true)
@@ -36,26 +38,7 @@ class RecipeDetailViewModel @Inject constructor(
             if (recipe == null) {
                 null
             } else {
-                val ingredientNames = ingredients.map { it.name.trim() }.toSet()
-                val essentialIngredients = recipe.ingredients.filter { it.isEssential }
-                val targetIngredients = if (essentialIngredients.isNotEmpty()) essentialIngredients else recipe.ingredients
-
-                val missing = targetIngredients.filter { recipeIngredient ->
-                    ingredientNames.none { myName -> recipeIngredient.name.contains(myName) }
-                }.map { it.name }
-
-                val totalCount = targetIngredients.size
-                val matchCount = totalCount - missing.size
-                val percentage = if (totalCount > 0) (matchCount * 100 / totalCount) else 0
-
-                RecipeWithMatch(
-                    recipe = recipe,
-                    matchCount = matchCount,
-                    totalCount = totalCount,
-                    matchPercentage = percentage,
-                    isCookable = percentage == 100,
-                    missingIngredients = missing
-                )
+                calculateRecipeMatchUseCase(recipe, ingredients)
             }
         }
     }.stateIn(

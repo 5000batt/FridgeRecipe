@@ -1,6 +1,4 @@
-package com.kjw.fridgerecipe.presentation.ui.model
-
-import com.kjw.fridgerecipe.domain.model.Recipe
+package com.kjw.fridgerecipe.domain.model
 
 data class RecipeWithMatch(
     val recipe: Recipe,
