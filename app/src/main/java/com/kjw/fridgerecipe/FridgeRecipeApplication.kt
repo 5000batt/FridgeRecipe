@@ -9,7 +9,6 @@ import androidx.work.WorkManager
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.Firebase
 import com.google.firebase.appcheck.appCheck
-import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.kjw.fridgerecipe.worker.ExpirationCheckWorker
 import dagger.hilt.android.HiltAndroidApp
@@ -31,15 +30,21 @@ class FridgeRecipeApplication : Application(), Configuration.Provider {
         super.onCreate()
 
         // App Check 초기화
-        Firebase.appCheck.installAppCheckProviderFactory(
-            if (BuildConfig.DEBUG) {
-                // 에뮬레이터나 디버그 빌드에서 테스트하기 위한 설정
-                DebugAppCheckProviderFactory.getInstance()
-            } else {
-                // 실제 배포 시 Play Integrity 사용
-                PlayIntegrityAppCheckProviderFactory.getInstance()
+        if (BuildConfig.DEBUG) {
+            try {
+                val debugFactoryClass = Class.forName("com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory")
+                val factory = debugFactoryClass.getMethod("getInstance").invoke(null) as com.google.firebase.appcheck.AppCheckProviderFactory
+
+                Firebase.appCheck.installAppCheckProviderFactory(factory)
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
-        )
+        } else {
+            // 실제 배포 시 Play Integrity 사용
+            Firebase.appCheck.installAppCheckProviderFactory(
+                PlayIntegrityAppCheckProviderFactory.getInstance()
+            )
+        }
 
         // AdMob SDK 초기화
         MobileAds.initialize(this) {
