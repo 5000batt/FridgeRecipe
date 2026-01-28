@@ -50,6 +50,7 @@
 
     <string name="home_btn_loading">레시피 생성 중…</string>
     <string name="home_btn_select_ingredient">재료를 먼저 선택해주세요</string>
+    <string name="home_btn_ticket_charge">이용권 충전하기</string>
     <string name="home_btn_recommend">맞춤 레시피 추천 받기</string>
     <string name="home_btn_recommend_another">다른 레시피 추천 받기</string>
 
@@ -72,7 +73,7 @@
     <string name="home_dialog_check_ingredient_btn_confirm">네, 추천해주세요</string>
 
     <string name="ticket_dialog_empty_title">무료 이용권 소진 🎫</string>
-    <string name="ticket_dialog_empty_msg">오늘 제공된 무료 이용권 3장을 모두 사용하셨어요!\n\n내일 다시 이용해 주세요!</string>
+    <string name="ticket_dialog_empty_msg">오늘 제공된 무료 이용권 3장을 모두 사용하셨어요!\n\n내일 다시 이용하거나 광고를 시청하여 이용권을 충전해주세요</string>
     <string name="ticket_dialog_btn_charge">광고 보고 충전 (+1)</string>
     <string name="ticket_dialog_btn_next_time">다음에 할게요</string>
     <string name="ticket_count_format">오늘의 무료 레시피: %1$d / %2$d회</string>

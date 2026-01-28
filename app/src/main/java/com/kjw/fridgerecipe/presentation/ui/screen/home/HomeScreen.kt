@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -47,6 +48,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -79,7 +81,6 @@ import com.kjw.fridgerecipe.presentation.util.RecipeConstants
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.presentation.viewmodel.HomeViewModel
 import com.kjw.fridgerecipe.worker.ExpirationCheckWorker
-import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -411,21 +412,52 @@ fun HomeScreen(
                         val buttonText = when {
                             uiState.isRecipeLoading -> stringResource(R.string.home_btn_loading)
                             uiState.selectedIngredientIds.isEmpty() -> stringResource(R.string.home_btn_select_ingredient)
+                            uiState.remainingTickets <= 0 -> stringResource(R.string.home_btn_ticket_charge)
                             uiState.recommendedRecipe == null -> stringResource(R.string.home_btn_recommend)
                             else -> stringResource(R.string.home_btn_recommend_another)
                         }
 
-                        Text(
-                            text = stringResource(R.string.ticket_count_format, uiState.remainingTickets, 3),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = if (uiState.remainingTickets > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .padding(bottom = 8.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    if (uiState.remainingTickets <= 0) {
+                                        homeViewModel.showAdDialog()
+                                    }
+                                }
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.ticket_count_format, uiState.remainingTickets, 3),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = if (uiState.remainingTickets > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            // 티켓이 없을 때만 '충전' 문구 표시
+                            if (uiState.remainingTickets <= 0) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "충전",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
 
                         FridgeBottomButton(
                             text = buttonText,
-                            onClick = { homeViewModel.onRecommendButtonClick() },
+                            onClick = {
+                                if (uiState.remainingTickets <= 0 && uiState.selectedIngredientIds.isNotEmpty()) {
+                                    homeViewModel.showAdDialog()
+                                } else {
+                                    homeViewModel.onRecommendButtonClick()
+                                }
+                            },
                             isEnabled = uiState.selectedIngredientIds.isNotEmpty() && !uiState.isRecipeLoading,
                             isLoading = uiState.isRecipeLoading,
                             modifier = Modifier.fillMaxWidth(),

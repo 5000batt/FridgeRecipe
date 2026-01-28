@@ -390,6 +390,10 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun showAdDialog() {
+        _homeUiState.update { it.copy(showAdDialog = true) }
+    }
+
     fun dismissAdDialog() {
         _homeUiState.update { it.copy(showAdDialog = false) }
     }
