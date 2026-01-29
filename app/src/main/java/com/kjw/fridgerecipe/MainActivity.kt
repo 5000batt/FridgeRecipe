@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -44,7 +45,9 @@ class MainActivity : ComponentActivity() {
         Firebase.remoteConfig.fetchAndActivate()
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-
+                    Log.d("MainActivity", "Remote Config updated!")
+                } else {
+                    Log.d("MainActivity", "Remote Config update failed")
                 }
             }
 

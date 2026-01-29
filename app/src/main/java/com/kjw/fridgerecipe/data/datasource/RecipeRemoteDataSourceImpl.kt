@@ -6,6 +6,7 @@ import com.google.firebase.ai.type.PromptBlockedException
 import com.google.firebase.ai.type.QuotaExceededException
 import com.google.firebase.ai.type.ResponseStoppedException
 import com.google.firebase.ai.type.ServerException
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.kjw.fridgerecipe.data.remote.AiRecipeResponse
 import com.kjw.fridgerecipe.data.remote.GeminiModelProvider
 import com.kjw.fridgerecipe.data.remote.RecipeDto
@@ -18,7 +19,8 @@ import javax.inject.Inject
 
 class RecipeRemoteDataSourceImpl @Inject constructor(
     private val promptGenerator: RecipePromptGenerator,
-    private val modelProvider: GeminiModelProvider
+    private val modelProvider: GeminiModelProvider,
+    private val remoteConfig: FirebaseRemoteConfig
 ) : RecipeRemoteDataSource {
 
     private val jsonParser = Json {
@@ -36,9 +38,11 @@ class RecipeRemoteDataSourceImpl @Inject constructor(
         useOnlySelected: Boolean,
         excludedIngredients: List<String>
     ): RecipeDto {
+        val template = remoteConfig.getString("recipe_prompt_template")
 
         // 프롬프트 생성
         val prompt = promptGenerator.createRecipePrompt(
+            template = template,
             ingredients = ingredients,
             timeFilter = timeFilter,
             levelFilter = levelFilter,
