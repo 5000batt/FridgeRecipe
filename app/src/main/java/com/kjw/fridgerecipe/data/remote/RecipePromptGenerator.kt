@@ -23,7 +23,7 @@ class RecipePromptGenerator @Inject constructor() {
         val constraints = buildList {
             add("- 필수 재료: [$ingredientDetails]")
             timeFilter?.let { add("- 조리 시간: $it") }
-            levelFilter?.let { add("- 난이도: ${it.label}") }
+            levelFilter?.let { add("- 난이도: ${it.id}") }
             categoryFilter?.let { add("- 음식 종류: ${it.id}") }
             cookingToolFilter?.let { add("- 조리 도구: ${it.id} (필수 사용)") }
 
@@ -53,6 +53,7 @@ class RecipePromptGenerator @Inject constructor() {
 
 **Format**:
 반드시 아래 JSON 형식으로만 응답하세요. Markdown 코드 블록(```json)이나 사족을 달지 마세요.
+난이도(level)는 반드시 BEGINNER, INTERMEDIATE, ADVANCED 중 하나로 응답하세요.
 
 **Few-Shot Example**:
 [Input]
@@ -61,7 +62,7 @@ class RecipePromptGenerator @Inject constructor() {
 {
   "recipe": { 
       "title": "참치 김치찌개",
-      "info": { "servings": "1인분", "time": "20분", "level": "초급" },
+      "info": { "servings": "1인분", "time": "20분", "level": "BEGINNER" },
       "ingredients": [ 
           { "name": "김치", "quantity": "1컵", "isEssential": true },
           { "name": "참치", "quantity": "1캔", "isEssential": true },

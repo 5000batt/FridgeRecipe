@@ -3,20 +3,6 @@ package com.kjw.fridgerecipe.domain.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class LevelType(val label: String) {
-    BEGINNER("초급"),
-    INTERMEDIATE("중급"),
-    ADVANCED("고급"),
-    ETC("기타");
-
-    companion object {
-        fun fromString(label: String?): LevelType {
-            return entries.find { it.label == label } ?: ETC
-        }
-    }
-}
-
-@Serializable
 data class RecipeIngredient(
     val name: String,
     val quantity: String,

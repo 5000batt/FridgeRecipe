@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.R
@@ -24,18 +23,10 @@ fun RecipeMetadataForm(
     cookingToolState: CookingToolType?,
     onCookingToolChange: (CookingToolType?) -> Unit
 ) {
-    val context = LocalContext.current
-
-    fun getLevelLabel(level: LevelType): String {
-        return RecipeConstants.LEVEL_FILTER_OPTIONS
-            .find { it.value == level }?.label?.asString(context)
-            ?: level.label
-    }
-
     Column {
         // 난이도
         CommonDropdown(
-            value = getLevelLabel(selectedLevel),
+            value = stringResource(selectedLevel.labelResId),
             label = stringResource(R.string.recipe_edit_label_level),
             options = RecipeConstants.LEVEL_FILTER_OPTIONS.filter { it.value != null },
             onOptionSelected = { option -> option.value?.let { onLevelChange(it) } },

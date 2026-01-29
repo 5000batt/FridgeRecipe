@@ -19,7 +19,7 @@ fun RecipeDto.toDomainModel(): Recipe {
         title = this.title ?: "제목 없음",
         servings = this.info?.servings ?: "-",
         time = this.info?.time ?: "-",
-        level = LevelType.fromString(this.info?.level),
+        level = LevelType.fromId(this.info?.level),
         ingredients = this.ingredients?.map { it.toDomainModel() } ?: emptyList(),
         steps = this.steps?.map { it.toDomainModel() } ?: emptyList()
     )
@@ -46,7 +46,7 @@ fun Recipe.toEntity(): RecipeEntity {
         title = this.title,
         servings = this.servings,
         time = this.time,
-        level = this.level.name,
+        level = this.level.id,
         ingredients = this.ingredients,
         steps = this.steps,
         imageUri = this.imageUri,
@@ -58,7 +58,7 @@ fun RecipeSearchMetadata.toEntity(): RecipeSearchMetadataEntity {
     return RecipeSearchMetadataEntity(
         ingredientsQuery = this.ingredientsQuery,
         timeFilter = this.timeFilter,
-        levelFilter = this.levelFilter?.name,
+        levelFilter = this.levelFilter?.id,
         categoryFilter = this.categoryFilter?.id,
         cookingToolFilter = this.cookingToolFilter?.id,
         useOnlySelected = this.useOnlySelected
@@ -71,11 +71,7 @@ fun RecipeEntity.toDomainModel(): Recipe {
         title = this.title,
         servings = this.servings,
         time = this.time,
-        level = try {
-            LevelType.valueOf(this.level)
-        } catch (e: Exception) {
-            LevelType.INTERMEDIATE
-        },
+        level = LevelType.fromId(this.level),
         ingredients = this.ingredients,
         steps = this.steps,
         imageUri = this.imageUri,
@@ -87,13 +83,7 @@ fun RecipeSearchMetadataEntity.toDomainModel(): RecipeSearchMetadata {
     return RecipeSearchMetadata(
         ingredientsQuery = this.ingredientsQuery,
         timeFilter = this.timeFilter,
-        levelFilter = this.levelFilter?.let {
-            try {
-                LevelType.valueOf(it)
-            } catch (e: Exception) {
-                null
-            }
-        },
+        levelFilter = LevelType.fromId(this.levelFilter),
         categoryFilter = RecipeCategoryType.fromId(this.categoryFilter),
         cookingToolFilter = CookingToolType.fromId(this.cookingToolFilter),
         useOnlySelected = this.useOnlySelected

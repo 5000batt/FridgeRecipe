@@ -248,6 +248,7 @@
     <string name="level_beginner">쉬움</string>
     <string name="level_intermediate">보통</string>
     <string name="level_advanced">어려움</string>
+    <string name="level_etc">기타</string>
 
     <string name="category_korean">한식</string>
     <string name="category_japanese">일식</string>

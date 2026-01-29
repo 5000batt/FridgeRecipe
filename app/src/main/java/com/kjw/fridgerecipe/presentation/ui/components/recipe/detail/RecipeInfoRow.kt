@@ -44,7 +44,7 @@ fun RecipeInfoRow(recipe: Recipe) {
         )
         RecipeMetaInfo(
             icon = Icons.Default.SignalCellularAlt,
-            label = recipe.level.label,
+            label = stringResource(recipe.level.labelResId),
             contentDescription = stringResource(R.string.recipe_meta_level_desc)
         )
     }
