@@ -4,6 +4,7 @@ import android.util.Log
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
+import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.repository.RecipeRepository
 import javax.inject.Inject
 
@@ -15,7 +16,7 @@ class GetRecommendedRecipeUseCase @Inject constructor(
         seenIds: Set<Long>,
         timeFilter: String?,
         levelFilter: LevelType?,
-        categoryFilter: String?,
+        categoryFilter: RecipeCategoryType?,
         utensilFilter: String?,
         useOnlySelected: Boolean,
         excludedIngredients: List<String> = emptyList(),

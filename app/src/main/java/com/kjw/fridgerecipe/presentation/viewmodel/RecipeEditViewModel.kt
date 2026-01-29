@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
 import com.kjw.fridgerecipe.domain.usecase.SaveRecipeImageUseCase
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientItemUiState
@@ -150,7 +151,7 @@ class RecipeEditViewModel @Inject constructor(
         _editUiState.update { it.copy(level = newLevel) }
     }
 
-    fun onCategoryChanged(newCategory: String) {
+    fun onCategoryChanged(newCategory: RecipeCategoryType?) {
         _editUiState.update { it.copy(categoryState = newCategory) }
     }
 
@@ -352,7 +353,7 @@ class RecipeEditViewModel @Inject constructor(
         val currentState = _editUiState.value
         val actualTimeInt = currentState.timeState.toIntOrNull() ?: 0
         val actualLevel = currentState.level
-        val actualCategory = if (currentState.categoryState == FILTER_ANY) null else currentState.categoryState
+        val actualCategory = currentState.categoryState
         val actualUtensil = if (currentState.utensilState == FILTER_ANY) null else currentState.utensilState
 
         val timeFilterTag = when {
@@ -410,7 +411,7 @@ private fun Recipe.toEditUiState(): RecipeEditUiState {
         servingsState = servingsExtracted,
         timeState = timeExtracted,
         level = this.level,
-        categoryState = this.searchMetadata?.categoryFilter ?: FILTER_ANY,
+        categoryState = this.searchMetadata?.categoryFilter,
         utensilState = this.searchMetadata?.utensilFilter ?: FILTER_ANY,
         ingredientsState = this.ingredients.map {
             IngredientItemUiState(

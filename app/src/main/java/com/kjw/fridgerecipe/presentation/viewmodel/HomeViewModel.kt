@@ -9,6 +9,7 @@ import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
+import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.model.TicketException
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.domain.usecase.CheckIngredientConflictsUseCase
@@ -368,10 +369,10 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun onCategoryFilterChanged(category: String) {
+    fun onCategoryFilterChanged(category: RecipeCategoryType?) {
         _homeUiState.update { state ->
             state.copy(filterState = state.filterState.copy(
-                category = if (category == FILTER_ANY) null else category
+                category = category
             ))
         }
     }

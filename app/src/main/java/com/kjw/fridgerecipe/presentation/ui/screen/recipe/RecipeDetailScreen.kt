@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kjw.fridgerecipe.R
+import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.presentation.ui.components.common.BottomActionBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonTopBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.FridgeBottomButton
@@ -46,8 +47,6 @@ import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.detail.IngredientListItem
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.detail.RecipeInfoRow
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.detail.RecipeStepItem
-import com.kjw.fridgerecipe.presentation.util.RecipeConstants
-import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeDetailViewModel
 
 @Composable
@@ -71,10 +70,10 @@ fun RecipeDetailScreen(
         }
     }
 
-    fun getCategoryLabel(value: String): String {
-        return RecipeConstants.CATEGORY_FILTER_OPTIONS
-            .find { it.value == value }?.label?.asString(context)
-            ?: value
+    @Composable
+    fun getCategoryLabel(type: RecipeCategoryType?): String {
+        return type?.let { stringResource(it.labelResId) }
+            ?: stringResource(R.string.recipe_detail_default_category)
     }
 
     LoadingContent(isLoading = isLoading) {
@@ -145,12 +144,7 @@ fun RecipeDetailScreen(
                                     .fillMaxWidth()
                                     .padding(24.dp)
                             ) {
-                                val categoryFilter = currentRecipe.searchMetadata?.categoryFilter
-                                val displayCategory = if (categoryFilter == FILTER_ANY || categoryFilter.isNullOrBlank()) {
-                                    stringResource(R.string.recipe_detail_default_category)
-                                } else {
-                                    getCategoryLabel(categoryFilter)
-                                }
+                                val displayCategory = getCategoryLabel(currentRecipe.searchMetadata?.categoryFilter)
 
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,

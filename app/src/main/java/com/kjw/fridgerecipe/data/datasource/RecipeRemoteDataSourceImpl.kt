@@ -14,6 +14,7 @@ import com.kjw.fridgerecipe.data.remote.RecipePromptGenerator
 import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
+import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
@@ -33,7 +34,7 @@ class RecipeRemoteDataSourceImpl @Inject constructor(
         ingredients: List<Ingredient>,
         timeFilter: String?,
         levelFilter: LevelType?,
-        categoryFilter: String?,
+        categoryFilter: RecipeCategoryType?,
         utensilFilter: String?,
         useOnlySelected: Boolean,
         excludedIngredients: List<String>

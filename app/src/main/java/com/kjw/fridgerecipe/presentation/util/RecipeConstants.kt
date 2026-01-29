@@ -2,6 +2,7 @@ package com.kjw.fridgerecipe.presentation.util
 
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.LevelType
+import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.presentation.ui.model.FilterOption
 
 object RecipeConstants {
@@ -14,13 +15,17 @@ object RecipeConstants {
         FilterOption(LevelType.ADVANCED, UiText.StringResource(R.string.level_advanced))
     )
 
-    val CATEGORY_FILTER_OPTIONS = listOf(
-        FilterOption(FILTER_ANY, UiText.StringResource(R.string.filter_any)),
-        FilterOption("한식", UiText.StringResource(R.string.category_korean)),
-        FilterOption("일식", UiText.StringResource(R.string.category_japanese)),
-        FilterOption("중식", UiText.StringResource(R.string.category_chinese)),
-        FilterOption("양식", UiText.StringResource(R.string.category_western))
-    )
+    val CATEGORY_FILTER_OPTIONS = buildList {
+        add(FilterOption(null, UiText.StringResource(R.string.filter_any)))
+        addAll(
+            RecipeCategoryType.entries.map { type ->
+                FilterOption(
+                    value = type,
+                    label = UiText.StringResource(type.labelResId)
+                )
+            }
+        )
+    }
 
     val UTENSIL_FILTER_OPTIONS = listOf(
         FilterOption(FILTER_ANY, UiText.StringResource(R.string.filter_any)),

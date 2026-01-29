@@ -7,6 +7,7 @@ import com.kjw.fridgerecipe.data.remote.RecipeIngredientDto
 import com.kjw.fridgerecipe.data.remote.RecipeStepDto
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
+import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
 import com.kjw.fridgerecipe.domain.model.RecipeStep
@@ -57,7 +58,7 @@ fun RecipeSearchMetadata.toEntity(): RecipeSearchMetadataEntity {
         ingredientsQuery = this.ingredientsQuery,
         timeFilter = this.timeFilter,
         levelFilter = this.levelFilter?.name,
-        categoryFilter = this.categoryFilter,
+        categoryFilter = this.categoryFilter?.id,
         utensilFilter = this.utensilFilter,
         useOnlySelected = this.useOnlySelected
     )
@@ -92,7 +93,7 @@ fun RecipeSearchMetadataEntity.toDomainModel(): RecipeSearchMetadata {
                 null
             }
         },
-        categoryFilter = this.categoryFilter,
+        categoryFilter = RecipeCategoryType.fromId(this.categoryFilter),
         utensilFilter = this.utensilFilter,
         useOnlySelected = this.useOnlySelected
     )

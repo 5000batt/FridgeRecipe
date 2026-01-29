@@ -1,6 +1,7 @@
 package com.kjw.fridgerecipe.presentation.ui.model
 
 import com.kjw.fridgerecipe.domain.model.LevelType
+import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.presentation.util.UiText
 
 data class ErrorDialogState(
@@ -16,7 +17,7 @@ data class FilterOption<T>(
 data class RecipeFilterState(
     val timeLimit: String? = null,
     val level: LevelType? = null,
-    val category: String? = null,
+    val category: RecipeCategoryType? = null,
     val utensil: String? = null,
     val useOnlySelected: Boolean = false
 )

@@ -8,6 +8,7 @@ import com.kjw.fridgerecipe.data.repository.mapper.toEntity
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
+import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
 import com.kjw.fridgerecipe.domain.repository.RecipeRepository
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
@@ -29,7 +30,7 @@ class RecipeRepositoryImpl @Inject constructor(
         ingredientsQuery: String,
         timeFilter: String?,
         levelFilter: LevelType?,
-        categoryFilter: String?,
+        categoryFilter: RecipeCategoryType?,
         utensilFilter: String?,
         useOnlySelected: Boolean,
         excludedIngredients: List<String>
@@ -37,7 +38,6 @@ class RecipeRepositoryImpl @Inject constructor(
 
         // 필터 정리
         val safeTime = sanitizeFilter(timeFilter)
-        val safeCategory = sanitizeFilter(categoryFilter)
         val safeUtensil = sanitizeFilter(utensilFilter)
 
         // AI 호출 및 응답 확인
@@ -45,7 +45,7 @@ class RecipeRepositoryImpl @Inject constructor(
             ingredients = ingredients,
             timeFilter = safeTime,
             levelFilter = levelFilter,
-            categoryFilter = safeCategory,
+            categoryFilter = categoryFilter,
             utensilFilter = safeUtensil,
             useOnlySelected = useOnlySelected,
             excludedIngredients = excludedIngredients
@@ -59,7 +59,7 @@ class RecipeRepositoryImpl @Inject constructor(
             ingredientsQuery = ingredientsQuery,
             timeFilter = safeTime,
             levelFilter = levelFilter,
-            categoryFilter = safeCategory,
+            categoryFilter = categoryFilter,
             utensilFilter = safeUtensil,
             useOnlySelected = useOnlySelected
         )
@@ -107,15 +107,15 @@ class RecipeRepositoryImpl @Inject constructor(
         ingredientsQuery: String,
         timeFilter: String?,
         levelFilter: LevelType?,
-        categoryFilter: String?,
+        categoryFilter: RecipeCategoryType?,
         utensilFilter: String?,
         useOnlySelected: Boolean
     ): List<Recipe> {
         val entities = recipeDao.findRecipesByFilters(
             ingredientsQuery =  ingredientsQuery,
             timeFilter = sanitizeFilter(timeFilter),
-            levelFilter = levelFilter?.label,
-            categoryFilter = sanitizeFilter(categoryFilter),
+            levelFilter = levelFilter?.name,
+            categoryFilter = categoryFilter?.id,
             utensilFilter = sanitizeFilter(utensilFilter),
             useOnlySelected = useOnlySelected
         )
