@@ -15,6 +15,7 @@ import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
@@ -35,7 +36,7 @@ class RecipeRemoteDataSourceImpl @Inject constructor(
         timeFilter: String?,
         levelFilter: LevelType?,
         categoryFilter: RecipeCategoryType?,
-        utensilFilter: String?,
+        cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean,
         excludedIngredients: List<String>
     ): RecipeDto {
@@ -48,7 +49,7 @@ class RecipeRemoteDataSourceImpl @Inject constructor(
             timeFilter = timeFilter,
             levelFilter = levelFilter,
             categoryFilter = categoryFilter,
-            utensilFilter = utensilFilter,
+            cookingToolFilter = cookingToolFilter,
             useOnlySelected = useOnlySelected,
             excludedIngredients = excludedIngredients
         )

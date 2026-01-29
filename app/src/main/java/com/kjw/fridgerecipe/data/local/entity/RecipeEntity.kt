@@ -11,7 +11,7 @@ data class RecipeSearchMetadataEntity(
     val timeFilter: String?,
     val levelFilter: String?,
     val categoryFilter: String?,
-    val utensilFilter: String?,
+    val cookingToolFilter: String?,
     val useOnlySelected: Boolean
 )
 

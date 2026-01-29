@@ -3,6 +3,7 @@ package com.kjw.fridgerecipe.data.remote
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import javax.inject.Inject
 
 class RecipePromptGenerator @Inject constructor() {
@@ -13,7 +14,7 @@ class RecipePromptGenerator @Inject constructor() {
         timeFilter: String?,
         levelFilter: LevelType?,
         categoryFilter: RecipeCategoryType?,
-        utensilFilter: String?,
+        cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean,
         excludedIngredients: List<String>
     ): String {
@@ -24,7 +25,7 @@ class RecipePromptGenerator @Inject constructor() {
             timeFilter?.let { add("- 조리 시간: $it") }
             levelFilter?.let { add("- 난이도: ${it.label}") }
             categoryFilter?.let { add("- 음식 종류: ${it.id}") }
-            utensilFilter?.let { add("- 조리 도구: $it (필수 사용)") }
+            cookingToolFilter?.let { add("- 조리 도구: ${it.id} (필수 사용)") }
 
             if (useOnlySelected) {
                 add("- 추가 제약: 소금, 후추, 물 등 기본 양념 외에 '필수 재료' 목록에 없는 재료는 절대 사용 금지.")

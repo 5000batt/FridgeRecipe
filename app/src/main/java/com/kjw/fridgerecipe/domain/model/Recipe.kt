@@ -34,7 +34,7 @@ data class RecipeSearchMetadata(
     val timeFilter: String? = null,
     val levelFilter: LevelType? = null,
     val categoryFilter: RecipeCategoryType? = null,
-    val utensilFilter: String? = null,
+    val cookingToolFilter: CookingToolType? = null,
     val useOnlySelected: Boolean = false
 )
 

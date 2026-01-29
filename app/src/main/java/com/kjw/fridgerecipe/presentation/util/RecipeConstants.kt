@@ -3,6 +3,7 @@ package com.kjw.fridgerecipe.presentation.util
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.presentation.ui.model.FilterOption
 
 object RecipeConstants {
@@ -27,11 +28,15 @@ object RecipeConstants {
         )
     }
 
-    val UTENSIL_FILTER_OPTIONS = listOf(
-        FilterOption(FILTER_ANY, UiText.StringResource(R.string.filter_any)),
-        FilterOption("에어프라이어", UiText.StringResource(R.string.utensil_airfryer)),
-        FilterOption("전자레인지", UiText.StringResource(R.string.utensil_microwave)),
-        FilterOption("냄비", UiText.StringResource(R.string.utensil_pot)),
-        FilterOption("후라이팬", UiText.StringResource(R.string.utensil_pan))
-    )
+    val COOKING_TOOL_FILTER_OPTIONS = buildList {
+        add(FilterOption(null, UiText.StringResource(R.string.filter_any)))
+        addAll(
+            CookingToolType.entries.map { type ->
+                FilterOption(
+                    value = type,
+                    label = UiText.StringResource(type.labelResId)
+                )
+            }
+        )
+    }
 }

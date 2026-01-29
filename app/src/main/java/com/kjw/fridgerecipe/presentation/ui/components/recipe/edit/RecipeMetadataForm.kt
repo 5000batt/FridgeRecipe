@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonDropdown
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants
 
@@ -20,8 +21,8 @@ fun RecipeMetadataForm(
     onLevelChange: (LevelType) -> Unit,
     categoryState: RecipeCategoryType?,
     onCategoryChange: (RecipeCategoryType?) -> Unit,
-    utensilState: String,
-    onUtensilChange: (String) -> Unit
+    cookingToolState: CookingToolType?,
+    onCookingToolChange: (CookingToolType?) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -29,12 +30,6 @@ fun RecipeMetadataForm(
         return RecipeConstants.LEVEL_FILTER_OPTIONS
             .find { it.value == level }?.label?.asString(context)
             ?: level.label
-    }
-
-    fun getUtensilLabel(value: String): String {
-        return RecipeConstants.UTENSIL_FILTER_OPTIONS
-            .find { it.value == value }?.label?.asString(context)
-            ?: value
     }
 
     Column {
@@ -62,10 +57,12 @@ fun RecipeMetadataForm(
 
         // 조리 도구
         CommonDropdown(
-            value = getUtensilLabel(utensilState),
-            label = stringResource(R.string.recipe_edit_label_utensil),
-            options = RecipeConstants.UTENSIL_FILTER_OPTIONS,
-            onOptionSelected = { onUtensilChange(it.value) },
+            value = cookingToolState?.let { stringResource(it.labelResId) } ?: stringResource(R.string.filter_any),
+            label = stringResource(R.string.recipe_edit_label_cooking_tool),
+            options = RecipeConstants.COOKING_TOOL_FILTER_OPTIONS,
+            onOptionSelected = { option ->
+                onCookingToolChange(option.value)
+            },
             itemLabel = { it.label.asString() }
         )
     }

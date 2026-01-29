@@ -226,8 +226,8 @@ fun RecipeEditScreen(
                             onLevelChange = { viewModel.onLevelChanged(it) },
                             categoryState = uiState.categoryState,
                             onCategoryChange = { viewModel.onCategoryChanged(it) },
-                            utensilState = uiState.utensilState,
-                            onUtensilChange = { viewModel.onUtensilChanged(it) }
+                            cookingToolState = uiState.cookingToolState,
+                            onCookingToolChange = { viewModel.onCookingToolChanged(it) }
                         )
                     }
 

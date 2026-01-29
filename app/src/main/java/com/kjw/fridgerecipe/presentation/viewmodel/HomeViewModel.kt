@@ -10,6 +10,7 @@ import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.TicketException
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.domain.usecase.CheckIngredientConflictsUseCase
@@ -242,7 +243,7 @@ class HomeViewModel @Inject constructor(
                     timeFilter = currentFilters.timeLimit,
                     levelFilter = currentFilters.level,
                     categoryFilter = currentFilters.category,
-                    utensilFilter = currentFilters.utensil,
+                    cookingToolFilter = currentFilters.cookingTool,
                     useOnlySelected = currentFilters.useOnlySelected,
                     excludedIngredients = finalExcludedList,
                     onAiCall = {
@@ -354,7 +355,6 @@ class HomeViewModel @Inject constructor(
     }
 
     // Filter & Dialog Handlers
-
     fun onTimeFilterChanged(time: String) {
         _homeUiState.update { state ->
             state.copy(filterState = state.filterState.copy(
@@ -377,10 +377,10 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun onUtensilFilterChanged(utensil: String) {
+    fun onCookingToolFilterChanged(cookingTool: CookingToolType?) {
         _homeUiState.update { state ->
             state.copy(filterState = state.filterState.copy(
-                utensil = if (utensil == FILTER_ANY) null else utensil
+                cookingTool = cookingTool
             ))
         }
     }

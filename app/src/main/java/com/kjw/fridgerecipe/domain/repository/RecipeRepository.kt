@@ -4,6 +4,7 @@ import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import kotlinx.coroutines.flow.Flow
 
 interface RecipeRepository {
@@ -13,7 +14,7 @@ interface RecipeRepository {
         timeFilter: String?,
         levelFilter: LevelType?,
         categoryFilter: RecipeCategoryType?,
-        utensilFilter: String?,
+        cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean,
         excludedIngredients: List<String> = emptyList()
     ): Recipe?
@@ -27,7 +28,7 @@ interface RecipeRepository {
         timeFilter: String?,
         levelFilter: LevelType?,
         categoryFilter: RecipeCategoryType?,
-        utensilFilter: String?,
+        cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean
     ): List<Recipe>
 

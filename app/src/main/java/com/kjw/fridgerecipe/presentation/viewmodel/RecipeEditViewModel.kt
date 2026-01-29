@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
 import com.kjw.fridgerecipe.domain.usecase.SaveRecipeImageUseCase
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientItemUiState
@@ -31,7 +32,6 @@ import com.kjw.fridgerecipe.presentation.ui.model.ListErrorType
 import com.kjw.fridgerecipe.presentation.ui.model.RecipeEditUiState
 import com.kjw.fridgerecipe.presentation.ui.model.RecipeValidationField
 import com.kjw.fridgerecipe.presentation.ui.model.StepItemUiState
-import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import com.kjw.fridgerecipe.presentation.util.UiText
 
 @HiltViewModel
@@ -155,8 +155,8 @@ class RecipeEditViewModel @Inject constructor(
         _editUiState.update { it.copy(categoryState = newCategory) }
     }
 
-    fun onUtensilChanged(newUtensil: String) {
-        _editUiState.update { it.copy(utensilState = newUtensil) }
+    fun onCookingToolChanged(newCookingTool: CookingToolType?) {
+        _editUiState.update { it.copy(cookingToolState = newCookingTool) }
     }
 
     fun onAddIngredient() {
@@ -354,7 +354,7 @@ class RecipeEditViewModel @Inject constructor(
         val actualTimeInt = currentState.timeState.toIntOrNull() ?: 0
         val actualLevel = currentState.level
         val actualCategory = currentState.categoryState
-        val actualUtensil = if (currentState.utensilState == FILTER_ANY) null else currentState.utensilState
+        val actualCookingTool = currentState.cookingToolState
 
         val timeFilterTag = when {
             actualTimeInt <= 15 -> "15분 이내"
@@ -375,7 +375,7 @@ class RecipeEditViewModel @Inject constructor(
             timeFilter = timeFilterTag,
             levelFilter = actualLevel,
             categoryFilter = actualCategory,
-            utensilFilter = actualUtensil,
+            cookingToolFilter = actualCookingTool,
             useOnlySelected = false
         )
 
@@ -397,30 +397,30 @@ class RecipeEditViewModel @Inject constructor(
             imageUri = currentState.imageUri
         )
     }
-}
 
-private fun Recipe.toEditUiState(): RecipeEditUiState {
-    val servingsString = this.servings
-    val servingsExtracted = Regex("\\d+").find(servingsString)?.value ?: ""
+    private fun Recipe.toEditUiState(): RecipeEditUiState {
+        val servingsString = this.servings
+        val servingsExtracted = Regex("\\d+").find(servingsString)?.value ?: ""
 
-    val timeString = this.time
-    val timeExtracted = Regex("\\d+").find(timeString)?.value ?: ""
+        val timeString = this.time
+        val timeExtracted = Regex("\\d+").find(timeString)?.value ?: ""
 
-    return RecipeEditUiState(
-        title = this.title,
-        servingsState = servingsExtracted,
-        timeState = timeExtracted,
-        level = this.level,
-        categoryState = this.searchMetadata?.categoryFilter,
-        utensilState = this.searchMetadata?.utensilFilter ?: FILTER_ANY,
-        ingredientsState = this.ingredients.map {
-            IngredientItemUiState(
-                name = it.name,
-                quantity = it.quantity,
-                isEssential = it.isEssential
-            )
-        },
-        stepsState = this.steps.map { StepItemUiState(it.number, it.description) },
-        imageUri = this.imageUri
-    )
+        return RecipeEditUiState(
+            title = this.title,
+            servingsState = servingsExtracted,
+            timeState = timeExtracted,
+            level = this.level,
+            categoryState = this.searchMetadata?.categoryFilter,
+            cookingToolState = this.searchMetadata?.cookingToolFilter,
+            ingredientsState = this.ingredients.map {
+                IngredientItemUiState(
+                    name = it.name,
+                    quantity = it.quantity,
+                    isEssential = it.isEssential
+                )
+            },
+            stepsState = this.steps.map { StepItemUiState(it.number, it.description) },
+            imageUri = this.imageUri
+        )
+    }
 }

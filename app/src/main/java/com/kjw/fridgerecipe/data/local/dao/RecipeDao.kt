@@ -37,7 +37,7 @@ interface RecipeDao {
             (:timeFilter IS NULL OR search_timeFilter = :timeFilter) AND
             (:levelFilter IS NULL OR search_levelFilter = :levelFilter) AND
             (:categoryFilter IS NULL OR search_categoryFilter = :categoryFilter) AND
-            (:utensilFilter IS NULL OR search_utensilFilter = :utensilFilter) AND
+            (:cookingToolFilter IS NULL OR search_cookingToolFilter = :cookingToolFilter) AND
             (search_useOnlySelected = :useOnlySelected)
     """)
     suspend fun findRecipesByFilters(
@@ -45,7 +45,7 @@ interface RecipeDao {
         timeFilter: String?,
         levelFilter: String?,
         categoryFilter: String?,
-        utensilFilter: String?,
+        cookingToolFilter: String?,
         useOnlySelected: Boolean
     ): List<RecipeEntity>
 

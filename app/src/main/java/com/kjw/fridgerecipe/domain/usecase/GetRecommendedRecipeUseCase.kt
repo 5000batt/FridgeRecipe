@@ -1,6 +1,7 @@
 package com.kjw.fridgerecipe.domain.usecase
 
 import android.util.Log
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
@@ -17,7 +18,7 @@ class GetRecommendedRecipeUseCase @Inject constructor(
         timeFilter: String?,
         levelFilter: LevelType?,
         categoryFilter: RecipeCategoryType?,
-        utensilFilter: String?,
+        cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean,
         excludedIngredients: List<String> = emptyList(),
         onAiCall: suspend () -> Unit
@@ -33,7 +34,7 @@ class GetRecommendedRecipeUseCase @Inject constructor(
             timeFilter = timeFilter,
             levelFilter = levelFilter,
             categoryFilter = categoryFilter,
-            utensilFilter = utensilFilter,
+            cookingToolFilter = cookingToolFilter,
             useOnlySelected = useOnlySelected
         )
 
@@ -69,7 +70,7 @@ class GetRecommendedRecipeUseCase @Inject constructor(
             timeFilter = timeFilter,
             levelFilter = levelFilter,
             categoryFilter = categoryFilter,
-            utensilFilter = utensilFilter,
+            cookingToolFilter = cookingToolFilter,
             useOnlySelected = useOnlySelected,
             excludedIngredients = excludedIngredients
         )

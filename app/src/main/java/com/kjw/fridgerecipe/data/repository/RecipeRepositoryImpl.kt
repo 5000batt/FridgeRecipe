@@ -5,6 +5,7 @@ import com.kjw.fridgerecipe.data.datasource.RecipeRemoteDataSource
 import com.kjw.fridgerecipe.data.local.dao.RecipeDao
 import com.kjw.fridgerecipe.data.repository.mapper.toDomainModel
 import com.kjw.fridgerecipe.data.repository.mapper.toEntity
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
@@ -31,14 +32,13 @@ class RecipeRepositoryImpl @Inject constructor(
         timeFilter: String?,
         levelFilter: LevelType?,
         categoryFilter: RecipeCategoryType?,
-        utensilFilter: String?,
+        cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean,
         excludedIngredients: List<String>
     ): Recipe? {
 
         // 필터 정리
         val safeTime = sanitizeFilter(timeFilter)
-        val safeUtensil = sanitizeFilter(utensilFilter)
 
         // AI 호출 및 응답 확인
         val recipeDto = remoteDataSource.getAiRecipe(
@@ -46,7 +46,7 @@ class RecipeRepositoryImpl @Inject constructor(
             timeFilter = safeTime,
             levelFilter = levelFilter,
             categoryFilter = categoryFilter,
-            utensilFilter = safeUtensil,
+            cookingToolFilter = cookingToolFilter,
             useOnlySelected = useOnlySelected,
             excludedIngredients = excludedIngredients
         )
@@ -60,7 +60,7 @@ class RecipeRepositoryImpl @Inject constructor(
             timeFilter = safeTime,
             levelFilter = levelFilter,
             categoryFilter = categoryFilter,
-            utensilFilter = safeUtensil,
+            cookingToolFilter = cookingToolFilter,
             useOnlySelected = useOnlySelected
         )
 
@@ -108,7 +108,7 @@ class RecipeRepositoryImpl @Inject constructor(
         timeFilter: String?,
         levelFilter: LevelType?,
         categoryFilter: RecipeCategoryType?,
-        utensilFilter: String?,
+        cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean
     ): List<Recipe> {
         val entities = recipeDao.findRecipesByFilters(
@@ -116,7 +116,7 @@ class RecipeRepositoryImpl @Inject constructor(
             timeFilter = sanitizeFilter(timeFilter),
             levelFilter = levelFilter?.name,
             categoryFilter = categoryFilter?.id,
-            utensilFilter = sanitizeFilter(utensilFilter),
+            cookingToolFilter = cookingToolFilter?.id,
             useOnlySelected = useOnlySelected
         )
         return entities.map { it.toDomainModel() }

@@ -4,6 +4,7 @@ import com.kjw.fridgerecipe.data.remote.RecipeDto
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 
 interface RecipeRemoteDataSource {
     suspend fun getAiRecipe(
@@ -11,7 +12,7 @@ interface RecipeRemoteDataSource {
         timeFilter: String?,
         levelFilter: LevelType?,
         categoryFilter: RecipeCategoryType?,
-        utensilFilter: String?,
+        cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean,
         excludedIngredients: List<String>
     ): RecipeDto

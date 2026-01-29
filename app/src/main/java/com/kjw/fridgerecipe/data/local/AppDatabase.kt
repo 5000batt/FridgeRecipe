@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
-@Database(entities = [IngredientEntity::class, RecipeEntity::class], version = 10, exportSchema = true)
+@Database(entities = [IngredientEntity::class, RecipeEntity::class], version = 11, exportSchema = true)
 @TypeConverters(LocalDateConverter::class, RecipeTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun ingredientDao(): IngredientDao

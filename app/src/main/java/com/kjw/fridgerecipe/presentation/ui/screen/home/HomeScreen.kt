@@ -98,7 +98,7 @@ fun HomeScreen(
 
     val levelFilterOptions = RecipeConstants.LEVEL_FILTER_OPTIONS
     val categoryFilterOptions = RecipeConstants.CATEGORY_FILTER_OPTIONS
-    val utensilFilterOptions = RecipeConstants.UTENSIL_FILTER_OPTIONS
+    val cookingToolFilterOptions = RecipeConstants.COOKING_TOOL_FILTER_OPTIONS
 
     LaunchedEffect(Unit) {
         homeViewModel.clearRecommendedRecipe()
@@ -351,15 +351,15 @@ fun HomeScreen(
 
                                 Spacer(modifier = Modifier.height(20.dp))
 
-                                val selectedUtensilOption = utensilFilterOptions.find { it.value == uiState.filterState.utensil }
-                                    ?: utensilFilterOptions.first()
+                                val selectedCookingToolOption = cookingToolFilterOptions.find { it.value == uiState.filterState.cookingTool }
+                                    ?: cookingToolFilterOptions.first()
 
                                 FilterChipSection(
-                                    title = stringResource(R.string.home_filter_utensil),
-                                    options = utensilFilterOptions,
-                                    selectedOption = selectedUtensilOption,
+                                    title = stringResource(R.string.home_filter_cooking_tool),
+                                    options = cookingToolFilterOptions,
+                                    selectedOption = selectedCookingToolOption,
                                     onOptionSelected = { option ->
-                                        homeViewModel.onUtensilFilterChanged(option.value)
+                                        homeViewModel.onCookingToolFilterChanged(option.value)
                                     },
                                     itemLabel = { it.label.asString(context) }
                                 )

@@ -2,7 +2,7 @@ package com.kjw.fridgerecipe.presentation.ui.model
 
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
-import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.presentation.util.UiText
 
 data class RecipeEditUiState(
@@ -14,7 +14,7 @@ data class RecipeEditUiState(
     val timeError: UiText? = null,
     val level: LevelType = LevelType.ETC,
     val categoryState: RecipeCategoryType? = null,
-    val utensilState: String = FILTER_ANY,
+    val cookingToolState: CookingToolType? = null,
     val ingredientsState: List<IngredientItemUiState> = emptyList(),
     val ingredientsError: UiText? = null,
     val ingredientsErrorType: ListErrorType = ListErrorType.NONE,

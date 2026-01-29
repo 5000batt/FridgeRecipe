@@ -58,7 +58,7 @@
     <string name="home_filter_time">조리 시간</string>
     <string name="home_filter_level">난이도</string>
     <string name="home_filter_category">음식 종류</string>
-    <string name="home_filter_utensil">조리 도구</string>
+    <string name="home_filter_cooking_tool">조리 도구</string>
     <string name="home_filter_only_selected_title">선택한 재료만 사용하기</string>
     <string name="home_filter_only_selected_desc">기본 재료(물, 조미료 등)를 제외한 다른 재료는 쓰지 않아요.</string>
 
@@ -149,7 +149,7 @@
 
     <string name="recipe_edit_label_level">난이도 *</string>
     <string name="recipe_edit_label_category">음식 종류</string>
-    <string name="recipe_edit_label_utensil">주요 조리 도구</string>
+    <string name="recipe_edit_label_cooking_tool">주요 조리 도구</string>
 
     <string name="recipe_edit_section_ingredients">재료</string>
     <string name="recipe_edit_btn_add">추가</string>
@@ -254,10 +254,10 @@
     <string name="category_chinese">중식</string>
     <string name="category_western">양식</string>
 
-    <string name="utensil_airfryer">에어프라이어</string>
-    <string name="utensil_microwave">전자레인지</string>
-    <string name="utensil_pot">냄비</string>
-    <string name="utensil_pan">후라이팬</string>
+    <string name="cooking_tool_airfryer">에어프라이어</string>
+    <string name="cooking_tool_microwave">전자레인지</string>
+    <string name="cooking_tool_pot">냄비</string>
+    <string name="cooking_tool_pan">후라이팬</string>
 
     <!--  RecipeManageViewModel  -->
     <string name="error_recipe_title_empty">레시피 이름을 입력해주세요.</string>
