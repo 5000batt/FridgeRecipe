@@ -61,8 +61,8 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.R
-import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.domain.model.StorageType
+import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.presentation.navigation.MainTab
 import com.kjw.fridgerecipe.presentation.ui.components.common.BottomNavigationBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonTopBar
@@ -199,11 +199,11 @@ fun HomeScreen(
                                     }
                                 )
                             }
-                            items(CategoryType.entries) { category ->
+                            items(IngredientCategoryType.entries) { category ->
                                 FilterChip(
                                     selected = uiState.selectedCategory == category,
                                     onClick = { homeViewModel.onCategorySelect(category) },
-                                    label = { Text(category.label) }
+                                    label = { Text(stringResource(category.labelResId)) }
                                 )
                             }
                         }
@@ -220,7 +220,7 @@ fun HomeScreen(
 
                         if (items.isNotEmpty()) {
                             StorageSection(
-                                title = storageType.label,
+                                title = stringResource(storageType.labelResId),
                                 items = items,
                                 displayType = ListDisplayType.ROW,
                                 modifier = Modifier.padding(vertical = 8.dp),

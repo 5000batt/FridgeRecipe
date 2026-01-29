@@ -1,6 +1,6 @@
 package com.kjw.fridgerecipe.presentation.ui.model
 
-import com.kjw.fridgerecipe.domain.model.CategoryType
+import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.domain.model.UnitType
@@ -15,12 +15,12 @@ data class IngredientEditUiState(
     val selectedUnit: UnitType = UnitType.COUNT,
     val selectedDate: LocalDate = LocalDate.now(),
     val selectedStorage: StorageType = StorageType.REFRIGERATED,
-    val selectedCategory: CategoryType = CategoryType.ETC,
+    val selectedCategory: IngredientCategoryType = IngredientCategoryType.ETC,
     val showDatePicker: Boolean = false,
     val showDeleteDialog: Boolean = false,
     val selectedIngredientName: String? = null,
     val selectedIcon: IngredientIcon = IngredientIcon.DEFAULT,
-    val selectedIconCategory: CategoryType? = null,
+    val selectedIconCategory: IngredientCategoryType? = null,
 )
 
 enum class IngredientValidationField {

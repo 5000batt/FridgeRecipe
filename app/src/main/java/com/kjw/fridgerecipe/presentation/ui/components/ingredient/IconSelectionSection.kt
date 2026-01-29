@@ -32,17 +32,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.R
-import com.kjw.fridgerecipe.domain.model.CategoryType
+import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.presentation.util.getIconResId
 
 @Composable
 fun IconSelectionSection(
-    selectedIconCategory: CategoryType?,
+    selectedIconCategory: IngredientCategoryType?,
     selectedIcon: IngredientIcon,
     currentIcons: List<IngredientIcon>,
     iconListState: LazyListState,
-    onIconCategorySelected: (CategoryType) -> Unit,
+    onIconCategorySelected: (IngredientCategoryType) -> Unit,
     onIconSelected: (IngredientIcon) -> Unit
 ) {
     Column(
@@ -60,13 +60,13 @@ fun IconSelectionSection(
             contentPadding = PaddingValues(vertical = 4.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(CategoryType.entries) { category ->
+            items(IngredientCategoryType.entries) { category ->
                 val isSelected = selectedIconCategory == category
 
                 FilterChip(
                     selected = isSelected,
                     onClick = { onIconCategorySelected(category) },
-                    label = { Text(category.label) },
+                    label = { Text(stringResource(category.labelResId)) },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                         selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -114,14 +114,14 @@ fun IconSelectionSection(
                 ) {
                     Image(
                         painter = painterResource(id = getIconResId(icon)),
-                        contentDescription = icon.label,
+                        contentDescription = stringResource(icon.labelResId),
                         modifier = Modifier.size(36.dp)
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = icon.label,
+                        text = stringResource(icon.labelResId),
                         style = MaterialTheme.typography.labelSmall,
                         color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
                         else MaterialTheme.colorScheme.onSurface

@@ -3,8 +3,8 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.R
-import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.domain.model.Ingredient
+import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.domain.model.UnitType
@@ -92,7 +92,7 @@ class IngredientEditViewModel @Inject constructor(
         _editUiState.update { it.copy(selectedStorage = storage) }
     }
 
-    fun onCategoryChanged(category: CategoryType) {
+    fun onCategoryChanged(category: IngredientCategoryType) {
         _editUiState.update { it.copy(selectedCategory = category) }
     }
 
@@ -100,7 +100,7 @@ class IngredientEditViewModel @Inject constructor(
         _editUiState.update { it.copy(selectedDate = date, showDatePicker = false) }
     }
 
-    fun onIconCategorySelected(category: CategoryType?) {
+    fun onIconCategorySelected(category: IngredientCategoryType?) {
         _editUiState.update { it.copy(selectedIconCategory = category) }
     }
 

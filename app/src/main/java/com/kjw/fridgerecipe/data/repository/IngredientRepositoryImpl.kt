@@ -1,7 +1,7 @@
 package com.kjw.fridgerecipe.data.repository
 
 import com.kjw.fridgerecipe.data.local.dao.IngredientDao
-import com.kjw.fridgerecipe.data.repository.mapper.toDomain
+import com.kjw.fridgerecipe.data.repository.mapper.toDomainModel
 import com.kjw.fridgerecipe.data.repository.mapper.toEntity
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.repository.IngredientRepository
@@ -21,16 +21,16 @@ class IngredientRepositoryImpl @Inject constructor(private val ingredientDao: In
 
     override fun getAllIngredients(): Flow<List<Ingredient>> {
         return ingredientDao.getAllIngredients().map { entities ->
-            entities.map { it.toDomain() }
+            entities.map { it.toDomainModel() }
         }
     }
 
     override suspend fun getAllIngredientsSuspend(): List<Ingredient> {
-        return ingredientDao.getAllIngredientsSuspend().map { it.toDomain() }
+        return ingredientDao.getAllIngredientsSuspend().map { it.toDomainModel() }
     }
 
     override suspend fun getIngredientById(id: Long): Ingredient? {
-        return ingredientDao.getIngredientById(id)?.toDomain()
+        return ingredientDao.getIngredientById(id)?.toDomainModel()
     }
 
     override suspend fun updateIngredient(ingredient: Ingredient) {

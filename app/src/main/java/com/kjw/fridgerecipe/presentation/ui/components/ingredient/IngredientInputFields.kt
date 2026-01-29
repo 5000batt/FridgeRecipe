@@ -71,11 +71,11 @@ fun IngredientInputFields(
 
             // 단위 선택
             CommonDropdown(
-                value = selectedUnit.label,
+                value = stringResource(selectedUnit.labelResId),
                 label = stringResource(R.string.ingredient_edit_label_unit),
                 options = UnitType.entries,
                 onOptionSelected = onUnitChanged,
-                itemLabel = { it.label },
+                itemLabel = { stringResource(it.labelResId) },
                 modifier = Modifier.weight(0.8f)
             )
         }

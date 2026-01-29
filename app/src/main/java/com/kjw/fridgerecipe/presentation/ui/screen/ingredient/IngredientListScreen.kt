@@ -21,7 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.R
-import com.kjw.fridgerecipe.domain.model.CategoryType
+import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.presentation.navigation.IngredientEditRoute
 import com.kjw.fridgerecipe.presentation.navigation.MainTab
 import com.kjw.fridgerecipe.presentation.ui.components.common.BottomNavigationBar
@@ -116,13 +116,13 @@ fun IngredientListScreen(
                         state = listState,
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        CategoryType.entries.forEach { categoryType ->
+                        IngredientCategoryType.entries.forEach { categoryType ->
                             val items = categorizedIngredients[categoryType] ?: emptyList()
 
                             if (items.isNotEmpty()) {
                                 item {
                                     StorageSection(
-                                        title = categoryType.label,
+                                        title = stringResource(categoryType.labelResId),
                                         items = items,
                                         displayType = ListDisplayType.GRID,
                                         selectedIngredientIds = emptySet(),

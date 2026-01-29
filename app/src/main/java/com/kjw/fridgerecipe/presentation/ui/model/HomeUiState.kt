@@ -1,9 +1,9 @@
 package com.kjw.fridgerecipe.presentation.ui.model
 
-import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.StorageType
+import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 
 data class HomeUiState(
     // 재료 로딩 상태
@@ -27,7 +27,7 @@ data class HomeUiState(
     val showAdDialog: Boolean = false,
 
     // 현재 선택된 카테고리
-    val selectedCategory: CategoryType? = null,
+    val selectedCategory: IngredientCategoryType? = null,
 
     // 재료 확인 관련
     val showIngredientCheckDialog: Boolean = false,

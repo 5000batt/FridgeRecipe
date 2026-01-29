@@ -2,8 +2,8 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.domain.model.Ingredient
+import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +29,7 @@ class IngredientListViewModel @Inject constructor(
 
     private val ingredientsFlow = getIngredientsUseCase()
 
-    val categorizedIngredients: StateFlow<Map<CategoryType, List<Ingredient>>> =
+    val categorizedIngredients: StateFlow<Map<IngredientCategoryType, List<Ingredient>>> =
         combine(ingredientsFlow, _searchQuery) { ingredients, query ->
             if (query.isBlank()) {
                 ingredients

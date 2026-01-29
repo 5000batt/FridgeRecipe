@@ -5,12 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.data.repository.TicketRepository
-import com.kjw.fridgerecipe.domain.model.CategoryType
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
-import com.kjw.fridgerecipe.domain.model.CookingToolType
+import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.domain.model.TicketException
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.domain.usecase.CheckIngredientConflictsUseCase
@@ -58,7 +58,7 @@ class HomeViewModel @Inject constructor(
     private var currentIngredientsQuery: String = ""
 
     // 현재 선택된 카테고리 필터
-    private var currentCategoryFilter: CategoryType? = null
+    private var currentCategoryFilter: IngredientCategoryType? = null
 
     init {
         loadIngredients()
@@ -83,7 +83,7 @@ class HomeViewModel @Inject constructor(
     }
 
     // 카테고리 칩 선택
-    fun onCategorySelect(category: CategoryType?) {
+    fun onCategorySelect(category: IngredientCategoryType?) {
         currentCategoryFilter = category
         _homeUiState.update { it.copy(selectedCategory = category) }
         updateDisplayedIngredients()

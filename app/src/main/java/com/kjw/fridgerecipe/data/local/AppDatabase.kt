@@ -13,8 +13,8 @@ import com.kjw.fridgerecipe.data.local.entity.IngredientEntity
 import com.kjw.fridgerecipe.data.local.entity.RecipeEntity
 import com.kjw.fridgerecipe.data.repository.mapper.toEntity
 import com.kjw.fridgerecipe.di.ApplicationScope
-import com.kjw.fridgerecipe.domain.model.CategoryType
 import com.kjw.fridgerecipe.domain.model.Ingredient
+import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.domain.model.UnitType
@@ -53,9 +53,9 @@ abstract class AppDatabase : RoomDatabase() {
 }
 
 val testDataList = listOf(
-    Ingredient(id = 1L, name = "양파", amount = 3.0, unit = UnitType.COUNT, expirationDate = LocalDate.now().plusDays(0), storageLocation = StorageType.REFRIGERATED, category = CategoryType.VEGETABLE, emoticon = IngredientIcon.ONION),
-    Ingredient(id = 2L, name = "소고기", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(1), storageLocation = StorageType.REFRIGERATED, category = CategoryType.MEAT, emoticon = IngredientIcon.BEEF),
-    Ingredient(id = 3L, name = "버섯", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(2), storageLocation = StorageType.REFRIGERATED, category = CategoryType.VEGETABLE, emoticon = IngredientIcon.MUSHROOM),
-    Ingredient(id = 4L, name = "카레가루", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(10), storageLocation = StorageType.ROOM_TEMPERATURE, category = CategoryType.MEAT, emoticon = IngredientIcon.DEFAULT),
-    Ingredient(id = 5L, name = "감자", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(-1), storageLocation = StorageType.ROOM_TEMPERATURE, category = CategoryType.VEGETABLE, emoticon = IngredientIcon.POTATO),
+    Ingredient(id = 1L, name = "양파", amount = 3.0, unit = UnitType.COUNT, expirationDate = LocalDate.now().plusDays(0), storageLocation = StorageType.REFRIGERATED, category = IngredientCategoryType.VEGETABLE, emoticon = IngredientIcon.ONION),
+    Ingredient(id = 2L, name = "소고기", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(1), storageLocation = StorageType.REFRIGERATED, category = IngredientCategoryType.MEAT, emoticon = IngredientIcon.BEEF),
+    Ingredient(id = 3L, name = "버섯", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(2), storageLocation = StorageType.REFRIGERATED, category = IngredientCategoryType.VEGETABLE, emoticon = IngredientIcon.MUSHROOM),
+    Ingredient(id = 4L, name = "카레가루", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(10), storageLocation = StorageType.ROOM_TEMPERATURE, category = IngredientCategoryType.MEAT, emoticon = IngredientIcon.DEFAULT),
+    Ingredient(id = 5L, name = "감자", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(-1), storageLocation = StorageType.ROOM_TEMPERATURE, category = IngredientCategoryType.VEGETABLE, emoticon = IngredientIcon.POTATO),
 )

@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.domain.model.Ingredient
@@ -48,7 +49,7 @@ fun IngredientChip(
     }
 
     Card(
-        modifier = Modifier.Companion
+        modifier = Modifier
             .size(width = 100.dp, height = 100.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -63,32 +64,32 @@ fun IngredientChip(
         border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Column(
-            modifier = Modifier.Companion
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(vertical = 8.dp),
-            horizontalAlignment = Alignment.Companion.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             IngredientIconImage(ingredient)
 
-            Spacer(modifier = Modifier.Companion.height(4.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = ingredient.name,
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.Companion.padding(horizontal = 4.dp),
+                modifier = Modifier.padding(horizontal = 4.dp),
                 maxLines = 1,
-                overflow = TextOverflow.Companion.Ellipsis
+                overflow = TextOverflow.Ellipsis
             )
 
-            Spacer(modifier = Modifier.Companion.height(2.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             Text(
                 text = ingredient.expirationDate.format(DateFormatter),
                 style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.Companion.padding(horizontal = 4.dp),
+                modifier = Modifier.padding(horizontal = 4.dp),
                 maxLines = 1,
-                overflow = TextOverflow.Companion.Ellipsis
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
@@ -100,8 +101,8 @@ fun IngredientIconImage(ingredient: Ingredient) {
 
     Image(
         painter = imagePainter,
-        contentDescription = ingredient.emoticon.label + " 아이콘",
-        modifier = Modifier.Companion.size(48.dp),
-        contentScale = ContentScale.Companion.Fit
+        contentDescription = stringResource(ingredient.emoticon.labelResId),
+        modifier = Modifier.size(48.dp),
+        contentScale = ContentScale.Fit
     )
 }

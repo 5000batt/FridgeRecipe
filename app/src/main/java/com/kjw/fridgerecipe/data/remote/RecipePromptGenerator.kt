@@ -18,7 +18,7 @@ class RecipePromptGenerator @Inject constructor() {
         useOnlySelected: Boolean,
         excludedIngredients: List<String>
     ): String {
-        val ingredientDetails = ingredients.joinToString(", ") { "${it.name} (${it.amount}${it.unit.label})" }
+        val ingredientDetails = ingredients.joinToString(", ") { "${it.name} (${it.amount}${it.unit.symbol})" }
 
         val constraints = buildList {
             add("- 필수 재료: [$ingredientDetails]")

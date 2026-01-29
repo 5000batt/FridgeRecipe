@@ -260,6 +260,83 @@
     <string name="cooking_tool_pot">냄비</string>
     <string name="cooking_tool_pan">후라이팬</string>
 
+    <!-- UnitType -->
+    <string name="unit_count">개</string>
+    <string name="unit_gram">g</string>
+    <string name="unit_milliliter">ml</string>
+    <string name="unit_etc">기타</string>
+
+    <!-- StorageType -->
+    <string name="storage_refrigerated">냉장</string>
+    <string name="storage_frozen">냉동</string>
+    <string name="storage_room_temperature">실온</string>
+
+    <!-- CategoryType (Ingredient) -->
+    <string name="ingredient_category_etc">기타</string>
+    <string name="ingredient_category_vegetable">채소</string>
+    <string name="ingredient_category_fruit">과일</string>
+    <string name="ingredient_category_meat">육류</string>
+    <string name="ingredient_category_seafood">해산물</string>
+    <string name="ingredient_category_dairy">유제품/계란</string>
+    <string name="ingredient_category_grain">곡물/면/빵</string>
+    <string name="ingredient_category_beverage">음료</string>
+    <string name="ingredient_category_seasoning">소스/양념/조미료</string>
+
+    <!-- Icon Labels -->
+    <string name="icon_label_default">기본</string>
+    <string name="icon_label_kimchi">김치</string>
+    <string name="icon_label_tofu">두부</string>
+    <string name="icon_label_carrot">당근</string>
+    <string name="icon_label_onion">양파</string>
+    <string name="icon_label_potato">감자</string>
+    <string name="icon_label_sweet_potato">고구마</string>
+    <string name="icon_label_tomato">토마토</string>
+    <string name="icon_label_mushroom">버섯</string>
+    <string name="icon_label_garlic">마늘</string>
+    <string name="icon_label_green_onion">대파</string>
+    <string name="icon_label_radish">무</string>
+    <string name="icon_label_cabbage">배추</string>
+    <string name="icon_label_bean_spr">콩나물</string>
+    <string name="icon_label_chili">고추</string>
+    <string name="icon_label_apple">사과</string>
+    <string name="icon_label_banana">바나나</string>
+    <string name="icon_label_lemon">레몬</string>
+    <string name="icon_label_tangerine">귤</string>
+    <string name="icon_label_grape">포도</string>
+    <string name="icon_label_strawberry">딸기</string>
+    <string name="icon_label_chicken">닭고기</string>
+    <string name="icon_label_pork">돼지고기</string>
+    <string name="icon_label_beef">소고기</string>
+    <string name="icon_label_duck">오리고기</string>
+    <string name="icon_label_lamb">양고기</string>
+    <string name="icon_label_fish">생선</string>
+    <string name="icon_label_shrimp">새우</string>
+    <string name="icon_label_squid">오징어</string>
+    <string name="icon_label_clam">조개</string>
+    <string name="icon_label_crab">게</string>
+    <string name="icon_label_egg">계란</string>
+    <string name="icon_label_milk">우유</string>
+    <string name="icon_label_cheese">치즈</string>
+    <string name="icon_label_yogurt">요거트</string>
+    <string name="icon_label_rice">쌀</string>
+    <string name="icon_label_bread">빵</string>
+    <string name="icon_label_noodle">면</string>
+    <string name="icon_label_salt">소금</string>
+    <string name="icon_label_sugar">설탕</string>
+    <string name="icon_label_pepper">후추</string>
+    <string name="icon_label_soy_sauce">간장</string>
+    <string name="icon_label_doenjang">된장</string>
+    <string name="icon_label_gochujang">고추장</string>
+    <string name="icon_label_cooking_oil">식용유</string>
+    <string name="icon_label_sesame_oil">참기름</string>
+    <string name="icon_label_vinegar">식초</string>
+    <string name="icon_label_ketchup">케첩</string>
+    <string name="icon_label_mayonnaise">마요네즈</string>
+    <string name="icon_label_water">물</string>
+    <string name="icon_label_soda">탄산음료</string>
+    <string name="icon_label_beer">맥주</string>
+    <string name="icon_label_soju">소주</string>
+
     <!--  RecipeManageViewModel  -->
     <string name="error_recipe_title_empty">레시피 이름을 입력해주세요.</string>
     <string name="error_recipe_servings_empty">조리 양을 입력해주세요.</string>
