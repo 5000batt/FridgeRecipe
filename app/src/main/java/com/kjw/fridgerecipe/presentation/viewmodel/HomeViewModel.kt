@@ -1,12 +1,10 @@
 package com.kjw.fridgerecipe.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.data.repository.TicketRepository
 import com.kjw.fridgerecipe.domain.model.CookingToolType
-import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
@@ -16,6 +14,7 @@ import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.domain.usecase.CheckIngredientConflictsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
+import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.ui.model.ErrorDialogState
 import com.kjw.fridgerecipe.presentation.ui.model.HomeUiState
 import com.kjw.fridgerecipe.presentation.ui.model.RecipeFilterState
@@ -36,9 +35,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getIngredientsUseCase: GetIngredientsUseCase, // 재료 로드
-    private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase, // 레시피 추천
-    private val checkIngredientConflictsUseCase: CheckIngredientConflictsUseCase, // 제외 재료 충돌 확인
+    private val getIngredientsUseCase: GetIngredientsUseCase,
+    private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase,
+    private val checkIngredientConflictsUseCase: CheckIngredientConflictsUseCase,
     private val settingsRepository: SettingsRepository,
     private val ticketRepository: TicketRepository
 ) : ViewModel() {
@@ -57,7 +56,6 @@ class HomeViewModel @Inject constructor(
     private val _seenRecipeIds = MutableStateFlow<Set<Long>>(emptySet())
     private var currentIngredientsQuery: String = ""
 
-    // 현재 선택된 카테고리 필터
     private var currentCategoryFilter: IngredientCategoryType? = null
 
     init {
@@ -67,7 +65,6 @@ class HomeViewModel @Inject constructor(
         observeSettings()
     }
 
-    // 재료 로드
     private fun loadIngredients() {
         viewModelScope.launch {
             getIngredientsUseCase().collect { ingredients ->
@@ -82,37 +79,23 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // 카테고리 칩 선택
     fun onCategorySelect(category: IngredientCategoryType?) {
         currentCategoryFilter = category
         _homeUiState.update { it.copy(selectedCategory = category) }
         updateDisplayedIngredients()
     }
 
-    // 필터링 및 정렬 로직 통합
     private fun updateDisplayedIngredients() {
         val all = _homeUiState.value.allIngredients
         val category = currentCategoryFilter
 
-        // 카테고리 필터링
-        val filtered = if (category == null) {
-            all
-        } else {
-            all.filter { it.category == category }
-        }
-
-        // 정렬 (소비기한 임박한 순서: 오름차순)
+        val filtered = if (category == null) all else all.filter { it.category == category }
         val sorted = filtered.sortedBy { it.expirationDate }
-
-        // 보관 장소별 그룹화
         val grouped = sorted.groupBy { it.storageLocation }
 
-        _homeUiState.update {
-            it.copy(storageIngredients = grouped)
-        }
+        _homeUiState.update { it.copy(storageIngredients = grouped) }
     }
 
-    // 티켓 갯수 확인
     private fun observeTickets() {
         viewModelScope.launch {
             ticketRepository.ticketCount.collect { count ->
@@ -121,14 +104,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // 티켓 갯수 리셋
     fun checkTicketReset() {
         viewModelScope.launch {
             ticketRepository.checkAndResetTicket()
         }
     }
 
-    // 재료 확인 설정값 확인
     private fun observeSettings() {
         viewModelScope.launch {
             settingsRepository.isIngredientCheckSkip.collect { isSkip ->
@@ -137,7 +118,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // 재료 선택
     fun toggleIngredientSelection(id: Long) {
         _homeUiState.update { currentState ->
             val currentIds = currentState.selectedIngredientIds
@@ -146,10 +126,8 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // 레시피 추천 버튼
     fun onRecommendButtonClick() {
         val uiState = _homeUiState.value
-
         if (uiState.selectedIngredientIds.isEmpty()) return
 
         if (uiState.isIngredientCheckSkip) {
@@ -159,21 +137,14 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // 재료 확인
     fun onConfirmIngredientCheck(doNotShowAgain: Boolean) {
         _homeUiState.update { it.copy(showIngredientCheckDialog = false) }
-
-        // 다시 보지 않기 체크
         if (doNotShowAgain) {
-            viewModelScope.launch {
-                settingsRepository.setIngredientCheckSkip(true)
-            }
+            viewModelScope.launch { settingsRepository.setIngredientCheckSkip(true) }
         }
-
         checkIngredientConflicts()
     }
 
-    // 제외 재료 충돌 확인
     fun checkIngredientConflicts() {
         val selectedIds = _homeUiState.value.selectedIngredientIds
         val allIngredients = _homeUiState.value.allIngredients
@@ -181,21 +152,14 @@ class HomeViewModel @Inject constructor(
 
         viewModelScope.launch {
             val conflicts = checkIngredientConflictsUseCase(selectedIngredients)
-
             if (conflicts.isNotEmpty()) {
-                _homeUiState.update {
-                    it.copy(
-                        showConflictDialog = true,
-                        conflictIngredients = conflicts
-                    )
-                }
+                _homeUiState.update { it.copy(showConflictDialog = true, conflictIngredients = conflicts) }
             } else {
                 fetchRecommendedRecipe(selectedIngredients)
             }
         }
     }
 
-    // 제외 재료 허용
     fun onConfirmConflict() {
         val selectedIds = _homeUiState.value.selectedIngredientIds
         val allIngredients = _homeUiState.value.allIngredients
@@ -203,41 +167,34 @@ class HomeViewModel @Inject constructor(
         fetchRecommendedRecipe(selectedIngredients)
     }
 
-    // 레시피 추천 요청
     private fun fetchRecommendedRecipe(selectedIngredients: List<Ingredient>) {
         _homeUiState.update { it.copy(showConflictDialog = false, conflictIngredients = emptyList()) }
 
         viewModelScope.launch {
             var isTicketUsed = false
-
-            // 로딩 시작 시간 기록 및 최소 대기 시간 설정 (광고 유효 노출)
             val startTime = System.currentTimeMillis()
             val minLoadingTime = 3000L
 
             _homeUiState.update { it.copy(isRecipeLoading = true) }
 
             try {
-                // 선택한 재료 이름만 추출
                 val ingredientsQuery = selectedIngredients
                     .map { it.name }
                     .sorted()
                     .joinToString(",")
 
-                // 추천 중복 방지
                 if (ingredientsQuery != currentIngredientsQuery) {
                     _seenRecipeIds.value = emptySet()
                     currentIngredientsQuery = ingredientsQuery
                 }
 
-                // 제외 재료
                 val excludedList = settingsRepository.excludedIngredients.first().toList()
                 val selectedIngredientNames = selectedIngredients.map { it.name }
                 val finalExcludedList = excludedList.filter { it !in selectedIngredientNames }
 
-                // 검색 필터
                 val currentFilters = _homeUiState.value.filterState
 
-                val newRecipe = getRecommendedRecipeUseCase(
+                val result = getRecommendedRecipeUseCase(
                     ingredients = selectedIngredients,
                     seenIds = _seenRecipeIds.value,
                     timeFilter = currentFilters.timeLimit,
@@ -248,12 +205,7 @@ class HomeViewModel @Inject constructor(
                     excludedIngredients = finalExcludedList,
                     onAiCall = {
                         if (_homeUiState.value.remainingTickets <= 0) {
-                            _homeUiState.update {
-                                it.copy(
-                                    showAdDialog = true,
-                                    isRecipeLoading = false
-                                )
-                            }
+                            _homeUiState.update { it.copy(showAdDialog = true, isRecipeLoading = false) }
                             throw TicketException.Exhausted
                         }
                         ticketRepository.useTicket()
@@ -262,83 +214,39 @@ class HomeViewModel @Inject constructor(
                 )
 
                 val elapsedTime = System.currentTimeMillis() - startTime
-                if (elapsedTime < minLoadingTime) {
-                    delay(minLoadingTime - elapsedTime)
-                }
+                if (elapsedTime < minLoadingTime) delay(minLoadingTime - elapsedTime)
 
-                if (newRecipe != null) {
-                    _homeUiState.update {
-                        it.copy(
-                            recommendedRecipe = newRecipe,
-                            isRecipeLoading = false
-                        )
-                    }
+                when (result) {
+                    is DataResult.Success -> {
+                        val newRecipe = result.data
+                        _homeUiState.update { it.copy(recommendedRecipe = newRecipe, isRecipeLoading = false) }
 
-                    newRecipe.id?.let { recipeId ->
-                        _seenRecipeIds.value = _seenRecipeIds.value + recipeId
-                        _sideEffect.emit(HomeSideEffect.NavigateToRecipeDetail(recipeId))
+                        newRecipe.id?.let { recipeId ->
+                            _seenRecipeIds.value = _seenRecipeIds.value + recipeId
+                            _sideEffect.emit(HomeSideEffect.NavigateToRecipeDetail(recipeId))
 
-                        if (!isTicketUsed) {
-                            _sideEffect.emit(
-                                HomeSideEffect.ShowSnackbar(
-                                    UiText.StringResource(R.string.msg_recipe_found_saved)
-                                )
-                            )
-                            Log.d("ViewModel", "기존 레시피 제공으로 티켓 차감 안 함")
+                            if (!isTicketUsed) {
+                                _sideEffect.emit(HomeSideEffect.ShowSnackbar(UiText.StringResource(R.string.msg_recipe_found_saved)))
+                            }
                         }
                     }
-                } else {
-                    if (isTicketUsed) ticketRepository.addTicket(1)
-                    _homeUiState.update {
-                        it.copy(
-                            isRecipeLoading = false,
-                            errorDialogState = ErrorDialogState(
-                                title = UiText.StringResource(R.string.error_title_generic),
-                                message = UiText.StringResource(R.string.error_msg_recipe_fetch_failed)
+                    is DataResult.Error -> {
+                        if (isTicketUsed) ticketRepository.addTicket(1)
+                        _homeUiState.update {
+                            it.copy(
+                                isRecipeLoading = false,
+                                errorDialogState = ErrorDialogState(
+                                    title = result.title ?: UiText.StringResource(R.string.error_title_generic),
+                                    message = result.message
+                                )
                             )
-                        )
+                        }
                     }
+                    else -> _homeUiState.update { it.copy(isRecipeLoading = false) }
                 }
 
             } catch (e: TicketException.Exhausted) {
-                Log.d("HomeViewModel", "티켓 소진으로 인한 중단")
-                return@launch
-            } catch (e: GeminiException) {
-                ticketRepository.addTicket(1)
-                val errorState = when (e) {
-                    is GeminiException.QuotaExceeded -> ErrorDialogState(
-                        title = UiText.StringResource(R.string.error_title_quota),
-                        message = UiText.StringResource(R.string.error_msg_quota)
-                    )
-                    is GeminiException.ServerOverloaded -> ErrorDialogState(
-                        title = UiText.StringResource(R.string.error_title_server),
-                        message = UiText.StringResource(R.string.error_msg_server)
-                    )
-                    is GeminiException.ApiKeyError -> ErrorDialogState(
-                        title = UiText.StringResource(R.string.error_title_update),
-                        message = UiText.StringResource(R.string.error_msg_update)
-                    )
-                    is GeminiException.ParsingError -> ErrorDialogState(
-                        title = UiText.StringResource(R.string.error_title_parsing),
-                        message = UiText.StringResource(R.string.error_msg_parsing)
-                    )
-                    is GeminiException.NetworkError -> ErrorDialogState(
-                        title = UiText.StringResource(R.string.error_title_network),
-                        message = UiText.StringResource(R.string.error_msg_network)
-                    )
-                    is GeminiException.ResponseBlocked -> ErrorDialogState(
-                        title = UiText.StringResource(R.string.error_title_blocked),
-                        message = UiText.StringResource(R.string.error_msg_blocked)
-                    )
-                    else -> ErrorDialogState(
-                        title = UiText.StringResource(R.string.error_title_generic),
-                        message = UiText.StringResource(R.string.error_msg_generic)
-                    )
-                }
-
-                _homeUiState.update {
-                    it.copy(isRecipeLoading = false, errorDialogState = errorState)
-                }
+                // 티켓 소진 시 조용히 중단 (상태 처리는 onAiCall에서 완료)
             } catch (e: Exception) {
                 if (isTicketUsed) ticketRepository.addTicket(1)
                 _homeUiState.update {
@@ -354,7 +262,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // Filter & Dialog Handlers
     fun onTimeFilterChanged(time: String) {
         _homeUiState.update { state ->
             state.copy(filterState = state.filterState.copy(
@@ -371,17 +278,13 @@ class HomeViewModel @Inject constructor(
 
     fun onCategoryFilterChanged(category: RecipeCategoryType?) {
         _homeUiState.update { state ->
-            state.copy(filterState = state.filterState.copy(
-                category = category
-            ))
+            state.copy(filterState = state.filterState.copy(category = category))
         }
     }
 
     fun onCookingToolFilterChanged(cookingTool: CookingToolType?) {
         _homeUiState.update { state ->
-            state.copy(filterState = state.filterState.copy(
-                cookingTool = cookingTool
-            ))
+            state.copy(filterState = state.filterState.copy(cookingTool = cookingTool))
         }
     }
 
@@ -391,13 +294,8 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun showAdDialog() {
-        _homeUiState.update { it.copy(showAdDialog = true) }
-    }
-
-    fun dismissAdDialog() {
-        _homeUiState.update { it.copy(showAdDialog = false) }
-    }
+    fun showAdDialog() { _homeUiState.update { it.copy(showAdDialog = true) } }
+    fun dismissAdDialog() { _homeUiState.update { it.copy(showAdDialog = false) } }
 
     fun onAdWatched() {
         viewModelScope.launch {
@@ -406,17 +304,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun dismissErrorDialog() {
-        _homeUiState.update { it.copy(errorDialogState = null) }
-    }
-
-    fun dismissIngredientCheckDialog() {
-        _homeUiState.update { it.copy(showIngredientCheckDialog = false) }
-    }
-
-    fun dismissConflictDialog() {
-        _homeUiState.update { it.copy(showConflictDialog = false, conflictIngredients = emptyList()) }
-    }
+    fun dismissErrorDialog() { _homeUiState.update { it.copy(errorDialogState = null) } }
+    fun dismissIngredientCheckDialog() { _homeUiState.update { it.copy(showIngredientCheckDialog = false) } }
+    fun dismissConflictDialog() { _homeUiState.update { it.copy(showConflictDialog = false, conflictIngredients = emptyList()) } }
 
     fun resetHomeState() {
         _homeUiState.update { state ->
@@ -431,10 +321,7 @@ class HomeViewModel @Inject constructor(
 
     fun clearRecommendedRecipe() {
         _homeUiState.update { state ->
-            state.copy(
-                isRecipeLoading = false,
-                recommendedRecipe = null
-            )
+            state.copy(isRecipeLoading = false, recommendedRecipe = null)
         }
     }
 }

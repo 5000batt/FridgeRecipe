@@ -4,7 +4,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.repository.ImageRepository
+import com.kjw.fridgerecipe.domain.util.DataResult
+import com.kjw.fridgerecipe.presentation.util.UiText
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -16,7 +19,7 @@ import javax.inject.Inject
 class ImageRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ImageRepository {
-    override suspend fun saveImageToInternalStorage(uriString: String): String? = withContext(Dispatchers.IO) {
+    override suspend fun saveImageToInternalStorage(uriString: String): DataResult<String> = withContext(Dispatchers.IO) {
         try {
             val uri = Uri.parse(uriString)
             val contentResolver = context.contentResolver
@@ -33,7 +36,7 @@ class ImageRepositoryImpl @Inject constructor(
             // 비트맵 로드 및 압축 저장
             val scaledBitmap = contentResolver.openInputStream(uri)?.use { inputStream ->
                 BitmapFactory.decodeStream(inputStream, null, options)
-            } ?: return@withContext null
+            } ?: return@withContext DataResult.Error(UiText.StringResource(R.string.error_msg_generic))
 
             val directory = File(context.filesDir, "recipe_images")
             if (!directory.exists()) directory.mkdirs()
@@ -46,10 +49,10 @@ class ImageRepositoryImpl @Inject constructor(
             }
 
             scaledBitmap.recycle()
-            file.absolutePath
+            DataResult.Success(file.absolutePath)
         } catch (e: Exception) {
             e.printStackTrace()
-            null
+            DataResult.Error(UiText.StringResource(R.string.error_msg_generic), cause = e)
         }
     }
 

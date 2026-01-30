@@ -12,6 +12,7 @@ import com.kjw.fridgerecipe.domain.usecase.DelRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipeByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.InsertRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateRecipeUseCase
+import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -66,9 +67,12 @@ class RecipeEditViewModel @Inject constructor(
 
     fun loadRecipeForEdit(id: Long) {
         viewModelScope.launch {
-            val recipe = getSavedRecipeByIdUseCase(id)
-            currentRecipe = recipe
-            _editUiState.value = recipe?.toEditUiState() ?: RecipeEditUiState()
+            val result = getSavedRecipeByIdUseCase(id)
+            if (result is DataResult.Success) {
+                val recipe = result.data
+                currentRecipe = recipe
+                _editUiState.value = recipe.toEditUiState()
+            }
             _isLoading.value = false
         }
     }
@@ -82,9 +86,12 @@ class RecipeEditViewModel @Inject constructor(
     fun onImageSelected(uri: Uri?) {
         uri?.let {
             viewModelScope.launch {
-                val savedPath = saveRecipeImageUseCase(it.toString())
-                if (savedPath != null) {
+                val result = saveRecipeImageUseCase(it.toString())
+                if (result is DataResult.Success) {
+                    val savedPath = result.data
                     _editUiState.update { state -> state.copy(imageUri = savedPath) }
+                } else if (result is DataResult.Error) {
+                    _operationResultEvent.emit(OperationResult.Failure(result.message))
                 }
             }
         }
@@ -92,25 +99,26 @@ class RecipeEditViewModel @Inject constructor(
 
     fun onSaveOrUpdateRecipe(isEditMode: Boolean) {
         viewModelScope.launch {
-            if (!validateInputs()) {
-                return@launch
-            }
+            if (!validateInputs()) return@launch
 
             val recipeToSave = buildRecipeFromState(isEditMode)
 
-            val success = if (isEditMode) {
+            val result = if (isEditMode) {
                 updateRecipeUseCase(recipeToSave)
             } else {
                 insertRecipeUseCase(recipeToSave)
             }
 
-            if (success) {
-                val messageResId = if (isEditMode) R.string.msg_updated else R.string.msg_saved
-                _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(messageResId)))
-                _navigationEvent.emit(NavigationEvent.NavigateBack)
-            } else {
-                val messageResId = if (isEditMode) R.string.error_update_failed else R.string.error_save_failed
-                _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(messageResId)))
+            when (result) {
+                is DataResult.Success -> {
+                    val messageResId = if (isEditMode) R.string.msg_updated else R.string.msg_saved
+                    _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(messageResId)))
+                    _navigationEvent.emit(NavigationEvent.NavigateBack)
+                }
+                is DataResult.Error -> {
+                    _operationResultEvent.emit(OperationResult.Failure(result.message))
+                }
+                else -> Unit
             }
         }
     }
@@ -118,12 +126,16 @@ class RecipeEditViewModel @Inject constructor(
     fun onDeleteRecipe() {
         viewModelScope.launch {
             currentRecipe?.let {
-                val success = delRecipeUseCase(it)
-                if (success) {
-                    _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(R.string.msg_deleted)))
-                    _navigationEvent.emit(NavigationEvent.NavigateToList)
-                } else {
-                    _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(R.string.error_delete_failed)))
+                val result = delRecipeUseCase(it)
+                when (result) {
+                    is DataResult.Success -> {
+                        _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(R.string.msg_deleted)))
+                        _navigationEvent.emit(NavigationEvent.NavigateToList)
+                    }
+                    is DataResult.Error -> {
+                        _operationResultEvent.emit(OperationResult.Failure(result.message))
+                    }
+                    else -> Unit
                 }
             }
             _editUiState.update { it.copy(showDeleteDialog = false) }

@@ -12,6 +12,7 @@ import com.kjw.fridgerecipe.domain.usecase.InsertIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.DelIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateIngredientUseCase
+import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientEditUiState
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientValidationField
@@ -42,6 +43,9 @@ class IngredientEditViewModel @Inject constructor(
     private val _operationResultEvent = MutableSharedFlow<OperationResult>()
     val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
 
+    private val _navigationEvent = MutableSharedFlow<Unit>()
+    val navigationEvent: SharedFlow<Unit> = _navigationEvent.asSharedFlow()
+
     private val _validationEvent = MutableSharedFlow<IngredientValidationField>()
     val validationEvent: SharedFlow<IngredientValidationField> = _validationEvent.asSharedFlow()
 
@@ -55,12 +59,16 @@ class IngredientEditViewModel @Inject constructor(
 
     fun loadIngredientById(id: Long) {
         viewModelScope.launch {
-            val ingredient = getIngredientByIdUseCase(id)
-            editingIngredient = ingredient
-            _editUiState.value = ingredient?.toEditUiState() ?: IngredientEditUiState()
-            if (ingredient == null) {
-                _isLoading.value = false
+            val result = getIngredientByIdUseCase(id)
+            if (result is DataResult.Success) {
+                val ingredient = result.data
+                editingIngredient = ingredient
+                _editUiState.value = ingredient.toEditUiState()
+            } else {
+                editingIngredient = null
+                _editUiState.value = IngredientEditUiState()
             }
+            _isLoading.value = false
         }
     }
 
@@ -137,7 +145,7 @@ class IngredientEditViewModel @Inject constructor(
 
         if (currentState.amount.isBlank()) {
             _editUiState.update { it.copy(amountError = UiText.StringResource(R.string.error_validation_amount_empty)) }
-            if (isValid) _validationEvent.emit(IngredientValidationField.AMOUNT) // 첫 번째 에러 필드로 포커스 이동을 위해
+            if (isValid) _validationEvent.emit(IngredientValidationField.AMOUNT)
             isValid = false
         }
 
@@ -161,18 +169,22 @@ class IngredientEditViewModel @Inject constructor(
                 emoticon = currentState.selectedIcon
             )
 
-            val success = if (isEditMode) {
+            val result = if (isEditMode) {
                 updateIngredientUseCase(ingredientToSave)
             } else {
                 insertIngredientUseCase(ingredientToSave)
             }
 
-            if (success) {
-                val messageResId = if (isEditMode) R.string.msg_updated else R.string.msg_saved
-                _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(messageResId)))
-            } else {
-                val messageResId = if (isEditMode) R.string.error_update_failed else R.string.error_save_failed
-                _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(messageResId)))
+            when (result) {
+                is DataResult.Success -> {
+                    val messageResId = if (isEditMode) R.string.msg_updated else R.string.msg_saved
+                    _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(messageResId)))
+                    _navigationEvent.emit(Unit)
+                }
+                is DataResult.Error -> {
+                    _operationResultEvent.emit(OperationResult.Failure(result.message))
+                }
+                else -> Unit
             }
         }
     }
@@ -180,11 +192,16 @@ class IngredientEditViewModel @Inject constructor(
     fun onDeleteIngredient() {
         viewModelScope.launch {
             editingIngredient?.let {
-                val success = delIngredientUseCase(it)
-                if (success) {
-                    _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(R.string.msg_deleted)))
-                } else {
-                    _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(R.string.error_delete_failed)))
+                val result = delIngredientUseCase(it)
+                when (result) {
+                    is DataResult.Success -> {
+                        _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(R.string.msg_deleted)))
+                        _navigationEvent.emit(Unit)
+                    }
+                    is DataResult.Error -> {
+                        _operationResultEvent.emit(OperationResult.Failure(result.message))
+                    }
+                    else -> Unit
                 }
             }
             _editUiState.update { it.copy(showDeleteDialog = false) }

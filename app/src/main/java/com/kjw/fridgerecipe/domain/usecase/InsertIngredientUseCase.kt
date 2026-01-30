@@ -1,29 +1,25 @@
 package com.kjw.fridgerecipe.domain.usecase
 
-import android.util.Log
+import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.repository.IngredientRepository
+import com.kjw.fridgerecipe.domain.util.DataResult
+import com.kjw.fridgerecipe.presentation.util.UiText
 import javax.inject.Inject
 
 class InsertIngredientUseCase @Inject constructor(
     private val ingredientRepository: IngredientRepository
 ) {
-    suspend operator fun invoke(ingredient: Ingredient): Boolean {
-
+    suspend operator fun invoke(ingredient: Ingredient): DataResult<Unit> {
+        // 비즈니스 유효성 검사
         if (ingredient.name.isBlank()) {
-            return false
+            return DataResult.Error(UiText.StringResource(R.string.error_validation_name_empty))
         }
 
         if (ingredient.amount <= 0) {
-            return false
+            return DataResult.Error(UiText.StringResource(R.string.error_validation_amount_zero))
         }
 
-        return try {
-            ingredientRepository.insertIngredient(ingredient)
-            true
-        } catch (e: Exception) {
-            Log.e("AddIngredientUseCase", "DB 저장 실패: ${e.message}", e)
-            false
-        }
+        return ingredientRepository.insertIngredient(ingredient)
     }
 }

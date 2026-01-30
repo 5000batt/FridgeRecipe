@@ -33,7 +33,8 @@ class RecipeDetailViewModel @Inject constructor(
         if (recipeId == null) {
             null
         } else {
-            val recipe = getSavedRecipeByIdUseCase(recipeId)
+            val recipeResult = getSavedRecipeByIdUseCase(recipeId)
+            val recipe = recipeResult.getOrNull()
 
             if (recipe == null) {
                 null

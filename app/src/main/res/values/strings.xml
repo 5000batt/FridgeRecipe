@@ -219,6 +219,8 @@
     <string name="error_title_generic">오류 발생</string>
     <string name="error_msg_generic">알 수 없는 오류가 발생했습니다.\n다시 시도해주세요.</string>
     <string name="error_msg_recipe_fetch_failed">레시피 데이터를 불러오지 못했습니다.\n다시 시도해주세요.</string>
+    <string name="error_recipe_not_found">레시피를 찾을 수 없습니다.</string>
+    <string name="error_recipe_id_exists">이미 존재하는 레시피입니다.</string>
 
     <string name="error_title_quota">셰프 체력 방전!</string>
     <string name="error_msg_quota">오늘 너무 많은 레시피를 연구해서 셰프가 지쳐버렸어요.\n체력을 회복하고 내일 다시 돌아올게요!</string>

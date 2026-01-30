@@ -14,6 +14,7 @@ import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.ExpirationStatus
 import com.kjw.fridgerecipe.domain.repository.IngredientRepository
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
+import com.kjw.fridgerecipe.domain.util.DataResult
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
@@ -33,25 +34,28 @@ class ExpirationCheckWorker @AssistedInject constructor(
                 return Result.success()
             }
 
-            return try {
-                val allIngredients = ingredientRepository.getAllIngredientsSuspend()
+            val result = ingredientRepository.getAllIngredientsSuspend()
+            
+            return when (result) {
+                is DataResult.Success -> {
+                    val allIngredients = result.data
+                    val expiringSoon = allIngredients.filter { it.expirationStatus == ExpirationStatus.URGENT }
 
-                // 도메인 모델의 상태를 활용하여 임박한 재료 필터링
-                val expiringSoon = allIngredients.filter { it.expirationStatus == ExpirationStatus.URGENT }
+                    if (expiringSoon.isNotEmpty()) {
+                        val ingredientNames = expiringSoon.joinToString(", ") { it.name }
 
-                if (expiringSoon.isNotEmpty()) {
-                    val ingredientNames = expiringSoon.joinToString(", ") { it.name }
-
-                    makeNotification(
-                        title = "소비기한 임박 알림!",
-                        message = "냉장고의 $ingredientNames 소비기한이 3일 이내입니다!"
-                    )
+                        makeNotification(
+                            title = "소비기한 임박 알림!",
+                            message = "냉장고의 $ingredientNames 소비기한이 3일 이내입니다!"
+                        )
+                    }
+                    Result.success()
                 }
-
-                Result.success()
-            } catch (e: Exception) {
-                android.util.Log.e("ExpirationCheckWorker", "Worker retry", e)
-                Result.retry()
+                is DataResult.Error -> {
+                    android.util.Log.e("ExpirationCheckWorker", "Failed to load ingredients: ${result.message}")
+                    Result.retry() // 에러 시 재시도
+                }
+                else -> Result.failure()
             }
         } catch (e: Exception) {
             android.util.Log.e("ExpirationCheckWorker", "Worker failed", e)

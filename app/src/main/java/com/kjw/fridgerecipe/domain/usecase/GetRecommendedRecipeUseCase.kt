@@ -7,6 +7,7 @@ import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.repository.RecipeRepository
+import com.kjw.fridgerecipe.domain.util.DataResult
 import javax.inject.Inject
 
 class GetRecommendedRecipeUseCase @Inject constructor(
@@ -22,14 +23,15 @@ class GetRecommendedRecipeUseCase @Inject constructor(
         useOnlySelected: Boolean,
         excludedIngredients: List<String> = emptyList(),
         onAiCall: suspend () -> Unit
-    ): Recipe? {
+    ): DataResult<Recipe> {
 
         val ingredientsQuery = ingredients
             .map { it.name }
             .sorted()
             .joinToString(",")
 
-        val cashedList = recipeRepository.findRecipesByFilters(
+        // 1. 캐시 확인
+        val cachedResult = recipeRepository.findRecipesByFilters(
             ingredientsQuery = ingredientsQuery,
             timeFilter = timeFilter,
             level = level,
@@ -38,8 +40,10 @@ class GetRecommendedRecipeUseCase @Inject constructor(
             useOnlySelected = useOnlySelected
         )
 
-        if (cashedList.isNotEmpty()) {
-            val availableCache = cashedList.filter { recipe ->
+        val cachedList = cachedResult.getOrNull() ?: emptyList()
+
+        if (cachedList.isNotEmpty()) {
+            val availableCache = cachedList.filter { recipe ->
                 val isSeen = recipe.id in seenIds
 
                 val hasExcludedIngredient = if (excludedIngredients.isNotEmpty()) {
@@ -57,10 +61,11 @@ class GetRecommendedRecipeUseCase @Inject constructor(
 
             if (availableCache.isNotEmpty()) {
                 Log.d("RecipeUseCase", "캐시된 목록 (다른 레시피) 반환")
-                return availableCache.random()
+                return DataResult.Success(availableCache.random())
             }
         }
 
+        // 2. AI 호출 (캐시가 없거나 모두 순회했을 때)
         Log.d("RecipeUseCase", "AI 호출 (캐시 없음 또는 모두 순회)")
         onAiCall()
 
