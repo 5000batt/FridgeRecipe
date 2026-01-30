@@ -56,7 +56,7 @@ fun StorageSection(
                 ListDisplayType.ROW -> {
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.Companion.heightIn(min = 80.dp, max = 100.dp)
+                        modifier = Modifier.Companion.heightIn(min = 80.dp, max = 110.dp)
                     ) {
                         items(items) { ingredient ->
                             IngredientChip(
@@ -72,7 +72,7 @@ fun StorageSection(
                     if (items.size <= singleRowMaxItems) {
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.Companion.heightIn(min = 80.dp, max = 100.dp)
+                            modifier = Modifier.Companion.heightIn(min = 80.dp, max = 110.dp)
                         ) {
                             items(items) { ingredient ->
                                 IngredientChip(
@@ -88,7 +88,7 @@ fun StorageSection(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.Companion
-                                .heightIn(min = 100.dp, max = 208.dp)
+                                .heightIn(min = 100.dp, max = 220.dp)
                                 .fillMaxWidth()
                         ) {
                             items(items) { ingredient ->

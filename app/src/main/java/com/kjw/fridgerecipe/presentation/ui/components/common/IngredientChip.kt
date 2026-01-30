@@ -24,11 +24,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.kjw.fridgerecipe.domain.model.ExpirationStatus
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.presentation.util.getIconResId
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private val DateFormatter = DateTimeFormatter.ofPattern("y.MM.dd")
@@ -39,18 +41,18 @@ fun IngredientChip(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val (containerColor, contentColor) = when {
-        ingredient.expirationDate.isBefore(LocalDate.now()) ->
+    val (containerColor, contentColor) = when (ingredient.expirationStatus) {
+        ExpirationStatus.EXPIRED ->
             MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
-        ingredient.expirationDate.isBefore(LocalDate.now().plusDays(3)) ->
+        ExpirationStatus.URGENT ->
             MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
-        else ->
-            MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onSurface
+        ExpirationStatus.SAFE ->
+            MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
     }
 
     Card(
         modifier = Modifier
-            .size(width = 100.dp, height = 100.dp)
+            .size(width = 100.dp, height = 120.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = LocalIndication.current,
@@ -66,17 +68,16 @@ fun IngredientChip(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(vertical = 8.dp),
+                .padding(vertical = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             IngredientIconImage(ingredient)
 
-            Spacer(modifier = Modifier.height(4.dp))
-
             Text(
                 text = ingredient.name,
                 style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 4.dp),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -86,7 +87,18 @@ fun IngredientChip(
 
             Text(
                 text = ingredient.expirationDate.format(DateFormatter),
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                modifier = Modifier.padding(horizontal = 4.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Text(
+                text = "${ingredient.remainingDaysText}",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
+                ),
                 modifier = Modifier.padding(horizontal = 4.dp),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis

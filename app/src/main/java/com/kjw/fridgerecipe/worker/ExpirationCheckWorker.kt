@@ -11,12 +11,12 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.kjw.fridgerecipe.MainActivity
 import com.kjw.fridgerecipe.R
+import com.kjw.fridgerecipe.domain.model.ExpirationStatus
 import com.kjw.fridgerecipe.domain.repository.IngredientRepository
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
-import java.time.LocalDate
 
 @HiltWorker
 class ExpirationCheckWorker @AssistedInject constructor(
@@ -35,12 +35,9 @@ class ExpirationCheckWorker @AssistedInject constructor(
 
             return try {
                 val allIngredients = ingredientRepository.getAllIngredientsSuspend()
-                val today = LocalDate.now()
 
-                val expiringSoon = allIngredients.filter {
-                    !it.expirationDate.isBefore(today) &&
-                            it.expirationDate.isBefore(today.plusDays(4))
-                }
+                // 도메인 모델의 상태를 활용하여 임박한 재료 필터링
+                val expiringSoon = allIngredients.filter { it.expirationStatus == ExpirationStatus.URGENT }
 
                 if (expiringSoon.isNotEmpty()) {
                     val ingredientNames = expiringSoon.joinToString(", ") { it.name }
@@ -54,12 +51,10 @@ class ExpirationCheckWorker @AssistedInject constructor(
                 Result.success()
             } catch (e: Exception) {
                 android.util.Log.e("ExpirationCheckWorker", "Worker retry", e)
-
                 Result.retry()
             }
         } catch (e: Exception) {
             android.util.Log.e("ExpirationCheckWorker", "Worker failed", e)
-
             return Result.failure()
         }
     }
