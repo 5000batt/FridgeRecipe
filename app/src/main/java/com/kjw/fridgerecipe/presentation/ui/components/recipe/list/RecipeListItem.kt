@@ -135,7 +135,7 @@ fun RecipeListItem(
                 ) {
                     RecipeInfoChip(
                         icon = Icons.Default.Person,
-                        text = recipe.servings
+                        text = stringResource(R.string.recipe_servings_format, recipe.servings)
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -150,7 +150,7 @@ fun RecipeListItem(
 
                     RecipeInfoChip(
                         icon = Icons.Default.AccessTime,
-                        text = recipe.time
+                        text = stringResource(R.string.recipe_time_format, recipe.time)
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))

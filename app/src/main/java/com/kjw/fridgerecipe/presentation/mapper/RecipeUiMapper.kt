@@ -11,13 +11,10 @@ import javax.inject.Inject
 class RecipeUiMapper @Inject constructor() {
 
     fun toEditUiState(recipe: Recipe): RecipeEditUiState {
-        val servingsExtracted = Regex("\\d+").find(recipe.servings)?.value ?: ""
-        val timeExtracted = Regex("\\d+").find(recipe.time)?.value ?: ""
-
         return RecipeEditUiState(
             title = recipe.title,
-            servingsState = servingsExtracted,
-            timeState = timeExtracted,
+            servingsState = if (recipe.servings > 0) recipe.servings.toString() else "",
+            timeState = if (recipe.time > 0) recipe.time.toString() else "",
             level = recipe.level,
             categoryState = recipe.category,
             cookingToolState = recipe.cookingTool,
@@ -35,6 +32,7 @@ class RecipeUiMapper @Inject constructor() {
 
     fun toDomain(state: RecipeEditUiState, recipeId: Long?): Recipe {
         val actualTimeInt = state.timeState.toIntOrNull() ?: 0
+        val actualServingsInt = state.servingsState.toIntOrNull() ?: 0
         
         val timeFilterTag = when {
             actualTimeInt <= 15 -> "15분 이내"
@@ -52,8 +50,8 @@ class RecipeUiMapper @Inject constructor() {
         return Recipe(
             id = recipeId,
             title = state.title.trim(),
-            servings = "${state.servingsState}인분",
-            time = "${state.timeState}분",
+            servings = actualServingsInt,
+            time = actualTimeInt,
             level = state.level,
             ingredients = state.ingredientsState.map {
                 RecipeIngredient(

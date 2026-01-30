@@ -34,12 +34,12 @@ fun RecipeInfoRow(recipe: Recipe) {
     ) {
         RecipeMetaInfo(
             icon = Icons.Default.Person,
-            label = recipe.servings,
+            label = stringResource(R.string.recipe_servings_format, recipe.servings),
             contentDescription = stringResource(R.string.recipe_meta_servings_desc)
         )
         RecipeMetaInfo(
             icon = Icons.Default.AccessTime,
-            label = recipe.time,
+            label = stringResource(R.string.recipe_time_format, recipe.time),
             contentDescription = stringResource(R.string.recipe_meta_time_desc)
         )
         RecipeMetaInfo(

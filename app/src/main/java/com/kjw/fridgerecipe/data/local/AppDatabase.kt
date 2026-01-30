@@ -7,6 +7,7 @@ import androidx.room.RenameColumn
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.AutoMigrationSpec
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.data.local.converter.IngredientTypeConverters
@@ -30,7 +31,7 @@ import javax.inject.Inject
 
 @Database(
     entities = [IngredientEntity::class, RecipeEntity::class],
-    version = 14,
+    version = 15,
     autoMigrations = [
         AutoMigration(from = 12, to = 13, spec = AppDatabase.RecipeMigration::class),
         AutoMigration(from = 13, to = 14, spec = AppDatabase.IngredientMigration::class)
@@ -55,6 +56,52 @@ abstract class AppDatabase : RoomDatabase() {
     @RenameColumn(tableName = "ingredients", fromColumnName = "categoryName", toColumnName = "category")
     @RenameColumn(tableName = "ingredients", fromColumnName = "emoticonName", toColumnName = "emoticon")
     class IngredientMigration : AutoMigrationSpec
+
+    companion object {
+        val MIGRATION_14_15 = object : Migration(14, 15) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 1. 새로운 스키마를 가진 임시 테이블 생성 (servings, time을 INTEGER로)
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `recipes_new` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT, 
+                        `title` TEXT NOT NULL, 
+                        `servings` INTEGER NOT NULL, 
+                        `time` INTEGER NOT NULL, 
+                        `level` TEXT NOT NULL, 
+                        `ingredients` TEXT NOT NULL, 
+                        `steps` TEXT NOT NULL, 
+                        `imageUri` TEXT, 
+                        `category` TEXT, 
+                        `cookingTool` TEXT, 
+                        `timeFilter` TEXT, 
+                        `ingredientsQuery` TEXT, 
+                        `useOnlySelected` INTEGER NOT NULL
+                    )
+                """.trimIndent())
+
+                // 2. 기존 데이터를 임시 테이블로 복사 (CAST를 사용하여 String -> Int 변환)
+                db.execSQL("""
+                    INSERT INTO `recipes_new` (
+                        id, title, servings, time, level, ingredients, steps, 
+                        imageUri, category, cookingTool, timeFilter, ingredientsQuery, useOnlySelected
+                    )
+                    SELECT 
+                        id, title, 
+                        CAST(servings AS INTEGER), 
+                        CAST(time AS INTEGER), 
+                        level, ingredients, steps, 
+                        imageUri, category, cookingTool, timeFilter, ingredientsQuery, useOnlySelected
+                    FROM `recipes`
+                """.trimIndent())
+
+                // 3. 기존 테이블 삭제
+                db.execSQL("DROP TABLE `recipes`")
+
+                // 4. 임시 테이블을 원래 이름으로 변경
+                db.execSQL("ALTER TABLE `recipes_new` RENAME TO `recipes`")
+            }
+        }
+    }
 
     class DatabaseCallback @Inject constructor(
         @ApplicationScope private val applicationScope: CoroutineScope,

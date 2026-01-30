@@ -28,6 +28,7 @@ object DatabaseModule {
             "fridge_recipe_db"
         )
         .addCallback(callback)
+        .addMigrations(AppDatabase.MIGRATION_14_15)
         .fallbackToDestructiveMigration(false)
         .build()
     }

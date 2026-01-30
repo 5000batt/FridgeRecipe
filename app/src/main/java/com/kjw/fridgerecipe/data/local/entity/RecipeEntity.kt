@@ -13,8 +13,8 @@ data class RecipeEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long? = null,
     val title: String,
-    val servings: String,
-    val time: String,
+    val servings: Int,
+    val time: Int,
     val level: LevelType,
     val ingredients: List<RecipeIngredient>,
     val steps: List<RecipeStep>,

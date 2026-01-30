@@ -123,6 +123,8 @@
 
     <string name="recipe_match_rate_format">%d%% 일치</string>
     <string name="recipe_missing_count_format">부족한 재료 %d개</string>
+    <string name="recipe_servings_format">%1$d인분</string>
+    <string name="recipe_time_format">%1$d분</string>
 
     <!--  RecipeDetail  -->
     <string name="recipe_detail_image_desc">레시피 사진</string>

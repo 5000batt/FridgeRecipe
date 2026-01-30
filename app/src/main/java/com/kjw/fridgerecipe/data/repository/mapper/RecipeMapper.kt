@@ -13,8 +13,8 @@ fun RecipeDto.toDomainModel(): Recipe {
     return Recipe(
         id = null,
         title = this.title ?: "제목 없음",
-        servings = this.info?.servings ?: "-",
-        time = this.info?.time ?: "-",
+        servings = extractNumber(this.info?.servings),
+        time = extractNumber(this.info?.time),
         level = LevelType.fromId(this.info?.level),
         ingredients = this.ingredients?.map { it.toDomainModel() } ?: emptyList(),
         steps = this.steps?.map { it.toDomainModel() } ?: emptyList()
@@ -70,4 +70,11 @@ fun RecipeEntity.toDomainModel(): Recipe {
         ingredientsQuery = this.ingredientsQuery,
         useOnlySelected = this.useOnlySelected
     )
+}
+
+private fun extractNumber(text: String?): Int {
+    if (text == null) return 0
+    // 숫자만 추출 (예: "3~4인분" -> "34"가 될 수 있으므로 첫 번째 연속된 숫자 그룹만 가져옴)
+    val match = Regex("\\d+").find(text)
+    return match?.value?.toIntOrNull() ?: 0
 }
