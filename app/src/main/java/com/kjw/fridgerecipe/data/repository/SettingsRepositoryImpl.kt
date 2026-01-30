@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
+import com.kjw.fridgerecipe.di.SettingsDataStore
 import com.kjw.fridgerecipe.domain.model.ThemeMode
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +18,7 @@ import java.io.IOException
 import javax.inject.Inject
 
 class SettingsRepositoryImpl @Inject constructor(
-    private val dataStore: DataStore<Preferences>
+    @SettingsDataStore private val dataStore: DataStore<Preferences>
 ) : SettingsRepository {
 
     private object PreferencesKeys {
