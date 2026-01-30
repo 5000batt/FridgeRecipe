@@ -9,6 +9,7 @@ import androidx.room.TypeConverters
 import androidx.room.migration.AutoMigrationSpec
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.kjw.fridgerecipe.BuildConfig
+import com.kjw.fridgerecipe.data.local.converter.IngredientTypeConverters
 import com.kjw.fridgerecipe.data.local.converter.LocalDateConverter
 import com.kjw.fridgerecipe.data.local.converter.RecipeTypeConverters
 import com.kjw.fridgerecipe.data.local.dao.IngredientDao
@@ -29,13 +30,14 @@ import javax.inject.Inject
 
 @Database(
     entities = [IngredientEntity::class, RecipeEntity::class],
-    version = 13,
+    version = 14,
     autoMigrations = [
-        AutoMigration(from = 12, to = 13, spec = AppDatabase.RecipeMigration::class)
+        AutoMigration(from = 12, to = 13, spec = AppDatabase.RecipeMigration::class),
+        AutoMigration(from = 13, to = 14, spec = AppDatabase.IngredientMigration::class)
     ],
     exportSchema = true
 )
-@TypeConverters(LocalDateConverter::class, RecipeTypeConverters::class)
+@TypeConverters(LocalDateConverter::class, RecipeTypeConverters::class, IngredientTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun ingredientDao(): IngredientDao
     abstract fun recipeDao(): RecipeDao
@@ -47,6 +49,12 @@ abstract class AppDatabase : RoomDatabase() {
     @RenameColumn(tableName = "recipes", fromColumnName = "search_useOnlySelected", toColumnName = "useOnlySelected")
     @DeleteColumn(tableName = "recipes", columnName = "search_levelFilter")
     class RecipeMigration : AutoMigrationSpec
+
+    @RenameColumn(tableName = "ingredients", fromColumnName = "unitName", toColumnName = "unit")
+    @RenameColumn(tableName = "ingredients", fromColumnName = "storageLocationName", toColumnName = "storageLocation")
+    @RenameColumn(tableName = "ingredients", fromColumnName = "categoryName", toColumnName = "category")
+    @RenameColumn(tableName = "ingredients", fromColumnName = "emoticonName", toColumnName = "emoticon")
+    class IngredientMigration : AutoMigrationSpec
 
     class DatabaseCallback @Inject constructor(
         @ApplicationScope private val applicationScope: CoroutineScope,
