@@ -6,8 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
-import com.kjw.fridgerecipe.domain.model.RecipeIngredient
-import com.kjw.fridgerecipe.domain.model.RecipeStep
 import com.kjw.fridgerecipe.domain.usecase.DelRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipeByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.InsertRecipeUseCase
@@ -27,12 +25,14 @@ import javax.inject.Inject
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.usecase.SaveRecipeImageUseCase
+import com.kjw.fridgerecipe.presentation.mapper.RecipeUiMapper
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientItemUiState
 import com.kjw.fridgerecipe.presentation.ui.model.ListErrorType
 import com.kjw.fridgerecipe.presentation.ui.model.RecipeEditUiState
 import com.kjw.fridgerecipe.presentation.ui.model.RecipeValidationField
 import com.kjw.fridgerecipe.presentation.ui.model.StepItemUiState
 import com.kjw.fridgerecipe.presentation.util.UiText
+import com.kjw.fridgerecipe.presentation.validator.RecipeValidator
 
 @HiltViewModel
 class RecipeEditViewModel @Inject constructor(
@@ -40,7 +40,9 @@ class RecipeEditViewModel @Inject constructor(
     private val insertRecipeUseCase: InsertRecipeUseCase,
     private val updateRecipeUseCase: UpdateRecipeUseCase,
     private val delRecipeUseCase: DelRecipeUseCase,
-    private val saveRecipeImageUseCase: SaveRecipeImageUseCase
+    private val saveRecipeImageUseCase: SaveRecipeImageUseCase,
+    private val mapper: RecipeUiMapper,
+    private val validator: RecipeValidator
 ) : ViewModel() {
 
     sealed class NavigationEvent {
@@ -71,7 +73,7 @@ class RecipeEditViewModel @Inject constructor(
             if (result is DataResult.Success) {
                 val recipe = result.data
                 currentRecipe = recipe
-                _editUiState.value = recipe.toEditUiState()
+                _editUiState.value = mapper.toEditUiState(recipe)
             }
             _isLoading.value = false
         }
@@ -99,9 +101,14 @@ class RecipeEditViewModel @Inject constructor(
 
     fun onSaveOrUpdateRecipe(isEditMode: Boolean) {
         viewModelScope.launch {
-            if (!validateInputs()) return@launch
+            val validationResult = validator.validate(_editUiState.value)
+            if (validationResult is RecipeValidator.ValidationResult.Failure) {
+                updateErrorState(validationResult)
+                _validationEvent.emit(validationResult.field)
+                return@launch
+            }
 
-            val recipeToSave = buildRecipeFromState(isEditMode)
+            val recipeToSave = mapper.toDomain(_editUiState.value, currentRecipe?.id)
 
             val result = if (isEditMode) {
                 updateRecipeUseCase(recipeToSave)
@@ -119,6 +126,24 @@ class RecipeEditViewModel @Inject constructor(
                     _operationResultEvent.emit(OperationResult.Failure(result.message))
                 }
                 else -> Unit
+            }
+        }
+    }
+
+    private fun updateErrorState(failure: RecipeValidator.ValidationResult.Failure) {
+        _editUiState.update { state ->
+            when (failure.field) {
+                RecipeValidationField.TITLE -> state.copy(titleError = failure.errorMessage)
+                RecipeValidationField.SERVINGS -> state.copy(servingsError = failure.errorMessage)
+                RecipeValidationField.TIME -> state.copy(timeError = failure.errorMessage)
+                RecipeValidationField.INGREDIENTS -> state.copy(
+                    ingredientsError = failure.errorMessage,
+                    ingredientsErrorType = failure.listErrorType
+                )
+                RecipeValidationField.STEPS -> state.copy(
+                    stepsError = failure.errorMessage,
+                    stepsErrorType = failure.listErrorType
+                )
             }
         }
     }
@@ -302,131 +327,5 @@ class RecipeEditViewModel @Inject constructor(
         } else {
             Pair(_editUiState.value.stepsError, _editUiState.value.stepsErrorType)
         }
-    }
-
-    private suspend fun validateInputs(): Boolean {
-        val currentState = _editUiState.value
-
-        if (currentState.title.isBlank()) {
-            _editUiState.update { it.copy(titleError = UiText.StringResource(R.string.error_recipe_title_empty)) }
-            _validationEvent.emit(RecipeValidationField.TITLE)
-            return false
-        }
-
-        if (currentState.servingsState.isBlank()) {
-            _editUiState.update { it.copy(servingsError = UiText.StringResource(R.string.error_recipe_servings_empty)) }
-            _validationEvent.emit(RecipeValidationField.SERVINGS)
-            return false
-        }
-
-        if (currentState.timeState.isBlank()) {
-            _editUiState.update { it.copy(timeError = UiText.StringResource(R.string.error_recipe_time_empty)) }
-            _validationEvent.emit(RecipeValidationField.TIME)
-            return false
-        }
-
-        if (currentState.ingredientsState.isEmpty()) {
-            _editUiState.update { it.copy(
-                ingredientsError = UiText.StringResource(R.string.error_recipe_ingredients_empty),
-                ingredientsErrorType = ListErrorType.IS_EMPTY
-            ) }
-            _validationEvent.emit(RecipeValidationField.INGREDIENTS)
-            return false
-        } else if (currentState.ingredientsState.any { it.name.isBlank() || it.quantity.isBlank() }) {
-            _editUiState.update { it.copy(
-                ingredientsError = UiText.StringResource(R.string.error_recipe_ingredients_blank),
-                ingredientsErrorType = ListErrorType.HAS_BLANK_ITEMS
-            ) }
-            _validationEvent.emit(RecipeValidationField.INGREDIENTS)
-            return false
-        }
-
-        if (currentState.stepsState.isEmpty()) {
-            _editUiState.update { it.copy(
-                stepsError = UiText.StringResource(R.string.error_recipe_steps_empty),
-                stepsErrorType = ListErrorType.IS_EMPTY
-            ) }
-            _validationEvent.emit(RecipeValidationField.STEPS)
-            return false
-        } else if (currentState.stepsState.any { it.description.isBlank() }) {
-            _editUiState.update { it.copy(
-                stepsError = UiText.StringResource(R.string.error_recipe_steps_blank),
-                stepsErrorType = ListErrorType.HAS_BLANK_ITEMS
-            ) }
-            _validationEvent.emit(RecipeValidationField.STEPS)
-            return false
-        }
-
-        return true
-    }
-
-    private fun buildRecipeFromState(isEditMode: Boolean): Recipe {
-        val currentState = _editUiState.value
-        val actualTimeInt = currentState.timeState.toIntOrNull() ?: 0
-        val actualLevel = currentState.level
-        val actualCategory = currentState.categoryState
-        val actualCookingTool = currentState.cookingToolState
-
-        val timeFilterTag = when {
-            actualTimeInt <= 15 -> "15분 이내"
-            actualTimeInt <= 30 -> "30분 이내"
-            actualTimeInt <= 60 -> "60분 이내"
-            else -> null
-        }
-
-        val recipeId = if (isEditMode) currentRecipe?.id else null
-        val ingredientsQueryTag = currentState.ingredientsState
-            .filter { it.isEssential }
-            .map { it.name }
-            .sorted()
-            .joinToString(",")
-
-        return Recipe(
-            id = recipeId,
-            title = currentState.title.trim(),
-            servings = "${currentState.servingsState}인분",
-            time = "${currentState.timeState}분",
-            level = actualLevel,
-            ingredients = currentState.ingredientsState.map {
-                RecipeIngredient(
-                    name = it.name,
-                    quantity = it.quantity,
-                    isEssential = it.isEssential
-                )
-            },
-            steps = currentState.stepsState.map { RecipeStep(it.number, it.description) },
-            category = actualCategory,
-            cookingTool = actualCookingTool,
-            timeFilter = timeFilterTag,
-            ingredientsQuery = ingredientsQueryTag,
-            useOnlySelected = false,
-            imageUri = currentState.imageUri
-        )
-    }
-
-    private fun Recipe.toEditUiState(): RecipeEditUiState {
-        val servingsString = this.servings
-        val servingsExtracted = Regex("\\d+").find(servingsString)?.value ?: ""
-
-        val timeString = this.time
-        val timeExtracted = Regex("\\d+").find(timeString)?.value ?: ""
-
-        return RecipeEditUiState(
-            title = this.title,
-            servingsState = servingsExtracted,
-            timeState = timeExtracted,
-            level = this.level,
-            categoryState = this.category,
-            cookingToolState = this.cookingTool,
-            ingredientsState = this.ingredients.map {
-                IngredientItemUiState(
-                    name = it.name,
-                    quantity = it.quantity,
-                    isEssential = it.isEssential
-                )
-            },
-            stepsState = this.steps.map { StepItemUiState(it.number, it.description) },
-            imageUri = this.imageUri
-        )
     }
 }
