@@ -13,6 +13,7 @@ import com.kjw.fridgerecipe.domain.usecase.DelIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateIngredientUseCase
 import com.kjw.fridgerecipe.domain.util.DataResult
+import com.kjw.fridgerecipe.presentation.mapper.IngredientUiMapper
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientEditUiState
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientValidationField
@@ -36,7 +37,8 @@ class IngredientEditViewModel @Inject constructor(
     private val insertIngredientUseCase: InsertIngredientUseCase,
     private val updateIngredientUseCase: UpdateIngredientUseCase,
     private val delIngredientUseCase: DelIngredientUseCase,
-    private val validator: IngredientValidator
+    private val validator: IngredientValidator,
+    private val mapper: IngredientUiMapper
 ) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(true)
@@ -56,15 +58,13 @@ class IngredientEditViewModel @Inject constructor(
 
     private var editingIngredient: Ingredient? = null
 
-    private val decimalRegex = Regex("^\\d*\\.?\\d{0,2}\$")
-
     fun loadIngredientById(id: Long) {
         viewModelScope.launch {
             val result = getIngredientByIdUseCase(id)
             if (result is DataResult.Success) {
                 val ingredient = result.data
                 editingIngredient = ingredient
-                _editUiState.value = ingredient.toEditUiState()
+                _editUiState.value = mapper.toEditUiState(ingredient)
             } else {
                 editingIngredient = null
                 _editUiState.value = IngredientEditUiState()
@@ -88,7 +88,7 @@ class IngredientEditViewModel @Inject constructor(
     }
 
     fun onAmountChanged(amount: String) {
-        if (amount.isEmpty() || decimalRegex.matches(amount)) {
+        if (amount.isEmpty() || DECIMAL_REGEX.matches(amount)) {
             _editUiState.update { it.copy(amount = amount, amountError = null) }
         }
     }
@@ -152,18 +152,7 @@ class IngredientEditViewModel @Inject constructor(
                 return@launch
             }
 
-            val currentState = _editUiState.value
-
-            val ingredientToSave = Ingredient(
-                id = if (isEditMode) editingIngredient?.id else null,
-                name = currentState.name,
-                amount = currentState.amount.toDoubleOrNull() ?: 0.0,
-                unit = currentState.selectedUnit,
-                expirationDate = currentState.selectedDate,
-                storageLocation = currentState.selectedStorage,
-                category = currentState.selectedCategory,
-                emoticon = currentState.selectedIcon
-            )
+            val ingredientToSave = mapper.toDomain(_editUiState.value, editingIngredient?.id)
 
             val result = if (isEditMode) {
                 updateIngredientUseCase(ingredientToSave)
@@ -204,22 +193,7 @@ class IngredientEditViewModel @Inject constructor(
         }
     }
 
-    private fun Ingredient.toEditUiState(): IngredientEditUiState {
-        val amountString = if (this.amount % 1.0 == 0.0) {
-            this.amount.toInt().toString()
-        } else {
-            this.amount.toString()
-        }
-
-        return IngredientEditUiState(
-            name = this.name,
-            amount = amountString,
-            selectedUnit = this.unit,
-            selectedDate = this.expirationDate,
-            selectedStorage = this.storageLocation,
-            selectedCategory = this.category,
-            selectedIcon = this.emoticon,
-            selectedIconCategory = this.emoticon.category
-        )
+    companion object {
+        private val DECIMAL_REGEX = Regex("^\\d*\\.?\\d{0,2}\$")
     }
 }

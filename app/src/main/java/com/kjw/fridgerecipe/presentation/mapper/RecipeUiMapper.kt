@@ -8,8 +8,16 @@ import com.kjw.fridgerecipe.presentation.ui.model.RecipeEditUiState
 import com.kjw.fridgerecipe.presentation.ui.model.StepItemUiState
 import javax.inject.Inject
 
+/**
+ * 레시피 UI 관련 데이터 변환을 담당하는 매퍼 클래스
+ */
 class RecipeUiMapper @Inject constructor() {
 
+    /**
+     * Domain Model(Recipe)을 UI State(RecipeEditUiState)로 변환합니다.
+     * @param recipe 변환할 도메인 모델
+     * @return 변환된 UI 상태 객체
+     */
     fun toEditUiState(recipe: Recipe): RecipeEditUiState {
         return RecipeEditUiState(
             title = recipe.title,
@@ -30,6 +38,12 @@ class RecipeUiMapper @Inject constructor() {
         )
     }
 
+    /**
+     * UI State(RecipeEditUiState)를 Domain Model(Recipe)로 변환합니다.
+     * @param state 현재 UI 상태
+     * @param recipeId 수정 모드일 경우 기존 레시피의 ID
+     * @return 변환된 도메인 모델 객체
+     */
     fun toDomain(state: RecipeEditUiState, recipeId: Long?): Recipe {
         val actualTimeInt = state.timeState.toIntOrNull() ?: 0
         val actualServingsInt = state.servingsState.toIntOrNull() ?: 0
