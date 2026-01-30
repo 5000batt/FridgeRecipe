@@ -1,22 +1,21 @@
 package com.kjw.fridgerecipe.data.local.converter
 
 import androidx.room.TypeConverter
+import com.kjw.fridgerecipe.data.util.AppJson
 import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 import com.kjw.fridgerecipe.domain.model.RecipeStep
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
+/**
+ * Recipe 관련 복합 타입을 DB에 저장하기 위한 컨버터.
+ * [AppJson] 싱글톤을 사용하여 직렬화 성능을 최적화합니다.
+ */
 class RecipeTypeConverters {
 
-    private val json = Json {
-        ignoreUnknownKeys = true
-        encodeDefaults = true
-        isLenient = true
-        coerceInputValues = true
-    }
+    private val json = AppJson.default
 
     // --- List Converters ---
 
@@ -50,7 +49,7 @@ class RecipeTypeConverters {
         }
     }
 
-    // --- Enum Converters (Type Safety 강화) ---
+    // --- Enum Converters ---
 
     @TypeConverter
     fun fromLevelType(value: LevelType?): String? = value?.id

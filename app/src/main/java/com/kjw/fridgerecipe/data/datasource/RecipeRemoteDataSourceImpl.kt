@@ -11,12 +11,12 @@ import com.kjw.fridgerecipe.data.remote.AiRecipeResponse
 import com.kjw.fridgerecipe.data.remote.GeminiModelProvider
 import com.kjw.fridgerecipe.data.remote.RecipeDto
 import com.kjw.fridgerecipe.data.remote.RecipePromptGenerator
+import com.kjw.fridgerecipe.data.util.AppJson
 import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.model.CookingToolType
-import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 class RecipeRemoteDataSourceImpl @Inject constructor(
@@ -25,11 +25,7 @@ class RecipeRemoteDataSourceImpl @Inject constructor(
     private val remoteConfig: FirebaseRemoteConfig
 ) : RecipeRemoteDataSource {
 
-    private val jsonParser = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-        coerceInputValues = true
-    }
+    private val jsonParser = AppJson.default
 
     override suspend fun getAiRecipe(
         ingredients: List<Ingredient>,
@@ -144,7 +140,6 @@ class RecipeRemoteDataSourceImpl @Inject constructor(
             else -> {
                 // 혹시 SDK가 구체적인 Exception Class 대신 ServerException 안에 메시지로 에러를 줄 경우를 대비
                 val msg = e.message ?: ""
-
                 when {
                     msg.contains("429") || msg.contains("Quota") -> GeminiException.QuotaExceeded()
                     msg.contains("403") || msg.contains("API key") -> GeminiException.ApiKeyError()
