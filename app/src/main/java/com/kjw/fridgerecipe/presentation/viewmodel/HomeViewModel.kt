@@ -241,7 +241,7 @@ class HomeViewModel @Inject constructor(
                     ingredients = selectedIngredients,
                     seenIds = _seenRecipeIds.value,
                     timeFilter = currentFilters.timeLimit,
-                    levelFilter = currentFilters.level,
+                    level = currentFilters.level,
                     categoryFilter = currentFilters.category,
                     cookingToolFilter = currentFilters.cookingTool,
                     useOnlySelected = currentFilters.useOnlySelected,

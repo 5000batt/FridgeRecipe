@@ -12,7 +12,7 @@ interface RecipeRepository {
         ingredients: List<Ingredient>,
         ingredientsQuery: String,
         timeFilter: String?,
-        levelFilter: LevelType?,
+        level: LevelType?,
         categoryFilter: RecipeCategoryType?,
         cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean,
@@ -25,10 +25,10 @@ interface RecipeRepository {
 
     suspend fun findRecipesByFilters(
         ingredientsQuery: String,
-        timeFilter: String?,
-        levelFilter: LevelType?,
         categoryFilter: RecipeCategoryType?,
         cookingToolFilter: CookingToolType?,
+        timeFilter: String?,
+        level: LevelType?,
         useOnlySelected: Boolean
     ): List<Recipe>
 

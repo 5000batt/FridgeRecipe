@@ -16,7 +16,7 @@ class GetRecommendedRecipeUseCase @Inject constructor(
         ingredients: List<Ingredient>,
         seenIds: Set<Long>,
         timeFilter: String?,
-        levelFilter: LevelType?,
+        level: LevelType?,
         categoryFilter: RecipeCategoryType?,
         cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean,
@@ -32,7 +32,7 @@ class GetRecommendedRecipeUseCase @Inject constructor(
         val cashedList = recipeRepository.findRecipesByFilters(
             ingredientsQuery = ingredientsQuery,
             timeFilter = timeFilter,
-            levelFilter = levelFilter,
+            level = level,
             categoryFilter = categoryFilter,
             cookingToolFilter = cookingToolFilter,
             useOnlySelected = useOnlySelected
@@ -68,7 +68,7 @@ class GetRecommendedRecipeUseCase @Inject constructor(
             ingredients = ingredients,
             ingredientsQuery = ingredientsQuery,
             timeFilter = timeFilter,
-            levelFilter = levelFilter,
+            level = level,
             categoryFilter = categoryFilter,
             cookingToolFilter = cookingToolFilter,
             useOnlySelected = useOnlySelected,

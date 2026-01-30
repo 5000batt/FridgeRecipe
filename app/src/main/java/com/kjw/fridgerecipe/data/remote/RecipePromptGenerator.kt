@@ -12,7 +12,7 @@ class RecipePromptGenerator @Inject constructor() {
         template: String,
         ingredients: List<Ingredient>,
         timeFilter: String?,
-        levelFilter: LevelType?,
+        level: LevelType?,
         categoryFilter: RecipeCategoryType?,
         cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean,
@@ -23,7 +23,7 @@ class RecipePromptGenerator @Inject constructor() {
         val constraints = buildList {
             add("- 필수 재료: [$ingredientDetails]")
             timeFilter?.let { add("- 조리 시간: $it") }
-            levelFilter?.let { add("- 난이도: ${it.id}") }
+            level?.let { add("- 난이도: ${it.id}") }
             categoryFilter?.let { add("- 음식 종류: ${it.id}") }
             cookingToolFilter?.let { add("- 조리 도구: ${it.id} (필수 사용)") }
 

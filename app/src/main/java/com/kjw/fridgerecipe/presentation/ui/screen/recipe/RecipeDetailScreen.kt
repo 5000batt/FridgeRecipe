@@ -144,7 +144,7 @@ fun RecipeDetailScreen(
                                     .fillMaxWidth()
                                     .padding(24.dp)
                             ) {
-                                val displayCategory = getCategoryLabel(currentRecipe.searchMetadata?.categoryFilter)
+                                val displayCategory = getCategoryLabel(currentRecipe.category)
 
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,

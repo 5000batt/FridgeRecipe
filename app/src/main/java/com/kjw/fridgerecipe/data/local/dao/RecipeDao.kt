@@ -31,24 +31,23 @@ interface RecipeDao {
     suspend fun deleteAllRecipes()
 
     @Query("""
-        SELECT * FROM recipes
-        WHERE
-            search_ingredientsQuery = :ingredientsQuery AND
-            (:timeFilter IS NULL OR search_timeFilter = :timeFilter) AND
-            (:levelFilter IS NULL OR search_levelFilter = :levelFilter) AND
-            (:categoryFilter IS NULL OR search_categoryFilter = :categoryFilter) AND
-            (:cookingToolFilter IS NULL OR search_cookingToolFilter = :cookingToolFilter) AND
-            (search_useOnlySelected = :useOnlySelected)
+        SELECT * FROM recipes 
+        WHERE ingredientsQuery = :ingredientsQuery 
+        AND (:category IS NULL OR category = :category)
+        AND (:cookingTool IS NULL OR cookingTool = :cookingTool)
+        AND (:timeFilter IS NULL OR timeFilter = :timeFilter)
+        AND (:level IS NULL OR level = :level)
+        AND useOnlySelected = :useOnlySelected
     """)
     suspend fun findRecipesByFilters(
         ingredientsQuery: String,
+        category: String?,
+        cookingTool: String?,
         timeFilter: String?,
-        levelFilter: String?,
-        categoryFilter: String?,
-        cookingToolFilter: String?,
+        level: String?,
         useOnlySelected: Boolean
     ): List<RecipeEntity>
 
-    @Query("SELECT * FROM recipes WHERE title = :title AND search_ingredientsQuery = :ingredientsQuery LIMIT 1")
-    suspend fun findExistingRecipe(title: String, ingredientsQuery: String): RecipeEntity?
+    @Query("SELECT * FROM recipes WHERE title = :title AND ingredientsQuery = :ingredientsQuery LIMIT 1")
+    suspend fun findExistingRecipeByTitle(title: String, ingredientsQuery: String): RecipeEntity?
 }

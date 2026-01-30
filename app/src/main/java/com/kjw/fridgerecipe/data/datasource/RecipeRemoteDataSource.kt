@@ -10,7 +10,7 @@ interface RecipeRemoteDataSource {
     suspend fun getAiRecipe(
         ingredients: List<Ingredient>,
         timeFilter: String?,
-        levelFilter: LevelType?,
+        level: LevelType?,
         categoryFilter: RecipeCategoryType?,
         cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean,

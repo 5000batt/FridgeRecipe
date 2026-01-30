@@ -10,7 +10,6 @@ import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
-import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
 import com.kjw.fridgerecipe.domain.repository.RecipeRepository
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import kotlinx.coroutines.flow.Flow
@@ -30,66 +29,48 @@ class RecipeRepositoryImpl @Inject constructor(
         ingredients: List<Ingredient>,
         ingredientsQuery: String,
         timeFilter: String?,
-        levelFilter: LevelType?,
+        level: LevelType?,
         categoryFilter: RecipeCategoryType?,
         cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean,
         excludedIngredients: List<String>
     ): Recipe? {
 
-        // 필터 정리
         val safeTime = sanitizeFilter(timeFilter)
 
         // AI 호출 및 응답 확인
         val recipeDto = remoteDataSource.getAiRecipe(
             ingredients = ingredients,
             timeFilter = safeTime,
-            levelFilter = levelFilter,
+            level = level,
             categoryFilter = categoryFilter,
             cookingToolFilter = cookingToolFilter,
             useOnlySelected = useOnlySelected,
             excludedIngredients = excludedIngredients
         )
 
-        // 도메인 변환
-        val domainRecipe = recipeDto.toDomainModel()
-
-        // 메타데이터 생성 및 저장
-        val searchMetadata = RecipeSearchMetadata(
-            ingredientsQuery = ingredientsQuery,
+        // 도메인 변환 및 검색 조건 설정 (캐싱 키)
+        val domainRecipe = recipeDto.toDomainModel().copy(
+            category = categoryFilter,
+            cookingTool = cookingToolFilter,
             timeFilter = safeTime,
-            levelFilter = levelFilter,
-            categoryFilter = categoryFilter,
-            cookingToolFilter = cookingToolFilter,
+            level = level ?: recipeDto.toDomainModel().level,
+            ingredientsQuery = ingredientsQuery,
             useOnlySelected = useOnlySelected
         )
 
-        val savedId = saveOrUpdateRecipe(domainRecipe, ingredientsQuery, searchMetadata)
+        // 중복 체크 및 저장 로직
+        val existingEntity = recipeDao.findExistingRecipeByTitle(domainRecipe.title, ingredientsQuery)
 
-        return domainRecipe.copy(
-            id = savedId,
-            searchMetadata = searchMetadata
-        )
-    }
-
-    private suspend fun saveOrUpdateRecipe(
-        domainRecipe: Recipe,
-        ingredientsQuery: String,
-        metadata: RecipeSearchMetadata
-    ): Long {
-        val existingEntity = recipeDao.findExistingRecipe(
-            title = domainRecipe.title,
-            ingredientsQuery = ingredientsQuery
-        )
-
-        return if (existingEntity != null) {
-            Log.d("RecipeRepo", "기존 레시피 발견 (업데이트 안 함): ${domainRecipe.title} (ID: ${existingEntity.id})")
+        val savedId = if (existingEntity != null) {
+            Log.d("RecipeRepo", "기존 레시피 발견 (ID 유지): ${domainRecipe.title}")
             existingEntity.id ?: throw IllegalStateException("기존 레시피의 ID가 누락되었습니다.")
         } else {
             Log.d("RecipeRepo", "새 레시피 삽입: ${domainRecipe.title}")
-            val newRecipe = domainRecipe.copy(searchMetadata = metadata)
-            recipeDao.insertRecipe(newRecipe.toEntity())
+            recipeDao.insertRecipe(domainRecipe.toEntity())
         }
+
+        return domainRecipe.copy(id = savedId)
     }
 
     override fun getAllSavedRecipes(): Flow<List<Recipe>> {
@@ -105,18 +86,18 @@ class RecipeRepositoryImpl @Inject constructor(
 
     override suspend fun findRecipesByFilters(
         ingredientsQuery: String,
-        timeFilter: String?,
-        levelFilter: LevelType?,
         categoryFilter: RecipeCategoryType?,
         cookingToolFilter: CookingToolType?,
+        timeFilter: String?,
+        level: LevelType?,
         useOnlySelected: Boolean
     ): List<Recipe> {
         val entities = recipeDao.findRecipesByFilters(
-            ingredientsQuery =  ingredientsQuery,
+            ingredientsQuery = ingredientsQuery,
+            category = categoryFilter?.id,
+            cookingTool = cookingToolFilter?.id,
             timeFilter = sanitizeFilter(timeFilter),
-            levelFilter = levelFilter?.name,
-            categoryFilter = categoryFilter?.id,
-            cookingToolFilter = cookingToolFilter?.id,
+            level = level?.id,
             useOnlySelected = useOnlySelected
         )
         return entities.map { it.toDomainModel() }

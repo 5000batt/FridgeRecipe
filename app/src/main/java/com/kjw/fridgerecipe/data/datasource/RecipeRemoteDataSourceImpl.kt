@@ -34,7 +34,7 @@ class RecipeRemoteDataSourceImpl @Inject constructor(
     override suspend fun getAiRecipe(
         ingredients: List<Ingredient>,
         timeFilter: String?,
-        levelFilter: LevelType?,
+        level: LevelType?,
         categoryFilter: RecipeCategoryType?,
         cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean,
@@ -47,7 +47,7 @@ class RecipeRemoteDataSourceImpl @Inject constructor(
             template = template,
             ingredients = ingredients,
             timeFilter = timeFilter,
-            levelFilter = levelFilter,
+            level = level,
             categoryFilter = categoryFilter,
             cookingToolFilter = cookingToolFilter,
             useOnlySelected = useOnlySelected,

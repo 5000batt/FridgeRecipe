@@ -1,7 +1,6 @@
 package com.kjw.fridgerecipe.data.repository.mapper
 
 import com.kjw.fridgerecipe.data.local.entity.RecipeEntity
-import com.kjw.fridgerecipe.data.local.entity.RecipeSearchMetadataEntity
 import com.kjw.fridgerecipe.data.remote.RecipeDto
 import com.kjw.fridgerecipe.data.remote.RecipeIngredientDto
 import com.kjw.fridgerecipe.data.remote.RecipeStepDto
@@ -10,7 +9,6 @@ import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
-import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
 import com.kjw.fridgerecipe.domain.model.RecipeStep
 
 fun RecipeDto.toDomainModel(): Recipe {
@@ -50,17 +48,10 @@ fun Recipe.toEntity(): RecipeEntity {
         ingredients = this.ingredients,
         steps = this.steps,
         imageUri = this.imageUri,
-        searchMetadata = this.searchMetadata?.toEntity()
-    )
-}
-
-fun RecipeSearchMetadata.toEntity(): RecipeSearchMetadataEntity {
-    return RecipeSearchMetadataEntity(
-        ingredientsQuery = this.ingredientsQuery,
+        category = this.category?.id,
+        cookingTool = this.cookingTool?.id,
         timeFilter = this.timeFilter,
-        levelFilter = this.levelFilter?.id,
-        categoryFilter = this.categoryFilter?.id,
-        cookingToolFilter = this.cookingToolFilter?.id,
+        ingredientsQuery = this.ingredientsQuery,
         useOnlySelected = this.useOnlySelected
     )
 }
@@ -75,17 +66,10 @@ fun RecipeEntity.toDomainModel(): Recipe {
         ingredients = this.ingredients,
         steps = this.steps,
         imageUri = this.imageUri,
-        searchMetadata = this.searchMetadata?.toDomainModel()
-    )
-}
-
-fun RecipeSearchMetadataEntity.toDomainModel(): RecipeSearchMetadata {
-    return RecipeSearchMetadata(
-        ingredientsQuery = this.ingredientsQuery,
+        category = RecipeCategoryType.fromId(this.category),
+        cookingTool = CookingToolType.fromId(this.cookingTool),
         timeFilter = this.timeFilter,
-        levelFilter = LevelType.fromId(this.levelFilter),
-        categoryFilter = RecipeCategoryType.fromId(this.categoryFilter),
-        cookingToolFilter = CookingToolType.fromId(this.cookingToolFilter),
+        ingredientsQuery = this.ingredientsQuery,
         useOnlySelected = this.useOnlySelected
     )
 }

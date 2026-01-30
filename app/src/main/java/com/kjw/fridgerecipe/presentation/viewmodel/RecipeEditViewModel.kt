@@ -25,7 +25,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.model.CookingToolType
-import com.kjw.fridgerecipe.domain.model.RecipeSearchMetadata
 import com.kjw.fridgerecipe.domain.usecase.SaveRecipeImageUseCase
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientItemUiState
 import com.kjw.fridgerecipe.presentation.ui.model.ListErrorType
@@ -370,15 +369,6 @@ class RecipeEditViewModel @Inject constructor(
             .sorted()
             .joinToString(",")
 
-        val metadata = RecipeSearchMetadata(
-            ingredientsQuery = ingredientsQueryTag,
-            timeFilter = timeFilterTag,
-            levelFilter = actualLevel,
-            categoryFilter = actualCategory,
-            cookingToolFilter = actualCookingTool,
-            useOnlySelected = false
-        )
-
         return Recipe(
             id = recipeId,
             title = currentState.title.trim(),
@@ -393,7 +383,11 @@ class RecipeEditViewModel @Inject constructor(
                 )
             },
             steps = currentState.stepsState.map { RecipeStep(it.number, it.description) },
-            searchMetadata = metadata,
+            category = actualCategory,
+            cookingTool = actualCookingTool,
+            timeFilter = timeFilterTag,
+            ingredientsQuery = ingredientsQueryTag,
+            useOnlySelected = false,
             imageUri = currentState.imageUri
         )
     }
@@ -410,8 +404,8 @@ class RecipeEditViewModel @Inject constructor(
             servingsState = servingsExtracted,
             timeState = timeExtracted,
             level = this.level,
-            categoryState = this.searchMetadata?.categoryFilter,
-            cookingToolState = this.searchMetadata?.cookingToolFilter,
+            categoryState = this.category,
+            cookingToolState = this.cookingTool,
             ingredientsState = this.ingredients.map {
                 IngredientItemUiState(
                     name = it.name,
