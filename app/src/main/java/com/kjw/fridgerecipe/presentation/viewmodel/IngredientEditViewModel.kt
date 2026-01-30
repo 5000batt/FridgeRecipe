@@ -17,6 +17,7 @@ import com.kjw.fridgerecipe.presentation.ui.model.IngredientEditUiState
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientValidationField
 import com.kjw.fridgerecipe.presentation.util.UiText
+import com.kjw.fridgerecipe.presentation.validator.IngredientValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,8 +35,9 @@ class IngredientEditViewModel @Inject constructor(
     private val getIngredientByIdUseCase: GetIngredientByIdUseCase,
     private val insertIngredientUseCase: InsertIngredientUseCase,
     private val updateIngredientUseCase: UpdateIngredientUseCase,
-    private val delIngredientUseCase: DelIngredientUseCase
-    ) : ViewModel() {
+    private val delIngredientUseCase: DelIngredientUseCase,
+    private val validator: IngredientValidator
+) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -55,7 +57,6 @@ class IngredientEditViewModel @Inject constructor(
     private var editingIngredient: Ingredient? = null
 
     private val decimalRegex = Regex("^\\d*\\.?\\d{0,2}\$")
-
 
     fun loadIngredientById(id: Long) {
         viewModelScope.launch {
@@ -133,28 +134,23 @@ class IngredientEditViewModel @Inject constructor(
         _editUiState.update { it.copy(showDeleteDialog = false) }
     }
 
-    private suspend fun validateInputs(): Boolean {
-        val currentState = _editUiState.value
-        var isValid = true
-
-        if (currentState.name.isBlank()) {
-            _editUiState.update { it.copy(nameError = UiText.StringResource(R.string.error_validation_name_empty)) }
-            _validationEvent.emit(IngredientValidationField.NAME)
-            isValid = false
+    private fun updateErrorState(failure: IngredientValidator.ValidationResult.Failure) {
+        _editUiState.update { state ->
+            when (failure.field) {
+                IngredientValidationField.NAME -> state.copy(nameError = failure.errorMessage)
+                IngredientValidationField.AMOUNT -> state.copy(amountError = failure.errorMessage)
+            }
         }
-
-        if (currentState.amount.isBlank()) {
-            _editUiState.update { it.copy(amountError = UiText.StringResource(R.string.error_validation_amount_empty)) }
-            if (isValid) _validationEvent.emit(IngredientValidationField.AMOUNT)
-            isValid = false
-        }
-
-        return isValid
     }
 
     fun onSaveOrUpdateIngredient(isEditMode: Boolean) {
         viewModelScope.launch {
-            if (!validateInputs()) return@launch
+            val validationResult = validator.validate(_editUiState.value)
+            if (validationResult is IngredientValidator.ValidationResult.Failure) {
+                updateErrorState(validationResult)
+                _validationEvent.emit(validationResult.field)
+                return@launch
+            }
 
             val currentState = _editUiState.value
 
