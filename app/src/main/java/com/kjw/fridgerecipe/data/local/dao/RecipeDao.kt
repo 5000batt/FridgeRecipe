@@ -7,6 +7,9 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.kjw.fridgerecipe.data.local.entity.RecipeEntity
+import com.kjw.fridgerecipe.domain.model.CookingToolType
+import com.kjw.fridgerecipe.domain.model.LevelType
+import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -41,10 +44,10 @@ interface RecipeDao {
     """)
     suspend fun findRecipesByFilters(
         ingredientsQuery: String,
-        category: String?,
-        cookingTool: String?,
+        category: RecipeCategoryType?,
+        cookingTool: CookingToolType?,
         timeFilter: String?,
-        level: String?,
+        level: LevelType?,
         useOnlySelected: Boolean
     ): List<RecipeEntity>
 

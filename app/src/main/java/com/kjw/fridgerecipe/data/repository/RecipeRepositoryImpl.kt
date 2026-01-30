@@ -94,10 +94,10 @@ class RecipeRepositoryImpl @Inject constructor(
     ): List<Recipe> {
         val entities = recipeDao.findRecipesByFilters(
             ingredientsQuery = ingredientsQuery,
-            category = categoryFilter?.id,
-            cookingTool = cookingToolFilter?.id,
+            category = categoryFilter,
+            cookingTool = cookingToolFilter,
             timeFilter = sanitizeFilter(timeFilter),
-            level = level?.id,
+            level = level,
             useOnlySelected = useOnlySelected
         )
         return entities.map { it.toDomainModel() }

@@ -6,8 +6,6 @@ import com.kjw.fridgerecipe.data.remote.RecipeIngredientDto
 import com.kjw.fridgerecipe.data.remote.RecipeStepDto
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
-import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
-import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 import com.kjw.fridgerecipe.domain.model.RecipeStep
 
@@ -44,12 +42,12 @@ fun Recipe.toEntity(): RecipeEntity {
         title = this.title,
         servings = this.servings,
         time = this.time,
-        level = this.level.id,
+        level = this.level,
         ingredients = this.ingredients,
         steps = this.steps,
         imageUri = this.imageUri,
-        category = this.category?.id,
-        cookingTool = this.cookingTool?.id,
+        category = this.category,
+        cookingTool = this.cookingTool,
         timeFilter = this.timeFilter,
         ingredientsQuery = this.ingredientsQuery,
         useOnlySelected = this.useOnlySelected
@@ -62,12 +60,12 @@ fun RecipeEntity.toDomainModel(): Recipe {
         title = this.title,
         servings = this.servings,
         time = this.time,
-        level = LevelType.fromId(this.level),
+        level = this.level,
         ingredients = this.ingredients,
         steps = this.steps,
         imageUri = this.imageUri,
-        category = RecipeCategoryType.fromId(this.category),
-        cookingTool = CookingToolType.fromId(this.cookingTool),
+        category = this.category,
+        cookingTool = this.cookingTool,
         timeFilter = this.timeFilter,
         ingredientsQuery = this.ingredientsQuery,
         useOnlySelected = this.useOnlySelected
