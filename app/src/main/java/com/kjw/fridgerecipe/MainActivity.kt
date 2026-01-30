@@ -21,6 +21,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.Firebase
 import com.google.firebase.remoteconfig.remoteConfig
+import com.kjw.fridgerecipe.domain.model.ThemeMode
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.presentation.ui.screen.MainAppScreen
 import com.kjw.fridgerecipe.presentation.util.RewardedAdManager
@@ -55,12 +56,12 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            val themeMode by settingsRepository.themeMode.collectAsState(initial = 0)
+            val themeMode by settingsRepository.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
 
             val isDarkTheme = when (themeMode) {
-                1 -> false
-                2 -> true
-                else -> isSystemInDarkTheme()
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
             }
 
             FridgeRecipeTheme(darkTheme = isDarkTheme) {

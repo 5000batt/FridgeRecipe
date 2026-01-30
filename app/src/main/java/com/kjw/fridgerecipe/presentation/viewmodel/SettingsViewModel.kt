@@ -2,6 +2,7 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kjw.fridgerecipe.domain.model.ThemeMode
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.domain.usecase.DeleteAllIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.DeleteAllRecipesUseCase
@@ -35,12 +36,12 @@ class SettingsViewModel @Inject constructor(
         settingsRepository.themeMode,
         settingsRepository.isNotificationEnabled,
         settingsRepository.excludedIngredients
-    ) { state, themeModeInt, isNotiEnabled, excludedSet ->
+    ) { state, currentThemeMode, isNotiEnabled, excludedSet ->
 
-        val isDarkMode = when (themeModeInt) {
-            1 -> false
-            2 -> true
-            else -> null
+        val isDarkMode = when (currentThemeMode) {
+            ThemeMode.LIGHT -> false
+            ThemeMode.DARK -> true
+            ThemeMode.SYSTEM -> null
         }
 
         state.copy(
@@ -85,9 +86,9 @@ class SettingsViewModel @Inject constructor(
     fun setTheme(isDark: Boolean?) {
         viewModelScope.launch {
             val mode = when (isDark) {
-                false -> 1
-                true -> 2
-                null -> 0
+                false -> ThemeMode.LIGHT
+                true -> ThemeMode.DARK
+                null -> ThemeMode.SYSTEM
             }
             settingsRepository.setThemeMode(mode)
         }

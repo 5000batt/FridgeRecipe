@@ -1,11 +1,12 @@
 package com.kjw.fridgerecipe.domain.repository
 
+import com.kjw.fridgerecipe.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
 
 interface SettingsRepository {
     // 앱 테마 설정
-    val themeMode: Flow<Int>
-    suspend fun setThemeMode(mode: Int)
+    val themeMode: Flow<ThemeMode>
+    suspend fun setThemeMode(mode: ThemeMode)
 
     // 알림 여부 설정
     val isNotificationEnabled: Flow<Boolean>
