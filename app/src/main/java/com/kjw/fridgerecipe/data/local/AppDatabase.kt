@@ -1,8 +1,12 @@
 package com.kjw.fridgerecipe.data.local
 
+import androidx.room.AutoMigration
 import androidx.room.Database
+import androidx.room.DeleteColumn
+import androidx.room.RenameColumn
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.AutoMigrationSpec
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.data.local.converter.LocalDateConverter
@@ -23,11 +27,26 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
-@Database(entities = [IngredientEntity::class, RecipeEntity::class], version = 12, exportSchema = true)
+@Database(
+    entities = [IngredientEntity::class, RecipeEntity::class],
+    version = 13,
+    autoMigrations = [
+        AutoMigration(from = 12, to = 13, spec = AppDatabase.RecipeMigration::class)
+    ],
+    exportSchema = true
+)
 @TypeConverters(LocalDateConverter::class, RecipeTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun ingredientDao(): IngredientDao
     abstract fun recipeDao(): RecipeDao
+
+    @RenameColumn(tableName = "recipes", fromColumnName = "search_categoryFilter", toColumnName = "category")
+    @RenameColumn(tableName = "recipes", fromColumnName = "search_cookingToolFilter", toColumnName = "cookingTool")
+    @RenameColumn(tableName = "recipes", fromColumnName = "search_timeFilter", toColumnName = "timeFilter")
+    @RenameColumn(tableName = "recipes", fromColumnName = "search_ingredientsQuery", toColumnName = "ingredientsQuery")
+    @RenameColumn(tableName = "recipes", fromColumnName = "search_useOnlySelected", toColumnName = "useOnlySelected")
+    @DeleteColumn(tableName = "recipes", columnName = "search_levelFilter")
+    class RecipeMigration : AutoMigrationSpec
 
     class DatabaseCallback @Inject constructor(
         @ApplicationScope private val applicationScope: CoroutineScope,
