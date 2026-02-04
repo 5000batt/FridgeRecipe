@@ -36,7 +36,7 @@ android {
         debug {
             // AdMob 테스트용
             resValue("string", "admob_app_id", "ca-app-pub-3940256099942544~3347511713")
-            buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/9214589741\"")
             buildConfigField("String", "ADMOB_REWARD_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
         }
 

@@ -20,15 +20,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.ui.components.common.AdMobBanner
+import com.kjw.fridgerecipe.presentation.viewmodel.HomeViewModel
 
 @Composable
-fun RecipeLoadingScreen() {
+fun RecipeLoadingScreen(
+    viewModel: HomeViewModel = hiltViewModel()
+) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading_recipe))
 
     Box(
@@ -73,7 +77,10 @@ fun RecipeLoadingScreen() {
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            AdMobBanner()
+            // 광고 로드 완료 시 ViewModel에 알림
+            AdMobBanner(
+                onAdLoaded = { viewModel.onAdLoaded() }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
         }

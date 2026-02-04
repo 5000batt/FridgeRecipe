@@ -16,6 +16,7 @@ data class HomeUiState(
     // 레시피 추천 관련
     val recommendedRecipe: Recipe? = null,
     val isRecipeLoading: Boolean = false,
+    val isAdLoaded: Boolean = false, // 광고 로드 상태 추가
     val selectedIngredientIds: Set<Long> = emptySet(),
     val remainingTickets: Int = 3,
 

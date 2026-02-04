@@ -167,15 +167,26 @@ class HomeViewModel @Inject constructor(
         fetchRecommendedRecipe(selectedIngredients)
     }
 
+    fun onAdLoaded() {
+        _homeUiState.update { it.copy(isAdLoaded = true) }
+    }
+
+    fun testAddTicket() {
+        viewModelScope.launch {
+            ticketRepository.addTicket(3)
+        }
+    }
+
     private fun fetchRecommendedRecipe(selectedIngredients: List<Ingredient>) {
         _homeUiState.update { it.copy(showConflictDialog = false, conflictIngredients = emptyList()) }
 
         viewModelScope.launch {
             var isTicketUsed = false
             val startTime = System.currentTimeMillis()
-            val minLoadingTime = 3000L
+            val minDataLoadingTime = 3000L // 최소 데이터 로딩 시간
+            val minAdDisplayTime = 2500L  // 광고 로드 후 최소 노출 시간
 
-            _homeUiState.update { it.copy(isRecipeLoading = true) }
+            _homeUiState.update { it.copy(isRecipeLoading = true, isAdLoaded = false) }
 
             try {
                 val ingredientsQuery = selectedIngredients
@@ -194,6 +205,7 @@ class HomeViewModel @Inject constructor(
 
                 val currentFilters = _homeUiState.value.filterState
 
+                // 레시피 데이터 호출
                 val result = getRecommendedRecipeUseCase(
                     ingredients = selectedIngredients,
                     seenIds = _seenRecipeIds.value,
@@ -213,8 +225,22 @@ class HomeViewModel @Inject constructor(
                     }
                 )
 
-                val elapsedTime = System.currentTimeMillis() - startTime
-                if (elapsedTime < minLoadingTime) delay(minLoadingTime - elapsedTime)
+                // 최소 레시피 데이터 로딩 시간 대기
+                val dataElapsedTime = System.currentTimeMillis() - startTime
+                if (dataElapsedTime < minDataLoadingTime) delay(minDataLoadingTime - dataElapsedTime)
+
+                // 광고가 로드될 때까지 최대 3초 더 대기
+                var adWaitTime = 0L
+                val maxAdWaitTime = 3000L
+                while (!_homeUiState.value.isAdLoaded && adWaitTime < maxAdWaitTime) {
+                    delay(200)
+                    adWaitTime += 200
+                }
+
+                // 광고 로드 성공했다면 최소 노출 시간(2.5초) 보장
+                if (_homeUiState.value.isAdLoaded) {
+                    delay(minAdDisplayTime)
+                }
 
                 when (result) {
                     is DataResult.Success -> {
@@ -246,7 +272,7 @@ class HomeViewModel @Inject constructor(
                 }
 
             } catch (e: TicketException.Exhausted) {
-                // 티켓 소진 시 조용히 중단 (상태 처리는 onAiCall에서 완료)
+                // 티켓 소진 시 조용히 중단
             } catch (e: Exception) {
                 if (isTicketUsed) ticketRepository.addTicket(1)
                 _homeUiState.update {

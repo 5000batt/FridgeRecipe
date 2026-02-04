@@ -144,6 +144,12 @@ fun HomeScreen(
                     onSettingClick = onNavigateToSettings,
                     actions = {
                         if (BuildConfig.DEBUG) {
+                            IconButton(onClick = {
+                                homeViewModel.testAddTicket()
+                                onShowSnackbar("이용권 충전 완료", SnackbarType.SUCCESS)
+                            }) {
+                                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.desc_add_ticket_test))
+                            }
                             val testMsg = stringResource(R.string.msg_notification_test)
                             IconButton(onClick = {
                                 val testRequest = OneTimeWorkRequestBuilder<ExpirationCheckWorker>().build()

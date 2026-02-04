@@ -40,6 +40,7 @@
     <string name="desc_back">뒤로 가기</string>
     <string name="desc_settings">설정</string>
     <string name="desc_notification_test">알림 테스트</string>
+    <string name="desc_add_ticket_test">이용권 충전</string>
 
     <!--  Home  -->
     <string name="home_title_fridge">🥕 냉장고 재료</string>
