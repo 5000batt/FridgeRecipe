@@ -26,6 +26,7 @@ navigation = "2.8.5"
 serializationJson = "1.7.3"
 googleServices = "4.4.4"
 firebaseBom = "34.8.0"
+komoran = "3.3.9"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -49,6 +50,7 @@ room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 # Hilt
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHiltNavigationCompose" }
 # Splash
 androidx-core-splash = { group = "androidx.core", name = "core-splashscreen", version.ref = "splash"}
@@ -81,6 +83,8 @@ firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics
 firebase-ai = { group = "com.google.firebase", name = "firebase-ai" }
 firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "firebase-appcheck-playintegrity" }
 firebase-appcheck-debug = { group = "com.google.firebase", name = "firebase-appcheck-debug" }
+# Komoran
+komoran = { group = "com.github.shin285", name = "KOMORAN", version.ref = "komoran" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

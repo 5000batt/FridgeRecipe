@@ -21,12 +21,15 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.Firebase
 import com.google.firebase.remoteconfig.remoteConfig
+import com.kjw.fridgerecipe.data.util.UserDictionaryManager
+import com.kjw.fridgerecipe.data.util.IngredientAnalyzer
 import com.kjw.fridgerecipe.domain.model.ThemeMode
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.presentation.ui.screen.MainAppScreen
 import com.kjw.fridgerecipe.presentation.util.RewardedAdManager
 import com.kjw.fridgerecipe.ui.theme.FridgeRecipeTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -37,20 +40,35 @@ class MainActivity : ComponentActivity() {
     lateinit var settingsRepository: SettingsRepository
     @Inject
     lateinit var rewardedAdManager: RewardedAdManager
+    @Inject
+    lateinit var userDictionaryManager: UserDictionaryManager
+    @Inject
+    lateinit var ingredientAnalyzer: IngredientAnalyzer // 간접 Warm-up용
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         installSplashScreen()
 
+        // Remote Config 업데이트
         Firebase.remoteConfig.fetchAndActivate()
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        userDictionaryManager.updateDictionary()
+                    }
                     Log.d("MainActivity", "Remote Config updated!")
                 } else {
                     Log.d("MainActivity", "Remote Config update failed")
                 }
             }
+
+        // 핵심: 코모란 Warm-up을 백그라운드 스레드에서만 수행
+        // 이렇게 하면 MainActivity의 onCreate나 첫 로딩 속도에 영향을 주지 않습니다.
+        lifecycleScope.launch(Dispatchers.Default) {
+            ingredientAnalyzer.getIngredientNouns("로딩준비")
+            Log.d("MainActivity", "Komoran warmed up in background!")
+        }
 
         rewardedAdManager.loadAd()
 
@@ -65,10 +83,8 @@ class MainActivity : ComponentActivity() {
             }
 
             FridgeRecipeTheme(darkTheme = isDarkTheme) {
-
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     val context = this
-
                     val permissionLauncher = rememberLauncherForActivityResult(
                         contract = ActivityResultContracts.RequestPermission(),
                         onResult = { isGranted: Boolean ->
