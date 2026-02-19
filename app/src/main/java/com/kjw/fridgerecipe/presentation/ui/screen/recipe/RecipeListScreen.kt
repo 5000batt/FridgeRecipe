@@ -51,10 +51,11 @@ fun RecipeListScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val sortType by viewModel.sortType.collectAsState()
-    val listState = androidx.compose.runtime.key(sortType) {
-        rememberLazyListState()
-    }
+    val listState = rememberLazyListState()
 
+    LaunchedEffect(sortType, searchQuery, recipeList) {
+        listState.scrollToItem(0)
+    }
 
     LoadingContent(isLoading = isLoading) {
         Scaffold(

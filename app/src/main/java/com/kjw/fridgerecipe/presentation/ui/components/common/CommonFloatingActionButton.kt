@@ -21,7 +21,7 @@ fun CommonFloatingActionButton(
     icon: ImageVector,
     onClick: () -> Unit
 ) {
-    val isExpanded by remember {
+    val isExpanded by remember(state) {
         derivedStateOf {
             !state.canScrollBackward || !state.canScrollForward
         }
