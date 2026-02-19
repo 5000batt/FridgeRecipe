@@ -177,6 +177,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun testUseTicket() {
+        viewModelScope.launch {
+            ticketRepository.useTicket()
+        }
+    }
+
     private fun fetchRecommendedRecipe(selectedIngredients: List<Ingredient>) {
         _homeUiState.update { it.copy(showConflictDialog = false, conflictIngredients = emptyList()) }
 

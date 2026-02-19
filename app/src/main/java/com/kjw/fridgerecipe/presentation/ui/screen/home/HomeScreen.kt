@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -144,6 +145,12 @@ fun HomeScreen(
                     onSettingClick = onNavigateToSettings,
                     actions = {
                         if (BuildConfig.DEBUG) {
+                            IconButton(onClick = {
+                                homeViewModel.testUseTicket()
+                                onShowSnackbar("이용권 제거", SnackbarType.SUCCESS)
+                            }) {
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.desc_add_ticket_test))
+                            }
                             IconButton(onClick = {
                                 homeViewModel.testAddTicket()
                                 onShowSnackbar("이용권 충전 완료", SnackbarType.SUCCESS)
