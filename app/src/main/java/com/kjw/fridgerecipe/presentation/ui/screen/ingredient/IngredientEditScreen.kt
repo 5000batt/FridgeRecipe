@@ -38,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kjw.fridgerecipe.R
+import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.presentation.navigation.IngredientEditRoute
 import com.kjw.fridgerecipe.presentation.ui.components.common.BottomActionBar
@@ -61,6 +62,7 @@ fun IngredientEditScreen(
     onNavigateBack: () -> Unit,
     viewModel: IngredientEditViewModel = hiltViewModel(),
     ingredientId: Long,
+    categoryId: String?,
     onShowSnackbar: (String, SnackbarType) -> Unit
 ) {
     val isEditMode = ingredientId != IngredientEditRoute.DEFAULT_ID
@@ -88,6 +90,16 @@ fun IngredientEditScreen(
             viewModel.loadIngredientById(ingredientId)
         } else {
             viewModel.clearState()
+
+            categoryId?.let { id ->
+                val category = IngredientCategoryType.fromId(id)
+                viewModel.onCategoryChanged(category)
+                viewModel.onIconCategorySelected(category)
+
+                val defaultIcon = IngredientIcon.entries.firstOrNull { it.category == category }
+                    ?: IngredientIcon.DEFAULT
+                viewModel.onIconSelected(defaultIcon)
+            }
         }
     }
 
@@ -196,10 +208,16 @@ fun IngredientEditScreen(
                         selectedIcon = uiState.selectedIcon,
                         currentIcons = currentIcons,
                         iconListState = iconListState,
-                        onIconCategorySelected = { viewModel.onIconCategorySelected(it) },
+                        onIconCategorySelected = { category ->
+                            viewModel.onIconCategorySelected(category)
+                            viewModel.onCategoryChanged(category)
+
+                            val defaultIcon = IngredientIcon.entries.firstOrNull { it.category == category }
+                                ?: IngredientIcon.DEFAULT
+                            viewModel.onIconSelected(defaultIcon)
+                        },
                         onIconSelected = { icon ->
                             viewModel.onIconSelected(icon)
-                            viewModel.onCategoryChanged(icon.category)
                         }
                     )
 

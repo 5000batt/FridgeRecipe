@@ -88,7 +88,7 @@ import com.kjw.fridgerecipe.worker.ExpirationCheckWorker
 fun HomeScreen(
     homeViewModel: HomeViewModel = hiltViewModel(),
     onNavigateToRecipeDetail: (Long) -> Unit,
-    onNavigateToIngredientEdit: () -> Unit,
+    onNavigateToIngredientEdit: (IngredientCategoryType?) -> Unit,
     onNavigateToSettings: () -> Unit,
     onShowAd: (onReward: () -> Unit) -> Unit,
     onShowSnackbar: (String, SnackbarType) -> Unit,
@@ -254,7 +254,7 @@ fun HomeScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 24.dp)
-                                    .clickable { onNavigateToIngredientEdit() }
+                                    .clickable { onNavigateToIngredientEdit(uiState.selectedCategory) }
                             ) {
                                 Column(
                                     modifier = Modifier

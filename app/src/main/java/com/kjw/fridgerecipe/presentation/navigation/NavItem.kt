@@ -25,7 +25,10 @@ data object RecipeListRoute
 
 // 상세 화면
 @Serializable
-data class IngredientEditRoute(val ingredientId: Long = -1L) {
+data class IngredientEditRoute(
+    val ingredientId: Long = -1L,
+    val categoryId: String? = null
+) {
     companion object { const val DEFAULT_ID = -1L }
 }
 

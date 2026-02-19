@@ -38,7 +38,7 @@ fun AppNavHost(
         composable<HomeRoute> {
             HomeScreen(
                 onNavigateToRecipeDetail = { id -> navController.navigate(RecipeDetailRoute(id)) },
-                onNavigateToIngredientEdit = { navController.navigate(IngredientEditRoute()) },
+                onNavigateToIngredientEdit = { category -> navController.navigate(IngredientEditRoute(categoryId = category?.id)) },
                 onNavigateToSettings = { navController.navigate(SettingsRoute) },
                 onShowAd = onShowAd,
                 onShowSnackbar = onShowSnackbar,
@@ -70,6 +70,7 @@ fun AppNavHost(
             IngredientEditScreen(
                 onNavigateBack = { navController.popBackStack() },
                 ingredientId = route.ingredientId,
+                categoryId = route.categoryId,
                 onShowSnackbar = onShowSnackbar
             )
         }

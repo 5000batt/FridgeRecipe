@@ -20,7 +20,7 @@ data class IngredientEditUiState(
     val showDeleteDialog: Boolean = false,
     val selectedIngredientName: String? = null,
     val selectedIcon: IngredientIcon = IngredientIcon.DEFAULT,
-    val selectedIconCategory: IngredientCategoryType? = null,
+    val selectedIconCategory: IngredientCategoryType? = IngredientCategoryType.ETC,
 )
 
 enum class IngredientValidationField {
