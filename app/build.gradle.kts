@@ -29,8 +29,6 @@ android {
         versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        buildConfigField("String", "API_KEY", "\"${properties.getProperty("apiKey") ?: ""}\"")
     }
 
     buildTypes {
