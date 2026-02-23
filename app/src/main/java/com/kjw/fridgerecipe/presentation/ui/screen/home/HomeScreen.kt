@@ -1,9 +1,15 @@
 package com.kjw.fridgerecipe.presentation.ui.screen.home
 
+import android.Manifest
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -57,6 +63,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -96,6 +104,28 @@ fun HomeScreen(
 ) {
     val uiState by homeViewModel.homeUiState.collectAsState()
     val context = LocalContext.current
+    val rejectionMsg = stringResource(R.string.settings_notification_rejection_msg)
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            homeViewModel.setNotificationEnabled(isGranted)
+
+            if (!isGranted) {
+                val activity = context as? Activity
+                val shouldShowRationale = activity?.let {
+                    ActivityCompat.shouldShowRequestPermissionRationale(it, Manifest.permission.POST_NOTIFICATIONS)
+                } ?: false
+
+                if (shouldShowRationale) {
+                    // 알림 최초 거부 시 메세지
+                    onShowSnackbar(rejectionMsg, SnackbarType.INFO)
+                } else {
+                    // 알림 권한 2회 거부 시 메세지 띄우지 않도록
+                }
+            }
+        }
+    )
 
     val levelFilterOptions = RecipeConstants.LEVEL_FILTER_OPTIONS
     val categoryFilterOptions = RecipeConstants.CATEGORY_FILTER_OPTIONS
@@ -546,6 +576,20 @@ fun HomeScreen(
             confirmColor = MaterialTheme.colorScheme.primary,
             onConfirm = { onShowAd { homeViewModel.onAdWatched() } },
             onDismiss = { homeViewModel.dismissAdDialog() }
+        )
+    }
+
+    if (uiState.isFirstLaunch) {
+        OnboardingOverlay(
+            onFinish = {
+                homeViewModel.completeOnboarding()
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                }
+            }
         )
     }
 }

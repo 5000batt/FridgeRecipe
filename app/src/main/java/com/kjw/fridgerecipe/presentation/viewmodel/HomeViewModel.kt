@@ -116,6 +116,26 @@ class HomeViewModel @Inject constructor(
                 _homeUiState.update { it.copy(isIngredientCheckSkip = isSkip) }
             }
         }
+
+        viewModelScope.launch {
+            settingsRepository.isFirstLaunch.collect { isFirst ->
+                _homeUiState.update { it.copy(isFirstLaunch = isFirst) }
+            }
+        }
+    }
+
+    // 가이드 완료 시 호출
+    fun completeOnboarding() {
+        viewModelScope.launch {
+            settingsRepository.setFirstLaunchComplete()
+        }
+    }
+
+    // 알림 권한 여부
+    fun setNotificationEnabled(isEnabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setNotificationEnabled(isEnabled)
+        }
     }
 
     fun toggleIngredientSelection(id: Long) {

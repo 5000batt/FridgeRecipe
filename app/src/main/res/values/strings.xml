@@ -180,6 +180,7 @@
     <string name="settings_desc_push_notification">소비기한 임박 알림</string>
     <string name="settings_dialog_permission_title">알림 권한 필요</string>
     <string name="settings_dialog_permission_msg">소비기한 알림을 받으려면 안드로이드 설정에서 알림 권한을 허용해야 합니다.\n설정 화면으로 이동하시겠습니까?</string>
+    <string name="settings_notification_rejection_msg">알림을 거부하여 소비기한 알림을 받을 수 없습니다.</string>
     <string name="settings_btn_go_to_settings">설정으로 이동</string>
 
     <string name="settings_section_general">일반</string>
@@ -212,6 +213,19 @@
     <string name="settings_email_subject">[냉파고] 문의 및 의견</string>
     <string name="settings_email_body_format">앱 버전: %1$s\n기기 모델: %2$s\nOS 버전: %3$d\n\n문의 내용을 작성해 주세요:\n</string>
     <string name="settings_error_no_email">이메일을 보낼 수 있는 앱이 없습니다.</string>
+
+    <!--  OnBoardingOverlay  -->
+    <string name="on_boarding_overlay_skip">건너뛰기</string>
+    <string name="on_boarding_overlay_start">시작하기</string>
+    <string name="on_boarding_overlay_guide_number_format">가이드 화면 %1$d</string>
+    <string name="on_boarding_overlay_next">다음</string>
+
+    <string name="on_boarding_overlay_step1_title">내 냉장고 채우기</string>
+    <string name="on_boarding_overlay_step1_content">홈 화면이나 재료 탭에서 식재료를 추가하고,\n요리에 사용할 재료를 터치해 선택해 주세요.</string>
+    <string name="on_boarding_overlay_step2_title">AI 맞춤 레시피 추천</string>
+    <string name="on_boarding_overlay_step2_content">원하는 요리 조건을 고르고 하단 버튼을 눌러보세요!\n(매일 무료 3회 제공, 소진 시 광고 시청 후 충전)</string>
+    <string name="on_boarding_overlay_step3_title">나만의 요리 완성</string>
+    <string name="on_boarding_overlay_step3_content">AI가 만들어준 상세한 레시피를 따라 하며\n냉장고 파먹기를 완벽하게 성공해 보세요!</string>
 
     <!--  IngredientViewModel  -->
     <string name="error_validation_name_empty">재료 이름을 입력해주세요.</string>

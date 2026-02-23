@@ -26,6 +26,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val NOTIFICATION_ENABLED = booleanPreferencesKey("notification_enabled")
         val EXCLUDED_INGREDIENTS = stringSetPreferencesKey("excluded_ingredients")
         val INGREDIENT_CHECK_SKIP = booleanPreferencesKey("ingredient_check_skip")
+        val IS_FIRST_LAUNCH = booleanPreferencesKey("is_first_launch")
     }
 
     override val themeMode: Flow<ThemeMode> = dataStore.data
@@ -99,6 +100,24 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setIngredientCheckSkip(isSkip: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.INGREDIENT_CHECK_SKIP] = isSkip
+        }
+    }
+
+    override val isFirstLaunch: Flow<Boolean> = dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[PreferencesKeys.IS_FIRST_LAUNCH] ?: true
+        }
+
+    override suspend fun setFirstLaunchComplete() {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_FIRST_LAUNCH] = false
         }
     }
 }

@@ -1,0 +1,37 @@
+name: FridgeRecipe CI
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Create local.properties
+        run: |
+          echo "admob_app_id=${{ secrets.ADMOB_APP_ID }}" >> local.properties
+          echo "admob_banner_id=${{ secrets.ADMOB_BANNER_ID }}" >> local.properties
+          echo "admob_reward_id=${{ secrets.ADMOB_REWARD_ID }}" >> local.properties
+
+      - name: Create google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug

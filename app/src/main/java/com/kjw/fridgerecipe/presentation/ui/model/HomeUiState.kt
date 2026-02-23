@@ -32,5 +32,8 @@ data class HomeUiState(
 
     // 재료 확인 관련
     val showIngredientCheckDialog: Boolean = false,
-    val isIngredientCheckSkip: Boolean = false
+    val isIngredientCheckSkip: Boolean = false,
+
+    // 최초 실행 여부
+    val isFirstLaunch: Boolean = false
 )
