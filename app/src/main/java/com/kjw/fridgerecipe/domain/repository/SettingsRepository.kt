@@ -19,4 +19,8 @@ interface SettingsRepository {
     // 재료 확인 건너뛰기 설정
     val isIngredientCheckSkip: Flow<Boolean>
     suspend fun setIngredientCheckSkip(isSkip: Boolean)
+
+    // 최초 실행 여부 설정
+    val isFirstLaunch: Flow<Boolean>
+    suspend fun setFirstLaunchComplete()
 }
