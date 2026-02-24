@@ -27,17 +27,25 @@ data object RecipeListRoute
 @Serializable
 data class IngredientEditRoute(
     val ingredientId: Long = -1L,
-    val categoryId: String? = null
+    val categoryId: String? = null,
 ) {
-    companion object { const val DEFAULT_ID = -1L }
+    companion object {
+        const val DEFAULT_ID = -1L
+    }
 }
 
 @Serializable
-data class RecipeDetailRoute(val recipeId: Long)
+data class RecipeDetailRoute(
+    val recipeId: Long,
+)
 
 @Serializable
-data class RecipeEditRoute(val recipeId: Long = -1L) {
-    companion object { const val DEFAULT_ID = -1L }
+data class RecipeEditRoute(
+    val recipeId: Long = -1L,
+) {
+    companion object {
+        const val DEFAULT_ID = -1L
+    }
 }
 
 @Serializable
@@ -48,32 +56,31 @@ enum class MainTab(
     val routeClass: KClass<*>,
     @StringRes val titleResId: Int,
     val icon: ImageVector,
-    @StringRes val labelResId: Int
+    @StringRes val labelResId: Int,
 ) {
     HOME(
         route = HomeRoute,
         routeClass = HomeRoute::class,
         titleResId = R.string.title_home,
         icon = Icons.Default.Home,
-        labelResId = R.string.label_tab_home
+        labelResId = R.string.label_tab_home,
     ),
     INGREDIENTS(
         route = IngredientListRoute,
         routeClass = IngredientListRoute::class,
         titleResId = R.string.title_ingredient_list,
         icon = Icons.Default.Kitchen,
-        labelResId = R.string.label_tab_ingredients
+        labelResId = R.string.label_tab_ingredients,
     ),
     RECIPES(
         route = RecipeListRoute,
         routeClass = RecipeListRoute::class,
         titleResId = R.string.title_recipe_list,
         icon = Icons.Default.RestaurantMenu,
-        labelResId = R.string.label_tab_recipes
-    );
+        labelResId = R.string.label_tab_recipes,
+    ),
+    ;
 
     @SuppressLint("RestrictedApi")
-    fun isSelected(currentDestination: NavDestination?): Boolean {
-        return currentDestination?.hasRoute(this.routeClass) == true
-    }
+    fun isSelected(currentDestination: NavDestination?): Boolean = currentDestination?.hasRoute(this.routeClass) == true
 }

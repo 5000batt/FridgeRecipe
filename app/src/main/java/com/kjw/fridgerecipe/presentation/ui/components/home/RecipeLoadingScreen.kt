@@ -30,27 +30,26 @@ import com.kjw.fridgerecipe.presentation.ui.components.common.AdMobBanner
 import com.kjw.fridgerecipe.presentation.viewmodel.HomeViewModel
 
 @Composable
-fun RecipeLoadingScreen(
-    viewModel: HomeViewModel = hiltViewModel()
-) {
+fun RecipeLoadingScreen(viewModel: HomeViewModel = hiltViewModel()) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading_recipe))
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.95f))
-            .clickable(enabled = false) {}
-            .padding(24.dp),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.95f))
+                .clickable(enabled = false) {}
+                .padding(24.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             LottieAnimation(
                 composition = composition,
                 iterations = LottieConstants.IterateForever,
-                modifier = Modifier.size(300.dp)
+                modifier = Modifier.size(300.dp),
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -59,13 +58,13 @@ fun RecipeLoadingScreen(
                 text = stringResource(R.string.loading_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
             )
 
             Text(
                 text = stringResource(R.string.loading_desc),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Spacer(modifier = Modifier.height(48.dp))
@@ -74,12 +73,12 @@ fun RecipeLoadingScreen(
                 text = stringResource(R.string.ad_label),
                 style = MaterialTheme.typography.labelSmall,
                 color = Color.Gray,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 8.dp),
             )
 
             // 광고 로드 완료 시 ViewModel에 알림
             AdMobBanner(
-                onAdLoaded = { viewModel.onAdLoaded() }
+                onAdLoaded = { viewModel.onAdLoaded() },
             )
 
             Spacer(modifier = Modifier.height(16.dp))

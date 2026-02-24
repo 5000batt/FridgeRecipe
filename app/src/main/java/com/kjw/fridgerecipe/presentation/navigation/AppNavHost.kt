@@ -8,9 +8,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.kjw.fridgerecipe.presentation.ui.screen.home.HomeScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.ingredient.IngredientEditScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.ingredient.IngredientListScreen
-import com.kjw.fridgerecipe.presentation.ui.screen.home.HomeScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.recipe.RecipeDetailScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.recipe.RecipeEditScreen
 import com.kjw.fridgerecipe.presentation.ui.screen.recipe.RecipeListScreen
@@ -23,7 +23,7 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
     onShowSnackbar: (String, SnackbarType) -> Unit,
     onShowAd: (onReward: () -> Unit) -> Unit,
-    onNavigateToMainTab: (MainTab) -> Unit
+    onNavigateToMainTab: (MainTab) -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -32,7 +32,7 @@ fun AppNavHost(
         enterTransition = { EnterTransition.None },
         exitTransition = { ExitTransition.None },
         popEnterTransition = { EnterTransition.None },
-        popExitTransition = { ExitTransition.None }
+        popExitTransition = { ExitTransition.None },
     ) {
         // --- Main Tabs ---
         composable<HomeRoute> {
@@ -42,7 +42,7 @@ fun AppNavHost(
                 onNavigateToSettings = { navController.navigate(SettingsRoute) },
                 onShowAd = onShowAd,
                 onShowSnackbar = onShowSnackbar,
-                onNavigateToMainTab = onNavigateToMainTab
+                onNavigateToMainTab = onNavigateToMainTab,
             )
         }
 
@@ -50,7 +50,7 @@ fun AppNavHost(
             IngredientListScreen(
                 onNavigateToIngredientEdit = { id -> navController.navigate(IngredientEditRoute(id)) },
                 onNavigateToSettings = { navController.navigate(SettingsRoute) },
-                onNavigateToMainTab = onNavigateToMainTab
+                onNavigateToMainTab = onNavigateToMainTab,
             )
         }
 
@@ -59,7 +59,7 @@ fun AppNavHost(
                 onNavigateToRecipeDetail = { id -> navController.navigate(RecipeDetailRoute(id)) },
                 onNavigateToRecipeEdit = { navController.navigate(RecipeEditRoute()) },
                 onNavigateToSettings = { navController.navigate(SettingsRoute) },
-                onNavigateToMainTab = onNavigateToMainTab
+                onNavigateToMainTab = onNavigateToMainTab,
             )
         }
 
@@ -71,7 +71,7 @@ fun AppNavHost(
                 onNavigateBack = { navController.popBackStack() },
                 ingredientId = route.ingredientId,
                 categoryId = route.categoryId,
-                onShowSnackbar = onShowSnackbar
+                onShowSnackbar = onShowSnackbar,
             )
         }
 
@@ -81,7 +81,7 @@ fun AppNavHost(
             RecipeDetailScreen(
                 onNavigateToRecipeEdit = { id -> navController.navigate(RecipeEditRoute(id)) },
                 onNavigateBack = { navController.popBackStack() },
-                recipeId = route.recipeId
+                recipeId = route.recipeId,
             )
         }
 
@@ -94,14 +94,14 @@ fun AppNavHost(
                     navController.popBackStack<RecipeListRoute>(inclusive = false)
                 },
                 recipeId = route.recipeId,
-                onShowSnackbar = onShowSnackbar
+                onShowSnackbar = onShowSnackbar,
             )
         }
 
         composable<SettingsRoute> {
             SettingsScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onShowSnackbar = onShowSnackbar
+                onShowSnackbar = onShowSnackbar,
             )
         }
     }

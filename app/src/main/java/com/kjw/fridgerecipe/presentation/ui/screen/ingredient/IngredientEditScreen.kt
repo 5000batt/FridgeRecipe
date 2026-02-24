@@ -43,9 +43,9 @@ import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.presentation.navigation.IngredientEditRoute
 import com.kjw.fridgerecipe.presentation.ui.components.common.BottomActionBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonTopBar
-import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.common.ConfirmDialog
 import com.kjw.fridgerecipe.presentation.ui.components.common.FridgeBottomButton
+import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IconSelectionSection
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientDetailFields
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientInputFields
@@ -63,7 +63,7 @@ fun IngredientEditScreen(
     viewModel: IngredientEditViewModel = hiltViewModel(),
     ingredientId: Long,
     categoryId: String?,
-    onShowSnackbar: (String, SnackbarType) -> Unit
+    onShowSnackbar: (String, SnackbarType) -> Unit,
 ) {
     val isEditMode = ingredientId != IngredientEditRoute.DEFAULT_ID
     val uiState by viewModel.editUiState.collectAsState()
@@ -72,13 +72,14 @@ fun IngredientEditScreen(
 
     val iconListState = rememberLazyListState()
 
-    val currentIcons = remember(uiState.selectedIconCategory) {
-        if (uiState.selectedIconCategory == null) {
-            IngredientIcon.entries
-        } else {
-            IngredientIcon.entries.filter { it.category == uiState.selectedIconCategory }
+    val currentIcons =
+        remember(uiState.selectedIconCategory) {
+            if (uiState.selectedIconCategory == null) {
+                IngredientIcon.entries
+            } else {
+                IngredientIcon.entries.filter { it.category == uiState.selectedIconCategory }
+            }
         }
-    }
 
     var hasScrolledToInitialSelection by remember { mutableStateOf(false) }
 
@@ -96,8 +97,9 @@ fun IngredientEditScreen(
                 viewModel.onCategoryChanged(category)
                 viewModel.onIconCategorySelected(category)
 
-                val defaultIcon = IngredientIcon.entries.firstOrNull { it.category == category }
-                    ?: IngredientIcon.DEFAULT
+                val defaultIcon =
+                    IngredientIcon.entries.firstOrNull { it.category == category }
+                        ?: IngredientIcon.DEFAULT
                 viewModel.onIconSelected(defaultIcon)
             }
         }
@@ -147,12 +149,13 @@ fun IngredientEditScreen(
         Scaffold(
             topBar = {
                 CommonTopBar(
-                    title = if (isEditMode) {
-                        stringResource(R.string.title_ingredient_edit)
-                    } else {
-                        stringResource(R.string.title_ingredient_add)
-                    },
-                    onNavigateBack = onNavigateBack
+                    title =
+                        if (isEditMode) {
+                            stringResource(R.string.title_ingredient_edit)
+                        } else {
+                            stringResource(R.string.title_ingredient_add)
+                        },
+                    onNavigateBack = onNavigateBack,
                 )
             },
             bottomBar = {
@@ -160,28 +163,33 @@ fun IngredientEditScreen(
                     if (isEditMode) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             FridgeBottomButton(
                                 text = stringResource(R.string.ingredient_edit_btn_delete),
                                 onClick = { viewModel.onDeleteDialogShow() },
-                                icon = { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.ingredient_edit_btn_delete)) },
+                                icon = {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = stringResource(R.string.ingredient_edit_btn_delete),
+                                    )
+                                },
                                 containerColor = MaterialTheme.colorScheme.errorContainer,
                                 contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
                             )
 
                             FridgeBottomButton(
                                 text = stringResource(R.string.ingredient_edit_btn_complete),
                                 onClick = { viewModel.onSaveOrUpdateIngredient(isEditMode = true) },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
                             )
                         }
                     } else {
                         FridgeBottomButton(
                             text = stringResource(R.string.ingredient_edit_btn_save),
                             onClick = { viewModel.onSaveOrUpdateIngredient(isEditMode = false) },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }
@@ -189,17 +197,19 @@ fun IngredientEditScreen(
             containerColor = MaterialTheme.colorScheme.background,
         ) { innerPadding ->
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
             ) {
                 Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Spacer(modifier = Modifier.height(5.dp))
 
@@ -212,13 +222,14 @@ fun IngredientEditScreen(
                             viewModel.onIconCategorySelected(category)
                             viewModel.onCategoryChanged(category)
 
-                            val defaultIcon = IngredientIcon.entries.firstOrNull { it.category == category }
-                                ?: IngredientIcon.DEFAULT
+                            val defaultIcon =
+                                IngredientIcon.entries.firstOrNull { it.category == category }
+                                    ?: IngredientIcon.DEFAULT
                             viewModel.onIconSelected(defaultIcon)
                         },
                         onIconSelected = { icon ->
                             viewModel.onIconSelected(icon)
-                        }
+                        },
                     )
 
                     IngredientInputFields(
@@ -231,7 +242,7 @@ fun IngredientEditScreen(
                         amountFocusRequester = amountFocusRequester,
                         onNameChanged = { viewModel.onNameChanged(it) },
                         onAmountChanged = { viewModel.onAmountChanged(it) },
-                        onUnitChanged = { viewModel.onUnitChanged(it) }
+                        onUnitChanged = { viewModel.onUnitChanged(it) },
                     )
 
                     IngredientDetailFields(
@@ -240,7 +251,7 @@ fun IngredientEditScreen(
                         selectedDate = uiState.selectedDate,
                         onCategoryChanged = { viewModel.onCategoryChanged(it) },
                         onStorageChanged = { viewModel.onStorageChanged(it) },
-                        onDatePickerShow = { viewModel.onDatePickerDialogShow() }
+                        onDatePickerShow = { viewModel.onDatePickerDialogShow() },
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -250,15 +261,20 @@ fun IngredientEditScreen(
     }
 
     if (uiState.showDatePicker) {
-        val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = uiState.selectedDate.atStartOfDay(ZoneId.of("UTC"))
-                .toInstant().toEpochMilli()
-        )
+        val datePickerState =
+            rememberDatePickerState(
+                initialSelectedDateMillis =
+                    uiState.selectedDate
+                        .atStartOfDay(ZoneId.of("UTC"))
+                        .toInstant()
+                        .toEpochMilli(),
+            )
         DatePickerDialog(
             onDismissRequest = { viewModel.onDatePickerDialogDismiss() },
-            colors = DatePickerDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
+            colors =
+                DatePickerDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ),
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -267,43 +283,45 @@ fun IngredientEditScreen(
                                 Instant.ofEpochMilli(millis).atZone(ZoneId.of("UTC")).toLocalDate()
                             viewModel.onDateSelected(date)
                         }
-                    }
+                    },
                 ) { Text(stringResource(R.string.btn_confirm)) }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.onDatePickerDialogDismiss() }) {Text(stringResource(R.string.btn_cancel)) }
-            }
+                TextButton(onClick = { viewModel.onDatePickerDialogDismiss() }) { Text(stringResource(R.string.btn_cancel)) }
+            },
         ) {
             DatePicker(
                 state = datePickerState,
-                colors = DatePickerDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    headlineContentColor = MaterialTheme.colorScheme.onSurface,
-                    weekdayContentColor = MaterialTheme.colorScheme.onSurface,
-                    subheadContentColor = MaterialTheme.colorScheme.onSurface,
-                    yearContentColor = MaterialTheme.colorScheme.onSurface,
-                    currentYearContentColor = MaterialTheme.colorScheme.primary,
-                    selectedYearContentColor = MaterialTheme.colorScheme.onPrimary,
-                    selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
-                    selectedDayContainerColor = MaterialTheme.colorScheme.primary,
-                    todayDateBorderColor = MaterialTheme.colorScheme.primary,
-                    dayContentColor = MaterialTheme.colorScheme.onSurface
-                )
+                colors =
+                    DatePickerDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        headlineContentColor = MaterialTheme.colorScheme.onSurface,
+                        weekdayContentColor = MaterialTheme.colorScheme.onSurface,
+                        subheadContentColor = MaterialTheme.colorScheme.onSurface,
+                        yearContentColor = MaterialTheme.colorScheme.onSurface,
+                        currentYearContentColor = MaterialTheme.colorScheme.primary,
+                        selectedYearContentColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+                        todayDateBorderColor = MaterialTheme.colorScheme.primary,
+                        dayContentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
             )
         }
     }
 
     if (uiState.showDeleteDialog) {
-        val targetName = uiState.selectedIngredientName
-            ?: stringResource(R.string.ingredient_edit_dialog_delete_msg_default)
+        val targetName =
+            uiState.selectedIngredientName
+                ?: stringResource(R.string.ingredient_edit_dialog_delete_msg_default)
 
         ConfirmDialog(
             title = stringResource(R.string.ingredient_edit_dialog_delete_title),
             message = stringResource(R.string.ingredient_edit_dialog_delete_msg, targetName),
             confirmText = stringResource(R.string.ingredient_edit_btn_delete),
             onConfirm = { viewModel.onDeleteIngredient() },
-            onDismiss = { viewModel.onDeleteDialogDismiss() }
+            onDismiss = { viewModel.onDeleteDialogDismiss() },
         )
     }
 }

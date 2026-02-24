@@ -24,14 +24,14 @@ fun CommonTopBar(
     modifier: Modifier = Modifier,
     onNavigateBack: (() -> Unit)? = null,
     onSettingClick: (() -> Unit)? = null,
-    actions: @Composable RowScope.() -> Unit = {}
+    actions: @Composable RowScope.() -> Unit = {},
 ) {
     TopAppBar(
         title = {
             Text(
                 text = title,
                 fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
             )
         },
         modifier = modifier,
@@ -40,7 +40,7 @@ fun CommonTopBar(
                 IconButton(onClick = onNavigateBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.desc_back)
+                        contentDescription = stringResource(R.string.desc_back),
                     )
                 }
             }
@@ -52,16 +52,17 @@ fun CommonTopBar(
                 IconButton(onClick = onSettingClick) {
                     Icon(
                         imageVector = Icons.Default.Settings,
-                        contentDescription = stringResource(R.string.desc_settings)
+                        contentDescription = stringResource(R.string.desc_settings),
                     )
                 }
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            titleContentColor = MaterialTheme.colorScheme.primary,
-            actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        colors =
+            TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.primary,
+                actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
     )
 }

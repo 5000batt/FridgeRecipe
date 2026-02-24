@@ -35,9 +35,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainAppScreen(
-    onShowAd: (onReward: () -> Unit) -> Unit
-) {
+fun MainAppScreen(onShowAd: (onReward: () -> Unit) -> Unit) {
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -56,16 +54,17 @@ fun MainAppScreen(
     val showSnackbar: (String, SnackbarType) -> Unit = { message, type ->
         scope.launch {
             snackbarHostState.currentSnackbarData?.dismiss()
-            val job = launch {
-                snackbarHostState.showSnackbar(
-                    CustomSnackbarVisuals(
-                        message = message,
-                        type = type,
-                        duration = SnackbarDuration.Indefinite,
-                        actionLabel = closeLabel
+            val job =
+                launch {
+                    snackbarHostState.showSnackbar(
+                        CustomSnackbarVisuals(
+                            message = message,
+                            type = type,
+                            duration = SnackbarDuration.Indefinite,
+                            actionLabel = closeLabel,
+                        ),
                     )
-                )
-            }
+                }
             delay(2000L)
             job.cancel()
         }
@@ -102,15 +101,16 @@ fun MainAppScreen(
             modifier = Modifier.fillMaxSize(),
             onShowSnackbar = showSnackbar,
             onShowAd = onShowAd,
-            onNavigateToMainTab = { tab -> navigateToMainTab(tab) }
+            onNavigateToMainTab = { tab -> navigateToMainTab(tab) },
         )
 
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 100.dp)
-                .systemBarsPadding()
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 100.dp)
+                    .systemBarsPadding(),
         ) { data ->
             CommonSnackbar(snackbarData = data)
         }

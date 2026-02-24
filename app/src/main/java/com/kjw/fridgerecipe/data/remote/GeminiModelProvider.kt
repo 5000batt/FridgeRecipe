@@ -8,16 +8,19 @@ import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.remoteconfig.remoteConfig
 import javax.inject.Inject
 
-class GeminiModelProvider @Inject constructor() {
+class GeminiModelProvider
+    @Inject
+    constructor() {
+        fun getModel(): GenerativeModel {
+            val modelName =
+                Firebase.remoteConfig.getString("gemini_model_name").ifBlank {
+                    "gemini-2.5-flash-lite"
+                }
 
-    fun getModel(): GenerativeModel {
-        val modelName = Firebase.remoteConfig.getString("gemini_model_name").ifBlank {
-            "gemini-2.5-flash-lite"
+            Log.d("RecipeRepo", "AI 모델 명 : $modelName")
+
+            return Firebase
+                .ai(backend = GenerativeBackend.googleAI())
+                .generativeModel(modelName)
         }
-
-        Log.d("RecipeRepo", "AI 모델 명 : $modelName")
-
-        return Firebase.ai(backend = GenerativeBackend.googleAI())
-            .generativeModel(modelName)
     }
-}

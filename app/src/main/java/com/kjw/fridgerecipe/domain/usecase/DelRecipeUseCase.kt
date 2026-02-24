@@ -7,14 +7,16 @@ import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.util.UiText
 import javax.inject.Inject
 
-class DelRecipeUseCase @Inject constructor(
-    private val recipeRepository: RecipeRepository
-) {
-    suspend operator fun invoke(recipe: Recipe): DataResult<Unit> {
-        if (recipe.id == null) {
-            return DataResult.Error(UiText.StringResource(R.string.error_recipe_not_found))
-        }
+class DelRecipeUseCase
+    @Inject
+    constructor(
+        private val recipeRepository: RecipeRepository,
+    ) {
+        suspend operator fun invoke(recipe: Recipe): DataResult<Unit> {
+            if (recipe.id == null) {
+                return DataResult.Error(UiText.StringResource(R.string.error_recipe_not_found))
+            }
 
-        return recipeRepository.deleteRecipe(recipe)
+            return recipeRepository.deleteRecipe(recipe)
+        }
     }
-}

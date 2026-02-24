@@ -28,7 +28,7 @@ fun IngredientDatePicker(
     selectedDate: LocalDate,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    shape: RoundedCornerShape = RoundedCornerShape(12.dp)
+    shape: RoundedCornerShape = RoundedCornerShape(12.dp),
 ) {
     OutlinedTextField(
         value = selectedDate.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일")),
@@ -39,27 +39,29 @@ fun IngredientDatePicker(
             Icon(
                 Icons.Default.DateRange,
                 contentDescription = stringResource(R.string.ingredient_edit_desc_date_select),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         },
         singleLine = true,
-        modifier = modifier
-            .fillMaxWidth()
-            .pointerInput(Unit) {
-                awaitEachGesture {
-                    awaitFirstDown(pass = PointerEventPass.Initial)
-                    val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
-                    if (upEvent != null) {
-                        onClick()
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .pointerInput(Unit) {
+                    awaitEachGesture {
+                        awaitFirstDown(pass = PointerEventPass.Initial)
+                        val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                        if (upEvent != null) {
+                            onClick()
+                        }
                     }
-                }
-            },
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outline
-        ),
-        shape = shape
+                },
+        colors =
+            OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            ),
+        shape = shape,
     )
 }

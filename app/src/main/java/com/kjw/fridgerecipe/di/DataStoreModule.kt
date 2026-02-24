@@ -24,25 +24,26 @@ annotation class TicketDataStore
 @Module
 @InstallIn(SingletonComponent::class)
 object DataStoreModule {
-
     private const val SETTINGS_DATASTORE_NAME = "settings"
     private const val TICKET_DATASTORE_NAME = "ticket_prefs"
 
     @Provides
     @Singleton
     @SettingsDataStore
-    fun provideSettingsDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
-        return PreferenceDataStoreFactory.create(
-            produceFile = { context.preferencesDataStoreFile(SETTINGS_DATASTORE_NAME) }
+    fun provideSettingsDataStore(
+        @ApplicationContext context: Context,
+    ): DataStore<Preferences> =
+        PreferenceDataStoreFactory.create(
+            produceFile = { context.preferencesDataStoreFile(SETTINGS_DATASTORE_NAME) },
         )
-    }
 
     @Provides
     @Singleton
     @TicketDataStore
-    fun provideTicketDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
-        return PreferenceDataStoreFactory.create(
-            produceFile = { context.preferencesDataStoreFile(TICKET_DATASTORE_NAME) }
+    fun provideTicketDataStore(
+        @ApplicationContext context: Context,
+    ): DataStore<Preferences> =
+        PreferenceDataStoreFactory.create(
+            produceFile = { context.preferencesDataStoreFile(TICKET_DATASTORE_NAME) },
         )
-    }
 }

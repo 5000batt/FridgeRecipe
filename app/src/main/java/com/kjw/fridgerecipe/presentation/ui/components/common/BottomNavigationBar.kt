@@ -14,11 +14,11 @@ import com.kjw.fridgerecipe.presentation.navigation.MainTab
 @Composable
 fun BottomNavigationBar(
     currentTab: MainTab?,
-    onTabSelected: (MainTab) -> Unit
+    onTabSelected: (MainTab) -> Unit,
 ) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 8.dp
+        tonalElevation = 8.dp,
     ) {
         MainTab.entries.forEach { tab ->
             val selected = tab == currentTab
@@ -31,18 +31,26 @@ fun BottomNavigationBar(
                     Icon(
                         imageVector = tab.icon,
                         contentDescription = label,
-                        tint = if (selected) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint =
+                            if (selected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
                     )
                 },
                 label = {
                     Text(
                         text = label,
                         fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                        color = if (selected) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurfaceVariant
+                        color =
+                            if (selected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
                     )
-                }
+                },
             )
         }
     }

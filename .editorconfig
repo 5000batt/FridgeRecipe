@@ -1,0 +1,5 @@
+root = true
+
+[*.{kt,kts}]
+# @Composable 어노테이션이 붙은 함수는 대문자로 시작가능
+ktlint_function_naming_ignore_when_annotated_with=Composable

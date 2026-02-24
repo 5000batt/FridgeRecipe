@@ -25,23 +25,24 @@ fun FridgeBottomButton(
     isLoading: Boolean = false,
     icon: @Composable (() -> Unit)? = null,
     containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer
+    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
 ) {
     Button(
         onClick = onClick,
         enabled = isEnabled && !isLoading,
         modifier = modifier.height(56.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = containerColor,
-            contentColor = contentColor
-        )
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = containerColor,
+                contentColor = contentColor,
+            ),
     ) {
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(24.dp),
                 color = contentColor,
-                strokeWidth = 2.dp
+                strokeWidth = 2.dp,
             )
             Spacer(modifier = Modifier.width(12.dp))
         } else if (icon != null) {
@@ -52,7 +53,7 @@ fun FridgeBottomButton(
         Text(
             text = text,
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
     }
 }

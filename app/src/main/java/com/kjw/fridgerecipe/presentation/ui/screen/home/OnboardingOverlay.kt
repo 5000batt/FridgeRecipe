@@ -46,42 +46,44 @@ fun OnboardingOverlay(onFinish: () -> Unit) {
     val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
 
-    val pages = listOf(
-        Triple(
-            R.drawable.step1,
-            stringResource(R.string.on_boarding_overlay_step1_title),
-            stringResource(R.string.on_boarding_overlay_step1_content)
-        ),
-        Triple(
-            R.drawable.step2,
-            stringResource(R.string.on_boarding_overlay_step2_title),
-            stringResource(R.string.on_boarding_overlay_step2_content)
-        ),
-        Triple(
-            R.drawable.step3,
-            stringResource(R.string.on_boarding_overlay_step3_title),
-            stringResource(R.string.on_boarding_overlay_step3_content)
+    val pages =
+        listOf(
+            Triple(
+                R.drawable.step1,
+                stringResource(R.string.on_boarding_overlay_step1_title),
+                stringResource(R.string.on_boarding_overlay_step1_content),
+            ),
+            Triple(
+                R.drawable.step2,
+                stringResource(R.string.on_boarding_overlay_step2_title),
+                stringResource(R.string.on_boarding_overlay_step2_content),
+            ),
+            Triple(
+                R.drawable.step3,
+                stringResource(R.string.on_boarding_overlay_step3_title),
+                stringResource(R.string.on_boarding_overlay_step3_content),
+            ),
         )
-    )
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.background,
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // 상단 건너뛰기
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 40.dp, end = 16.dp),
-                horizontalArrangement = Arrangement.End
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 40.dp, end = 16.dp),
+                horizontalArrangement = Arrangement.End,
             ) {
                 if (pagerState.currentPage < 2) {
                     TextButton(onClick = onFinish) {
                         Text(
                             stringResource(R.string.on_boarding_overlay_skip),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
                         )
                     }
                 } else {
@@ -92,32 +94,33 @@ fun OnboardingOverlay(onFinish: () -> Unit) {
             // 슬라이드
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) { page ->
                 val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
                 val scale = 1f - (pageOffset * 0.15f).coerceIn(0f, 1f)
                 val alpha = 1f - (pageOffset * 0.8f).coerceIn(0f, 1f)
 
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 32.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = Arrangement.Center,
                 ) {
                     Image(
                         painter = painterResource(id = pages[page].first),
                         contentDescription = stringResource(R.string.on_boarding_overlay_guide_number_format, page + 1),
-                        modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .weight(1f)
-                            .padding(bottom = 32.dp)
-                            .graphicsLayer {
-                                scaleX = scale
-                                scaleY = scale
-                                this.alpha = alpha
-                            }
-                            .clip(RoundedCornerShape(24.dp))
+                        modifier =
+                            Modifier
+                                .fillMaxWidth(0.9f)
+                                .weight(1f)
+                                .padding(bottom = 32.dp)
+                                .graphicsLayer {
+                                    scaleX = scale
+                                    scaleY = scale
+                                    this.alpha = alpha
+                                }.clip(RoundedCornerShape(24.dp)),
                     )
 
                     Text(
@@ -125,7 +128,7 @@ fun OnboardingOverlay(onFinish: () -> Unit) {
                         style = MaterialTheme.typography.headlineSmall.copy(fontSize = 24.sp),
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.graphicsLayer { this.alpha = alpha }
+                        modifier = Modifier.graphicsLayer { this.alpha = alpha },
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -135,7 +138,7 @@ fun OnboardingOverlay(onFinish: () -> Unit) {
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.graphicsLayer { this.alpha = alpha }
+                        modifier = Modifier.graphicsLayer { this.alpha = alpha },
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -144,24 +147,29 @@ fun OnboardingOverlay(onFinish: () -> Unit) {
 
             // 하단 인디케이터 및 버튼
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(bottom = 32.dp)
+                    modifier = Modifier.padding(bottom = 32.dp),
                 ) {
                     repeat(3) { index ->
                         Box(
-                            modifier = Modifier
-                                .size(if (pagerState.currentPage == index) 10.dp else 8.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (pagerState.currentPage == index) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
-                                )
+                            modifier =
+                                Modifier
+                                    .size(if (pagerState.currentPage == index) 10.dp else 8.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (pagerState.currentPage == index) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                                        },
+                                    ),
                         )
                     }
                 }
@@ -176,18 +184,27 @@ fun OnboardingOverlay(onFinish: () -> Unit) {
                             }
                         }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                        ),
                 ) {
                     Text(
-                        text = if (pagerState.currentPage == 2) stringResource(R.string.on_boarding_overlay_start) else stringResource(R.string.on_boarding_overlay_next),
+                        text =
+                            if (pagerState.currentPage ==
+                                2
+                            ) {
+                                stringResource(R.string.on_boarding_overlay_start)
+                            } else {
+                                stringResource(R.string.on_boarding_overlay_next)
+                            },
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 }
 

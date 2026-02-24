@@ -23,7 +23,7 @@ import kotlin.math.roundToInt
 @Composable
 fun TimeSliderSection(
     currentFilter: String?,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
 ) {
     val option1 = stringResource(R.string.option_time_15)
     val option2 = stringResource(R.string.option_time_30)
@@ -37,19 +37,19 @@ fun TimeSliderSection(
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = stringResource(R.string.home_filter_time),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
             Text(
                 text = currentFilter ?: stringResource(R.string.filter_any),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
         }
 
@@ -67,11 +67,12 @@ fun TimeSliderSection(
             },
             valueRange = 0f..4f,
             steps = 3,
-            colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary,
-                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+            colors =
+                SliderDefaults.colors(
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                ),
         )
     }
 }

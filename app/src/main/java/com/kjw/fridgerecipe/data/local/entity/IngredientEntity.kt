@@ -18,5 +18,5 @@ data class IngredientEntity(
     val expirationDate: LocalDate,
     val storageLocation: StorageType,
     val category: IngredientCategoryType,
-    val emoticon: IngredientIcon
+    val emoticon: IngredientIcon,
 )

@@ -41,7 +41,7 @@ fun ConfirmDialog(
     dismissText: String = stringResource(id = R.string.btn_cancel),
     confirmColor: Color = MaterialTheme.colorScheme.error,
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -49,7 +49,7 @@ fun ConfirmDialog(
         text = {
             Text(
                 text = message,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
         },
         confirmButton = {
@@ -63,7 +63,7 @@ fun ConfirmDialog(
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
     )
 }
 
@@ -72,7 +72,7 @@ fun ErrorDialog(
     title: String,
     message: String,
     confirmText: String = stringResource(id = R.string.btn_confirm),
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -81,7 +81,7 @@ fun ErrorDialog(
                 Icon(
                     imageVector = Icons.Default.ErrorOutline,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
+                    tint = MaterialTheme.colorScheme.error,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(text = title, fontWeight = FontWeight.Bold)
@@ -90,7 +90,7 @@ fun ErrorDialog(
         text = {
             Text(
                 text = message,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
         },
         confirmButton = {
@@ -99,7 +99,7 @@ fun ErrorDialog(
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
     )
 }
 
@@ -107,7 +107,7 @@ fun ErrorDialog(
 fun IngredientCheckDialog(
     ingredientNames: String,
     onDismiss: () -> Unit,
-    onConfirm: (Boolean) -> Unit
+    onConfirm: (Boolean) -> Unit,
 ) {
     var isDoNotShowChecked by remember { mutableStateOf(false) }
 
@@ -117,17 +117,17 @@ fun IngredientCheckDialog(
             Text(
                 text = stringResource(R.string.home_dialog_check_ingredient_title),
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
         },
         text = {
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(
                     text = stringResource(R.string.home_dialog_check_ingredient_desc),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -135,16 +135,16 @@ fun IngredientCheckDialog(
                 Surface(
                     shape = RoundedCornerShape(16.dp),
                     color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(
                             text = "선택된 재료",
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
@@ -153,7 +153,7 @@ fun IngredientCheckDialog(
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            lineHeight = 24.sp
+                            lineHeight = 24.sp,
                         )
                     }
                 }
@@ -161,22 +161,23 @@ fun IngredientCheckDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Icon(
                         imageVector = Icons.Filled.ErrorOutline,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier
-                            .size(16.dp)
-                            .padding(top = 2.dp)
+                        modifier =
+                            Modifier
+                                .size(16.dp)
+                                .padding(top = 2.dp),
                     )
                     Spacer(modifier = Modifier.width(2.dp))
                     Text(
                         text = stringResource(R.string.home_dialog_check_ingredient_warning),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
-                        lineHeight = 16.sp
+                        lineHeight = 16.sp,
                     )
                 }
 
@@ -184,31 +185,32 @@ fun IngredientCheckDialog(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { isDoNotShowChecked = !isDoNotShowChecked }
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { isDoNotShowChecked = !isDoNotShowChecked },
                 ) {
                     Checkbox(
                         checked = isDoNotShowChecked,
                         onCheckedChange = { isDoNotShowChecked = it },
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.home_dialog_check_ingredient_do_not_show),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }
         },
         confirmButton = {
             TextButton(
-                onClick = { onConfirm(isDoNotShowChecked) }
+                onClick = { onConfirm(isDoNotShowChecked) },
             ) {
                 Text(
                     text = stringResource(R.string.home_dialog_check_ingredient_btn_confirm),
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
         },
@@ -218,6 +220,6 @@ fun IngredientCheckDialog(
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
     )
 }

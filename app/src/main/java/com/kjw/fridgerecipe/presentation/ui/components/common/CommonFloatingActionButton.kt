@@ -19,7 +19,7 @@ fun CommonFloatingActionButton(
     state: LazyListState = rememberLazyListState(),
     text: String,
     icon: ImageVector,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val isExpanded by remember(state) {
         derivedStateOf {
@@ -34,6 +34,6 @@ fun CommonFloatingActionButton(
         expanded = isExpanded,
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        modifier = modifier
+        modifier = modifier,
     )
 }

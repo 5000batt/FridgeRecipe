@@ -21,131 +21,133 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(
-    private val deleteAllRecipesUseCase: DeleteAllRecipesUseCase,
-    private val deleteAllIngredientsUseCase: DeleteAllIngredientsUseCase,
-    private val settingsRepository: SettingsRepository
-) : ViewModel() {
+class SettingsViewModel
+    @Inject
+    constructor(
+        private val deleteAllRecipesUseCase: DeleteAllRecipesUseCase,
+        private val deleteAllIngredientsUseCase: DeleteAllIngredientsUseCase,
+        private val settingsRepository: SettingsRepository,
+    ) : ViewModel() {
+        private val internalState = MutableStateFlow(SettingsUiState())
+        private val _isLoading = MutableStateFlow(true)
+        val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _internalState = MutableStateFlow(SettingsUiState())
-    private val _isLoading = MutableStateFlow(true)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+        val uiState: StateFlow<SettingsUiState> =
+            combine(
+                internalState,
+                settingsRepository.themeMode,
+                settingsRepository.isNotificationEnabled,
+                settingsRepository.excludedIngredients,
+            ) { state, currentThemeMode, isNotiEnabled, excludedSet ->
 
-    val uiState: StateFlow<SettingsUiState> = combine(
-        _internalState,
-        settingsRepository.themeMode,
-        settingsRepository.isNotificationEnabled,
-        settingsRepository.excludedIngredients
-    ) { state, currentThemeMode, isNotiEnabled, excludedSet ->
+                val isDarkMode =
+                    when (currentThemeMode) {
+                        ThemeMode.LIGHT -> false
+                        ThemeMode.DARK -> true
+                        ThemeMode.SYSTEM -> null
+                    }
 
-        val isDarkMode = when (currentThemeMode) {
-            ThemeMode.LIGHT -> false
-            ThemeMode.DARK -> true
-            ThemeMode.SYSTEM -> null
-        }
+                state.copy(
+                    isDarkMode = isDarkMode,
+                    isNotificationEnabled = isNotiEnabled,
+                    excludedIngredients = excludedSet.toList().sorted(),
+                )
+            }.onEach {
+                _isLoading.value = false
+            }.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = SettingsUiState(),
+            )
 
-        state.copy(
-            isDarkMode = isDarkMode,
-            isNotificationEnabled = isNotiEnabled,
-            excludedIngredients = excludedSet.toList().sorted()
-        )
-    }
-    .onEach {
-        _isLoading.value = false
-    }
-    .stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = SettingsUiState()
-    )
-
-    fun syncNotificationState(isSystemPermissionGranted: Boolean) {
-        viewModelScope.launch {
-            val currentEnabled = settingsRepository.isNotificationEnabled.first()
-
-            if (!isSystemPermissionGranted && currentEnabled) {
-                settingsRepository.setNotificationEnabled(false)
-            }
-        }
-    }
-
-    fun toggleNotification(isEnabled: Boolean) {
-        viewModelScope.launch {
-            settingsRepository.setNotificationEnabled(isEnabled)
-        }
-    }
-
-    fun showPermissionDialog() {
-        _internalState.update { it.copy(showPermissionDialog = true) }
-    }
-
-    fun dismissPermissionDialog() {
-        _internalState.update { it.copy(showPermissionDialog = false) }
-    }
-
-    fun setTheme(isDark: Boolean?) {
-        viewModelScope.launch {
-            val mode = when (isDark) {
-                false -> ThemeMode.LIGHT
-                true -> ThemeMode.DARK
-                null -> ThemeMode.SYSTEM
-            }
-            settingsRepository.setThemeMode(mode)
-        }
-    }
-
-    fun onNewExcludedIngredientChanged(text: String) {
-        _internalState.update { it.copy(newExcludedIngredient = text) }
-    }
-
-    fun addExcludedIngredient() {
-        val newItem = _internalState.value.newExcludedIngredient.trim()
-        val currentList = uiState.value.excludedIngredients
-
-        if (newItem.isNotBlank() && newItem !in currentList) {
+        fun syncNotificationState(isSystemPermissionGranted: Boolean) {
             viewModelScope.launch {
-                val newSet = currentList.toSet() + newItem
+                val currentEnabled = settingsRepository.isNotificationEnabled.first()
+
+                if (!isSystemPermissionGranted && currentEnabled) {
+                    settingsRepository.setNotificationEnabled(false)
+                }
+            }
+        }
+
+        fun toggleNotification(isEnabled: Boolean) {
+            viewModelScope.launch {
+                settingsRepository.setNotificationEnabled(isEnabled)
+            }
+        }
+
+        fun showPermissionDialog() {
+            internalState.update { it.copy(showPermissionDialog = true) }
+        }
+
+        fun dismissPermissionDialog() {
+            internalState.update { it.copy(showPermissionDialog = false) }
+        }
+
+        fun setTheme(isDark: Boolean?) {
+            viewModelScope.launch {
+                val mode =
+                    when (isDark) {
+                        false -> ThemeMode.LIGHT
+                        true -> ThemeMode.DARK
+                        null -> ThemeMode.SYSTEM
+                    }
+                settingsRepository.setThemeMode(mode)
+            }
+        }
+
+        fun onNewExcludedIngredientChanged(text: String) {
+            internalState.update { it.copy(newExcludedIngredient = text) }
+        }
+
+        fun addExcludedIngredient() {
+            val newItem = internalState.value.newExcludedIngredient.trim()
+            val currentList = uiState.value.excludedIngredients
+
+            if (newItem.isNotBlank() && newItem !in currentList) {
+                viewModelScope.launch {
+                    val newSet = currentList.toSet() + newItem
+                    settingsRepository.setExcludedIngredients(newSet)
+                    internalState.update { it.copy(newExcludedIngredient = "") }
+                }
+            }
+        }
+
+        fun removeExcludedIngredient(item: String) {
+            viewModelScope.launch {
+                val currentList = uiState.value.excludedIngredients
+                val newSet = currentList.toSet() - item
                 settingsRepository.setExcludedIngredients(newSet)
-                _internalState.update { it.copy(newExcludedIngredient = "") }
+            }
+        }
+
+        fun showResetIngredientsDialog() {
+            internalState.update { it.copy(showResetIngredientsDialog = true) }
+        }
+
+        fun dismissResetIngredientsDialog() {
+            internalState.update { it.copy(showResetIngredientsDialog = false) }
+        }
+
+        fun resetIngredients() {
+            viewModelScope.launch {
+                deleteAllIngredientsUseCase()
+                internalState.update { it.copy(showResetIngredientsDialog = false) }
+            }
+        }
+
+        fun showResetRecipesDialog() {
+            internalState.update { it.copy(showResetRecipesDialog = true) }
+        }
+
+        fun dismissResetRecipesDialog() {
+            internalState.update { it.copy(showResetRecipesDialog = false) }
+        }
+
+        fun resetRecipes() {
+            viewModelScope.launch {
+                deleteAllRecipesUseCase()
+                internalState.update { it.copy(showResetRecipesDialog = false) }
             }
         }
     }
-
-    fun removeExcludedIngredient(item: String) {
-        viewModelScope.launch {
-            val currentList = uiState.value.excludedIngredients
-            val newSet = currentList.toSet() - item
-            settingsRepository.setExcludedIngredients(newSet)
-        }
-    }
-
-    fun showResetIngredientsDialog() {
-        _internalState.update { it.copy(showResetIngredientsDialog = true) }
-    }
-
-    fun dismissResetIngredientsDialog() {
-        _internalState.update { it.copy(showResetIngredientsDialog = false) }
-    }
-
-    fun resetIngredients() {
-        viewModelScope.launch {
-            deleteAllIngredientsUseCase()
-            _internalState.update { it.copy(showResetIngredientsDialog = false) }
-        }
-    }
-
-    fun showResetRecipesDialog() {
-        _internalState.update { it.copy(showResetRecipesDialog = true) }
-    }
-
-    fun dismissResetRecipesDialog() {
-        _internalState.update { it.copy(showResetRecipesDialog = false) }
-    }
-
-    fun resetRecipes() {
-        viewModelScope.launch {
-            deleteAllRecipesUseCase()
-            _internalState.update { it.copy(showResetRecipesDialog = false) }
-        }
-    }
-}

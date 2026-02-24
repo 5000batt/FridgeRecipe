@@ -6,13 +6,13 @@ import kotlinx.serialization.Serializable
 data class RecipeIngredient(
     val name: String,
     val quantity: String,
-    val isEssential: Boolean
+    val isEssential: Boolean,
 )
 
 @Serializable
 data class RecipeStep(
     val number: Int,
-    val description: String
+    val description: String,
 )
 
 data class Recipe(
@@ -24,11 +24,10 @@ data class Recipe(
     val ingredients: List<RecipeIngredient>,
     val steps: List<RecipeStep>,
     val imageUri: String? = null,
-
     // 검색 조건 및 캐싱을 위한 정보
     val category: RecipeCategoryType? = null,
     val cookingTool: CookingToolType? = null,
     val timeFilter: String? = null,
     val ingredientsQuery: String? = null,
-    val useOnlySelected: Boolean = false
+    val useOnlySelected: Boolean = false,
 )

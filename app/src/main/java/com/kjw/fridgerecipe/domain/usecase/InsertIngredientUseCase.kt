@@ -7,19 +7,21 @@ import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.util.UiText
 import javax.inject.Inject
 
-class InsertIngredientUseCase @Inject constructor(
-    private val ingredientRepository: IngredientRepository
-) {
-    suspend operator fun invoke(ingredient: Ingredient): DataResult<Unit> {
-        // 비즈니스 유효성 검사
-        if (ingredient.name.isBlank()) {
-            return DataResult.Error(UiText.StringResource(R.string.error_validation_name_empty))
-        }
+class InsertIngredientUseCase
+    @Inject
+    constructor(
+        private val ingredientRepository: IngredientRepository,
+    ) {
+        suspend operator fun invoke(ingredient: Ingredient): DataResult<Unit> {
+            // 비즈니스 유효성 검사
+            if (ingredient.name.isBlank()) {
+                return DataResult.Error(UiText.StringResource(R.string.error_validation_name_empty))
+            }
 
-        if (ingredient.amount <= 0) {
-            return DataResult.Error(UiText.StringResource(R.string.error_validation_amount_zero))
-        }
+            if (ingredient.amount <= 0) {
+                return DataResult.Error(UiText.StringResource(R.string.error_validation_amount_zero))
+            }
 
-        return ingredientRepository.insertIngredient(ingredient)
+            return ingredientRepository.insertIngredient(ingredient)
+        }
     }
-}

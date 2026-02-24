@@ -3,8 +3,8 @@ package com.kjw.fridgerecipe.data.repository.mapper
 import com.kjw.fridgerecipe.data.local.entity.IngredientEntity
 import com.kjw.fridgerecipe.domain.model.Ingredient
 
-fun Ingredient.toEntity(): IngredientEntity {
-    return IngredientEntity(
+fun Ingredient.toEntity(): IngredientEntity =
+    IngredientEntity(
         id = this.id,
         name = this.name,
         amount = this.amount,
@@ -12,12 +12,11 @@ fun Ingredient.toEntity(): IngredientEntity {
         expirationDate = this.expirationDate,
         storageLocation = this.storageLocation,
         emoticon = this.emoticon,
-        category = this.category
+        category = this.category,
     )
-}
 
-fun IngredientEntity.toDomainModel(): Ingredient {
-    return Ingredient(
+fun IngredientEntity.toDomainModel(): Ingredient =
+    Ingredient(
         id = this.id,
         name = this.name,
         amount = this.amount,
@@ -25,6 +24,5 @@ fun IngredientEntity.toDomainModel(): Ingredient {
         expirationDate = this.expirationDate,
         storageLocation = this.storageLocation,
         emoticon = this.emoticon,
-        category = this.category
+        category = this.category,
     )
-}

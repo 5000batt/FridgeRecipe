@@ -16,15 +16,18 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltAndroidApp
-class FridgeRecipeApplication : Application(), Configuration.Provider {
-
+class FridgeRecipeApplication :
+    Application(),
+    Configuration.Provider {
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
     override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder()
-            .setWorkerFactory(workerFactory)
-            .build()
+        get() =
+            Configuration
+                .Builder()
+                .setWorkerFactory(workerFactory)
+                .build()
 
     override fun onCreate() {
         super.onCreate()
@@ -33,7 +36,11 @@ class FridgeRecipeApplication : Application(), Configuration.Provider {
         if (BuildConfig.DEBUG) {
             try {
                 val debugFactoryClass = Class.forName("com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory")
-                val factory = debugFactoryClass.getMethod("getInstance").invoke(null) as com.google.firebase.appcheck.AppCheckProviderFactory
+                val factory =
+                    debugFactoryClass
+                        .getMethod(
+                            "getInstance",
+                        ).invoke(null) as com.google.firebase.appcheck.AppCheckProviderFactory
 
                 Firebase.appCheck.installAppCheckProviderFactory(factory)
             } catch (e: Exception) {
@@ -42,28 +49,28 @@ class FridgeRecipeApplication : Application(), Configuration.Provider {
         } else {
             // 실제 배포 시 Play Integrity 사용
             Firebase.appCheck.installAppCheckProviderFactory(
-                PlayIntegrityAppCheckProviderFactory.getInstance()
+                PlayIntegrityAppCheckProviderFactory.getInstance(),
             )
         }
 
         // AdMob SDK 초기화
         MobileAds.initialize(this) {
-
         }
 
         scheduleExpirationCheck()
     }
 
     private fun scheduleExpirationCheck() {
-        val expirationCheckRequest = PeriodicWorkRequestBuilder<ExpirationCheckWorker>(
-            1, TimeUnit.DAYS
-        ).build()
-
+        val expirationCheckRequest =
+            PeriodicWorkRequestBuilder<ExpirationCheckWorker>(
+                1,
+                TimeUnit.DAYS,
+            ).build()
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             "ExpirationCheckWork",
             ExistingPeriodicWorkPolicy.KEEP,
-            expirationCheckRequest
+            expirationCheckRequest,
         )
     }
 }

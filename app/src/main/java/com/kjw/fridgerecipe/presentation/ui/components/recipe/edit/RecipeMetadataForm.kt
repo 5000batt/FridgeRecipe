@@ -8,9 +8,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.R
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
-import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonDropdown
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants
 
@@ -21,7 +21,7 @@ fun RecipeMetadataForm(
     categoryState: RecipeCategoryType?,
     onCategoryChange: (RecipeCategoryType?) -> Unit,
     cookingToolState: CookingToolType?,
-    onCookingToolChange: (CookingToolType?) -> Unit
+    onCookingToolChange: (CookingToolType?) -> Unit,
 ) {
     Column {
         // 난이도
@@ -30,7 +30,7 @@ fun RecipeMetadataForm(
             label = stringResource(R.string.recipe_edit_label_level),
             options = RecipeConstants.LEVEL_FILTER_OPTIONS.filter { it.value != null },
             onOptionSelected = { option -> option.value?.let { onLevelChange(it) } },
-            itemLabel = { it.label.asString() }
+            itemLabel = { it.label.asString() },
         )
         Spacer(modifier = Modifier.Companion.height(12.dp))
 
@@ -42,7 +42,7 @@ fun RecipeMetadataForm(
             onOptionSelected = { option ->
                 onCategoryChange(option.value)
             },
-            itemLabel = { it.label.asString() }
+            itemLabel = { it.label.asString() },
         )
         Spacer(modifier = Modifier.Companion.height(12.dp))
 
@@ -54,7 +54,7 @@ fun RecipeMetadataForm(
             onOptionSelected = { option ->
                 onCookingToolChange(option.value)
             },
-            itemLabel = { it.label.asString() }
+            itemLabel = { it.label.asString() },
         )
     }
 }

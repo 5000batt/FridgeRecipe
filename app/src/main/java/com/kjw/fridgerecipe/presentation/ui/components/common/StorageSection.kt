@@ -29,24 +29,28 @@ fun StorageSection(
     displayType: ListDisplayType,
     selectedIngredientIds: Set<Long>,
     modifier: Modifier = Modifier.Companion,
-    onIngredientClick: (Ingredient) -> Unit
+    onIngredientClick: (Ingredient) -> Unit,
 ) {
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
 
     val itemWidthWithSpacing = 88.dp
 
-    val singleRowMaxItems = remember(screenWidthDp) {
-        val availableWidth = screenWidthDp - (16.dp * 2)
-        if ((availableWidth / itemWidthWithSpacing).toInt() > 2) 2
-        else (availableWidth / itemWidthWithSpacing).toInt()
-    }
+    val singleRowMaxItems =
+        remember(screenWidthDp) {
+            val availableWidth = screenWidthDp - (16.dp * 2)
+            if ((availableWidth / itemWidthWithSpacing).toInt() > 2) {
+                2
+            } else {
+                (availableWidth / itemWidthWithSpacing).toInt()
+            }
+        }
 
     Column(modifier = modifier) {
         Text(
             text = stringResource(R.string.storage_section_title_format, title, items.size),
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.Companion.padding(bottom = 8.dp)
+            modifier = Modifier.Companion.padding(bottom = 8.dp),
         )
 
         if (items.isEmpty()) {
@@ -56,13 +60,13 @@ fun StorageSection(
                 ListDisplayType.ROW -> {
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.Companion.heightIn(min = 80.dp, max = 110.dp)
+                        modifier = Modifier.Companion.heightIn(min = 80.dp, max = 110.dp),
                     ) {
                         items(items) { ingredient ->
                             IngredientChip(
                                 ingredient = ingredient,
                                 isSelected = ingredient.id in selectedIngredientIds,
-                                onClick = { onIngredientClick(ingredient) }
+                                onClick = { onIngredientClick(ingredient) },
                             )
                         }
                     }
@@ -72,13 +76,13 @@ fun StorageSection(
                     if (items.size <= singleRowMaxItems) {
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.Companion.heightIn(min = 80.dp, max = 110.dp)
+                            modifier = Modifier.Companion.heightIn(min = 80.dp, max = 110.dp),
                         ) {
                             items(items) { ingredient ->
                                 IngredientChip(
                                     ingredient = ingredient,
                                     isSelected = ingredient.id in selectedIngredientIds,
-                                    onClick = { onIngredientClick(ingredient) }
+                                    onClick = { onIngredientClick(ingredient) },
                                 )
                             }
                         }
@@ -87,15 +91,16 @@ fun StorageSection(
                             rows = GridCells.Fixed(singleRowMaxItems),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.Companion
-                                .heightIn(min = 100.dp, max = 220.dp)
-                                .fillMaxWidth()
+                            modifier =
+                                Modifier.Companion
+                                    .heightIn(min = 100.dp, max = 220.dp)
+                                    .fillMaxWidth(),
                         ) {
                             items(items) { ingredient ->
                                 IngredientChip(
                                     ingredient = ingredient,
                                     isSelected = ingredient.id in selectedIngredientIds,
-                                    onClick = { onIngredientClick(ingredient) }
+                                    onClick = { onIngredientClick(ingredient) },
                                 )
                             }
                         }

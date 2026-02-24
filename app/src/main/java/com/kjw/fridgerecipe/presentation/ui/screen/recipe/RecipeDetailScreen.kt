@@ -54,7 +54,7 @@ fun RecipeDetailScreen(
     onNavigateToRecipeEdit: (Long) -> Unit,
     onNavigateBack: () -> Unit,
     viewModel: RecipeDetailViewModel = hiltViewModel(),
-    recipeId: Long
+    recipeId: Long,
 ) {
     val recipe by viewModel.recipe.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -71,10 +71,9 @@ fun RecipeDetailScreen(
     }
 
     @Composable
-    fun getCategoryLabel(type: RecipeCategoryType?): String {
-        return type?.let { stringResource(it.labelResId) }
+    fun getCategoryLabel(type: RecipeCategoryType?): String =
+        type?.let { stringResource(it.labelResId) }
             ?: stringResource(R.string.recipe_detail_default_category)
-    }
 
     LoadingContent(isLoading = isLoading) {
         recipe?.let { matchData ->
@@ -84,7 +83,7 @@ fun RecipeDetailScreen(
                 topBar = {
                     CommonTopBar(
                         title = stringResource(R.string.title_recipe_detail),
-                        onNavigateBack = onNavigateBack
+                        onNavigateBack = onNavigateBack,
                     )
                 },
                 bottomBar = {
@@ -93,45 +92,47 @@ fun RecipeDetailScreen(
                             text = stringResource(R.string.recipe_detail_btn_edit),
                             onClick = { currentRecipe.id?.let { onNavigateToRecipeEdit(it) } },
                             modifier = Modifier.fillMaxWidth(),
-                            icon = { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.recipe_detail_btn_edit)) }
+                            icon = { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.recipe_detail_btn_edit)) },
                         )
                     }
                 },
                 containerColor = MaterialTheme.colorScheme.background,
             ) { innerPadding ->
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
                 ) {
                     LazyColumn(
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     ) {
                         item {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(300.dp)
-                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .height(300.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant),
                             ) {
                                 if (currentRecipe.imageUri != null) {
                                     AsyncImage(
                                         model = currentRecipe.imageUri,
                                         contentDescription = stringResource(R.string.recipe_detail_image_desc),
                                         contentScale = ContentScale.Crop,
-                                        modifier = Modifier.fillMaxSize()
+                                        modifier = Modifier.fillMaxSize(),
                                     )
                                 } else {
                                     Column(
                                         modifier = Modifier.fillMaxSize(),
                                         horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center
+                                        verticalArrangement = Arrangement.Center,
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.SoupKitchen,
                                             contentDescription = null,
                                             modifier = Modifier.size(64.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                                         )
                                     }
                                 }
@@ -140,36 +141,45 @@ fun RecipeDetailScreen(
 
                         item {
                             Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(24.dp)
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(24.dp),
                             ) {
                                 val displayCategory = getCategoryLabel(currentRecipe.category)
 
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier.fillMaxWidth(),
                                 ) {
                                     Text(
                                         text = displayCategory,
                                         style = MaterialTheme.typography.labelLarge,
                                         color = MaterialTheme.colorScheme.primary,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
                                     )
 
                                     Surface(
-                                        color = if (matchData.isCookable) MaterialTheme.colorScheme.primaryContainer
-                                        else MaterialTheme.colorScheme.surfaceVariant,
+                                        color =
+                                            if (matchData.isCookable) {
+                                                MaterialTheme.colorScheme.primaryContainer
+                                            } else {
+                                                MaterialTheme.colorScheme.surfaceVariant
+                                            },
                                         shape = RoundedCornerShape(8.dp),
-                                        modifier = Modifier.padding(start = 8.dp)
+                                        modifier = Modifier.padding(start = 8.dp),
                                     ) {
                                         Text(
                                             text = stringResource(R.string.recipe_match_rate_format, matchData.matchPercentage),
                                             style = MaterialTheme.typography.labelMedium,
                                             fontWeight = FontWeight.Bold,
-                                            color = if (matchData.isCookable) MaterialTheme.colorScheme.onPrimaryContainer
-                                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                            color =
+                                                if (matchData.isCookable) {
+                                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                                } else {
+                                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                                },
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                         )
                                     }
                                 }
@@ -180,7 +190,7 @@ fun RecipeDetailScreen(
                                     text = currentRecipe.title,
                                     style = MaterialTheme.typography.headlineMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
 
                                 Spacer(modifier = Modifier.height(24.dp))
@@ -194,21 +204,21 @@ fun RecipeDetailScreen(
                                 Text(
                                     text = stringResource(R.string.recipe_detail_ingredients_title),
                                     style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
                                 )
-
                             }
                         }
 
                         items(currentRecipe.ingredients) { ingredient ->
-                            val isMissing = matchData.missingIngredients.any { missingName ->
-                                ingredient.name.contains(missingName)
-                            }
+                            val isMissing =
+                                matchData.missingIngredients.any { missingName ->
+                                    ingredient.name.contains(missingName)
+                                }
 
                             Box(modifier = Modifier.padding(horizontal = 24.dp)) {
                                 IngredientListItem(
                                     ingredient = ingredient,
-                                    isMissing = isMissing
+                                    isMissing = isMissing,
                                 )
                             }
                         }
@@ -222,7 +232,7 @@ fun RecipeDetailScreen(
                                 Text(
                                     text = stringResource(R.string.recipe_detail_steps_title),
                                     style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
                                 )
                             }
                         }

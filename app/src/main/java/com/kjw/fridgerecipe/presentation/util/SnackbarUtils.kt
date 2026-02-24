@@ -4,7 +4,9 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarVisuals
 
 enum class SnackbarType {
-    SUCCESS, ERROR, INFO
+    SUCCESS,
+    ERROR,
+    INFO,
 }
 
 class CustomSnackbarVisuals(
@@ -12,5 +14,5 @@ class CustomSnackbarVisuals(
     override val actionLabel: String? = null,
     override val duration: SnackbarDuration = SnackbarDuration.Short,
     override val withDismissAction: Boolean = false,
-    val type: SnackbarType
+    val type: SnackbarType,
 ) : SnackbarVisuals

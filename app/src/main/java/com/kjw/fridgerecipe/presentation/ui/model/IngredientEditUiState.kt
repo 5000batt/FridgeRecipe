@@ -24,5 +24,6 @@ data class IngredientEditUiState(
 )
 
 enum class IngredientValidationField {
-    NAME, AMOUNT
+    NAME,
+    AMOUNT,
 }

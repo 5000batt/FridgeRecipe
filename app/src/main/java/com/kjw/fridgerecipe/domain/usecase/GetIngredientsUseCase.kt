@@ -5,11 +5,10 @@ import com.kjw.fridgerecipe.domain.repository.IngredientRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class GetIngredientsUseCase @Inject constructor(
-    private val ingredientRepository: IngredientRepository
-) {
-
-    operator fun invoke(): Flow<List<Ingredient>> {
-        return ingredientRepository.getAllIngredients()
+class GetIngredientsUseCase
+    @Inject
+    constructor(
+        private val ingredientRepository: IngredientRepository,
+    ) {
+        operator fun invoke(): Flow<List<Ingredient>> = ingredientRepository.getAllIngredients()
     }
-}

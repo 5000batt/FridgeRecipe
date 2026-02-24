@@ -17,39 +17,37 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class IngredientListViewModel @Inject constructor(
-    getIngredientsUseCase: GetIngredientsUseCase
-) : ViewModel() {
+class IngredientListViewModel
+    @Inject
+    constructor(
+        getIngredientsUseCase: GetIngredientsUseCase,
+    ) : ViewModel() {
+        private val _isLoading = MutableStateFlow(true)
+        val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(true)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+        private val _searchQuery = MutableStateFlow("")
+        val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+        private val ingredientsFlow = getIngredientsUseCase()
 
-    private val ingredientsFlow = getIngredientsUseCase()
-
-    val categorizedIngredients: StateFlow<Map<IngredientCategoryType, List<Ingredient>>> =
-        combine(ingredientsFlow, _searchQuery) { ingredients, query ->
-            if (query.isBlank()) {
-                ingredients
-            } else {
-                ingredients.filter { it.name.contains(query, ignoreCase = true) }
-            }
-        }
-        .onEach {
+        val categorizedIngredients: StateFlow<Map<IngredientCategoryType, List<Ingredient>>> =
+            combine(ingredientsFlow, _searchQuery) { ingredients, query ->
+                if (query.isBlank()) {
+                    ingredients
+                } else {
+                    ingredients.filter { it.name.contains(query, ignoreCase = true) }
+                }
+            }.onEach {
                 _isLoading.value = false
-        }
-        .map { filteredList ->
-            filteredList.groupBy { it.category }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyMap()
-        )
+            }.map { filteredList ->
+                filteredList.groupBy { it.category }
+            }.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyMap(),
+            )
 
-    fun onSearchQueryChanged(newQuery: String) {
-        _searchQuery.value = newQuery
+        fun onSearchQueryChanged(newQuery: String) {
+            _searchQuery.value = newQuery
+        }
     }
-}

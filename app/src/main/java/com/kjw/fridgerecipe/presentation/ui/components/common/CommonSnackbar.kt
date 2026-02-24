@@ -28,71 +28,75 @@ import com.kjw.fridgerecipe.presentation.util.CustomSnackbarVisuals
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 
 @Composable
-fun CommonSnackbar(
-    snackbarData: SnackbarData
-) {
+fun CommonSnackbar(snackbarData: SnackbarData) {
     val customVisuals = snackbarData.visuals as? CustomSnackbarVisuals
     val type = customVisuals?.type ?: SnackbarType.INFO
 
-    val (containerColor, contentColor, icon) = when (type) {
-        SnackbarType.SUCCESS -> Triple(
-            MaterialTheme.colorScheme.primaryContainer,
-            MaterialTheme.colorScheme.onPrimaryContainer,
-            Icons.Default.CheckCircle
-        )
-        SnackbarType.ERROR -> Triple(
-            MaterialTheme.colorScheme.errorContainer,
-            MaterialTheme.colorScheme.onErrorContainer,
-            Icons.Default.ErrorOutline
-        )
-        SnackbarType.INFO -> Triple(
-            MaterialTheme.colorScheme.secondaryContainer,
-            MaterialTheme.colorScheme.onSecondaryContainer,
-            Icons.Default.Info
-        )
-    }
+    val (containerColor, contentColor, icon) =
+        when (type) {
+            SnackbarType.SUCCESS ->
+                Triple(
+                    MaterialTheme.colorScheme.primaryContainer,
+                    MaterialTheme.colorScheme.onPrimaryContainer,
+                    Icons.Default.CheckCircle,
+                )
+            SnackbarType.ERROR ->
+                Triple(
+                    MaterialTheme.colorScheme.errorContainer,
+                    MaterialTheme.colorScheme.onErrorContainer,
+                    Icons.Default.ErrorOutline,
+                )
+            SnackbarType.INFO ->
+                Triple(
+                    MaterialTheme.colorScheme.secondaryContainer,
+                    MaterialTheme.colorScheme.onSecondaryContainer,
+                    Icons.Default.Info,
+                )
+        }
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 12.dp),
-        horizontalArrangement = Arrangement.Center
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+        horizontalArrangement = Arrangement.Center,
     ) {
         Snackbar(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .widthIn(max = 420.dp),
+            modifier =
+                Modifier
+                    .padding(horizontal = 16.dp)
+                    .widthIn(max = 420.dp),
             containerColor = containerColor,
             contentColor = contentColor,
             shape = RoundedCornerShape(8.dp),
             action = {
                 snackbarData.visuals.actionLabel?.let { actionLabel ->
                     TextButton(
-                        onClick = { snackbarData.dismiss() }
+                        onClick = { snackbarData.dismiss() },
                     ) {
                         Text(
                             text = actionLabel,
                             color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
                         )
                     }
                 }
-            }
+            },
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(horizontal = 4.dp)
+                modifier = Modifier.padding(horizontal = 4.dp),
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(20.dp),
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = snackbarData.visuals.message,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
         }

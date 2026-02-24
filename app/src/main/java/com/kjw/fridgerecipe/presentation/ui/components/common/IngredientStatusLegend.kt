@@ -19,48 +19,50 @@ import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.R
 
 @Composable
-fun IngredientStatusLegend(
-    modifier: Modifier = Modifier
-) {
+fun IngredientStatusLegend(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.End
+        horizontalArrangement = Arrangement.End,
     ) {
         StatusIndicator(
             color = MaterialTheme.colorScheme.primaryContainer,
-            text = stringResource(R.string.ingredient_status_safe)
+            text = stringResource(R.string.ingredient_status_safe),
         )
 
         Spacer(modifier = Modifier.width(8.dp))
 
         StatusIndicator(
             color = MaterialTheme.colorScheme.tertiaryContainer,
-            text = stringResource(R.string.ingredient_status_warning)
+            text = stringResource(R.string.ingredient_status_warning),
         )
 
         Spacer(modifier = Modifier.width(8.dp))
 
         StatusIndicator(
             color = MaterialTheme.colorScheme.errorContainer,
-            text = stringResource(R.string.ingredient_status_danger)
+            text = stringResource(R.string.ingredient_status_danger),
         )
     }
 }
 
 @Composable
-private fun StatusIndicator(color: Color, text: String) {
+private fun StatusIndicator(
+    color: Color,
+    text: String,
+) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
-            modifier = Modifier
-                .size(8.dp)
-                .background(color, shape = CircleShape)
+            modifier =
+                Modifier
+                    .size(8.dp)
+                    .background(color, shape = CircleShape),
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = text,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
