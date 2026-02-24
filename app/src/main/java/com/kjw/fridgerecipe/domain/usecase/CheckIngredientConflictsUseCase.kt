@@ -5,13 +5,15 @@ import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
-class CheckIngredientConflictsUseCase @Inject constructor(
-    private val settingsRepository: SettingsRepository
-) {
-    suspend operator fun invoke(selectedIngredients: List<Ingredient>): List<String> {
-        val excludedList = settingsRepository.excludedIngredients.first().toSet()
-        return selectedIngredients
-            .map { it.name }
-            .filter { it in excludedList }
+class CheckIngredientConflictsUseCase
+    @Inject
+    constructor(
+        private val settingsRepository: SettingsRepository,
+    ) {
+        suspend operator fun invoke(selectedIngredients: List<Ingredient>): List<String> {
+            val excludedList = settingsRepository.excludedIngredients.first().toSet()
+            return selectedIngredients
+                .map { it.name }
+                .filter { it in excludedList }
+        }
     }
-}

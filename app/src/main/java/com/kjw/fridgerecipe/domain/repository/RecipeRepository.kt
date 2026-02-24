@@ -1,10 +1,10 @@
 package com.kjw.fridgerecipe.domain.repository
 
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
-import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.util.DataResult
 import kotlinx.coroutines.flow.Flow
 
@@ -20,7 +20,7 @@ interface RecipeRepository {
         categoryFilter: RecipeCategoryType?,
         cookingToolFilter: CookingToolType?,
         useOnlySelected: Boolean,
-        excludedIngredients: List<String> = emptyList()
+        excludedIngredients: List<String> = emptyList(),
     ): DataResult<Recipe>
 
     /**
@@ -42,7 +42,7 @@ interface RecipeRepository {
         cookingToolFilter: CookingToolType?,
         timeFilter: String?,
         level: LevelType?,
-        useOnlySelected: Boolean
+        useOnlySelected: Boolean,
     ): DataResult<List<Recipe>>
 
     suspend fun insertRecipe(recipe: Recipe): DataResult<Long>

@@ -6,5 +6,5 @@ data class RecipeWithMatch(
     val totalCount: Int,
     val matchPercentage: Int,
     val isCookable: Boolean,
-    val missingIngredients: List<String>
+    val missingIngredients: List<String>,
 )

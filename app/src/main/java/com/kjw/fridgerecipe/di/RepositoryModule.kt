@@ -17,28 +17,19 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
+    @Binds
+    @Singleton
+    abstract fun bindIngredientRepository(implementation: IngredientRepositoryImpl): IngredientRepository
 
     @Binds
     @Singleton
-    abstract fun bindIngredientRepository(
-        implementation: IngredientRepositoryImpl
-    ): IngredientRepository
+    abstract fun bindRecipeRepository(implementation: RecipeRepositoryImpl): RecipeRepository
 
     @Binds
     @Singleton
-    abstract fun bindRecipeRepository(
-        implementation: RecipeRepositoryImpl
-    ): RecipeRepository
+    abstract fun bindSettingsRepository(settingsRepositoryImpl: SettingsRepositoryImpl): SettingsRepository
 
     @Binds
     @Singleton
-    abstract fun bindSettingsRepository(
-        settingsRepositoryImpl: SettingsRepositoryImpl
-    ): SettingsRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindImageRepository(
-        imageRepositoryImpl: ImageRepositoryImpl
-    ): ImageRepository
+    abstract fun bindImageRepository(imageRepositoryImpl: ImageRepositoryImpl): ImageRepository
 }

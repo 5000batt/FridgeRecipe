@@ -41,7 +41,7 @@ fun IngredientListScreen(
     viewModel: IngredientListViewModel = hiltViewModel(),
     onNavigateToIngredientEdit: (Long) -> Unit,
     onNavigateToSettings: () -> Unit,
-    onNavigateToMainTab: (MainTab) -> Unit
+    onNavigateToMainTab: (MainTab) -> Unit,
 ) {
     val categorizedIngredients by viewModel.categorizedIngredients.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -53,13 +53,13 @@ fun IngredientListScreen(
             topBar = {
                 CommonTopBar(
                     title = stringResource(MainTab.INGREDIENTS.titleResId),
-                    onSettingClick = onNavigateToSettings
+                    onSettingClick = onNavigateToSettings,
                 )
             },
             bottomBar = {
                 BottomNavigationBar(
                     currentTab = MainTab.INGREDIENTS,
-                    onTabSelected = onNavigateToMainTab
+                    onTabSelected = onNavigateToMainTab,
                 )
             },
             floatingActionButton = {
@@ -67,22 +67,23 @@ fun IngredientListScreen(
                     text = stringResource(R.string.fab_add_ingredient),
                     icon = Icons.Filled.Add,
                     state = listState,
-                    onClick = { onNavigateToIngredientEdit(IngredientEditRoute.DEFAULT_ID) }
+                    onClick = { onNavigateToIngredientEdit(IngredientEditRoute.DEFAULT_ID) },
                 )
             },
-            containerColor = MaterialTheme.colorScheme.background
+            containerColor = MaterialTheme.colorScheme.background,
         ) { innerPadding ->
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 16.dp)
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(horizontal = 16.dp),
             ) {
                 CommonSearchBar(
                     query = searchQuery,
                     onQueryChange = { viewModel.onSearchQueryChanged(it) },
                     placeholderText = stringResource(R.string.ingredient_search_placeholder),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
 
                 if (categorizedIngredients.isEmpty()) {
@@ -90,31 +91,32 @@ fun IngredientListScreen(
                         EmptyStateView(
                             icon = Icons.Default.Search,
                             title = stringResource(R.string.ingredient_search_empty_title, searchQuery),
-                            message = stringResource(R.string.ingredient_search_empty_desc)
+                            message = stringResource(R.string.ingredient_search_empty_desc),
                         )
-                    }
-                    else {
+                    } else {
                         EmptyStateView(
                             icon = Icons.Default.SoupKitchen,
                             title = stringResource(R.string.ingredient_empty_title),
-                            message = stringResource(R.string.ingredient_empty_desc)
+                            message = stringResource(R.string.ingredient_empty_desc),
                         )
                     }
                 } else {
                     IngredientStatusLegend(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp, bottom = 4.dp)
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp, bottom = 4.dp),
                     )
 
                     FadeScrollLazyColumn(
                         modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(
-                            top = 8.dp,
-                            bottom = 80.dp
-                        ),
+                        contentPadding =
+                            PaddingValues(
+                                top = 8.dp,
+                                bottom = 80.dp,
+                            ),
                         state = listState,
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                        verticalArrangement = Arrangement.spacedBy(24.dp),
                     ) {
                         IngredientCategoryType.entries.forEach { categoryType ->
                             val items = categorizedIngredients[categoryType] ?: emptyList()
@@ -128,7 +130,7 @@ fun IngredientListScreen(
                                         selectedIngredientIds = emptySet(),
                                         onIngredientClick = { ingredient ->
                                             ingredient.id?.let { onNavigateToIngredientEdit(it) }
-                                        }
+                                        },
                                     )
                                 }
                             }

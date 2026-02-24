@@ -21,7 +21,7 @@ fun IngredientDetailFields(
     selectedDate: LocalDate,
     onCategoryChanged: (IngredientCategoryType) -> Unit,
     onStorageChanged: (StorageType) -> Unit,
-    onDatePickerShow: () -> Unit
+    onDatePickerShow: () -> Unit,
 ) {
     val shape = RoundedCornerShape(12.dp)
 
@@ -33,7 +33,7 @@ fun IngredientDetailFields(
             options = IngredientCategoryType.entries,
             onOptionSelected = onCategoryChanged,
             itemLabel = { stringResource(it.labelResId) },
-            shape = shape
+            shape = shape,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -45,7 +45,7 @@ fun IngredientDetailFields(
             options = StorageType.entries,
             onOptionSelected = onStorageChanged,
             itemLabel = { stringResource(it.labelResId) },
-            shape = shape
+            shape = shape,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -54,7 +54,7 @@ fun IngredientDetailFields(
         IngredientDatePicker(
             selectedDate = selectedDate,
             onClick = onDatePickerShow,
-            shape = shape
+            shape = shape,
         )
     }
 }

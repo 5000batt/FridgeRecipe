@@ -32,7 +32,7 @@ fun RecipeBasicInfoForm(
     timeError: String?,
     titleFocusRequester: FocusRequester,
     servingsFocusRequester: FocusRequester,
-    timeFocusRequester: FocusRequester
+    timeFocusRequester: FocusRequester,
 ) {
     Column {
         CommonTextField(
@@ -42,14 +42,14 @@ fun RecipeBasicInfoForm(
             isError = titleError != null,
             errorMessage = titleError,
             modifier = Modifier.focusRequester(titleFocusRequester),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             CommonTextField(
                 value = servings,
@@ -59,9 +59,10 @@ fun RecipeBasicInfoForm(
                 errorMessage = servingsError,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
                 suffix = { Text(stringResource(R.string.recipe_edit_suffix_servings)) },
-                modifier = Modifier
-                    .weight(1f)
-                    .focusRequester(servingsFocusRequester)
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .focusRequester(servingsFocusRequester),
             )
 
             CommonTextField(
@@ -72,9 +73,10 @@ fun RecipeBasicInfoForm(
                 errorMessage = timeError,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
                 suffix = { Text(stringResource(R.string.recipe_edit_suffix_time)) },
-                modifier = Modifier
-                    .weight(1f)
-                    .focusRequester(timeFocusRequester)
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .focusRequester(timeFocusRequester),
             )
         }
     }

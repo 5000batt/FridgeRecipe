@@ -43,22 +43,22 @@ fun IconSelectionSection(
     currentIcons: List<IngredientIcon>,
     iconListState: LazyListState,
     onIconCategorySelected: (IngredientCategoryType) -> Unit,
-    onIconSelected: (IngredientIcon) -> Unit
+    onIconSelected: (IngredientIcon) -> Unit,
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
             text = stringResource(R.string.ingredient_edit_title_icon_selection),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
 
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(vertical = 4.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             items(IngredientCategoryType.entries) { category ->
                 val isSelected = selectedIconCategory == category
@@ -67,16 +67,18 @@ fun IconSelectionSection(
                     selected = isSelected,
                     onClick = { onIconCategorySelected(category) },
                     label = { Text(stringResource(category.labelResId)) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ),
-                    border = FilterChipDefaults.filterChipBorder(
-                        enabled = true,
-                        selected = isSelected,
-                        borderColor = MaterialTheme.colorScheme.outline,
-                        selectedBorderColor = Color.Transparent
-                    )
+                    colors =
+                        FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ),
+                    border =
+                        FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = isSelected,
+                            borderColor = MaterialTheme.colorScheme.outline,
+                            selectedBorderColor = Color.Transparent,
+                        ),
                 )
             }
         }
@@ -85,37 +87,42 @@ fun IconSelectionSection(
             state = iconListState,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(vertical = 4.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             items(currentIcons) { icon ->
                 val isSelected = selectedIcon == icon
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = LocalIndication.current
-                        ) {
-                            onIconSelected(icon)
-                        }
-                        .background(
-                            if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                            else Color.Transparent
-                        )
-                        .border(
-                            width = if (isSelected) 2.dp else 1.dp,
-                            color = if (isSelected) Color.Transparent
-                            else MaterialTheme.colorScheme.outline,
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .padding(8.dp)
+                    modifier =
+                        Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = LocalIndication.current,
+                            ) {
+                                onIconSelected(icon)
+                            }.background(
+                                if (isSelected) {
+                                    MaterialTheme.colorScheme.primaryContainer
+                                } else {
+                                    Color.Transparent
+                                },
+                            ).border(
+                                width = if (isSelected) 2.dp else 1.dp,
+                                color =
+                                    if (isSelected) {
+                                        Color.Transparent
+                                    } else {
+                                        MaterialTheme.colorScheme.outline
+                                    },
+                                shape = RoundedCornerShape(12.dp),
+                            ).padding(8.dp),
                 ) {
                     Image(
                         painter = painterResource(id = getIconResId(icon)),
                         contentDescription = stringResource(icon.labelResId),
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(36.dp),
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -123,8 +130,12 @@ fun IconSelectionSection(
                     Text(
                         text = stringResource(icon.labelResId),
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onSurface
+                        color =
+                            if (isSelected) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
                     )
                 }
             }

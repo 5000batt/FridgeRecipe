@@ -39,38 +39,42 @@ private val DateFormatter = DateTimeFormatter.ofPattern("y.MM.dd")
 fun IngredientChip(
     ingredient: Ingredient,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
-    val (containerColor, contentColor) = when (ingredient.expirationStatus) {
-        ExpirationStatus.EXPIRED ->
-            MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
-        ExpirationStatus.URGENT ->
-            MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
-        ExpirationStatus.SAFE ->
-            MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
-    }
+    val (containerColor, contentColor) =
+        when (ingredient.expirationStatus) {
+            ExpirationStatus.EXPIRED ->
+                MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+            ExpirationStatus.URGENT ->
+                MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
+            ExpirationStatus.SAFE ->
+                MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
+        }
 
     Card(
-        modifier = Modifier
-            .size(width = 100.dp, height = 120.dp)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = LocalIndication.current,
-                onClick = onClick
-            ),
+        modifier =
+            Modifier
+                .size(width = 100.dp, height = 120.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = LocalIndication.current,
+                    onClick = onClick,
+                ),
         shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = containerColor,
-            contentColor = contentColor
-        ),
-        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
+        colors =
+            CardDefaults.cardColors(
+                containerColor = containerColor,
+                contentColor = contentColor,
+            ),
+        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(vertical = 4.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             IngredientIconImage(ingredient)
 
@@ -80,7 +84,7 @@ fun IngredientChip(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 4.dp),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
             )
 
             Spacer(modifier = Modifier.height(2.dp))
@@ -90,18 +94,19 @@ fun IngredientChip(
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                 modifier = Modifier.padding(horizontal = 4.dp),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
             )
 
             Text(
                 text = "${ingredient.remainingDaysText}",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold
-                ),
+                style =
+                    MaterialTheme.typography.labelSmall.copy(
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                    ),
                 modifier = Modifier.padding(horizontal = 4.dp),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
@@ -115,6 +120,6 @@ fun IngredientIconImage(ingredient: Ingredient) {
         painter = imagePainter,
         contentDescription = stringResource(ingredient.emoticon.labelResId),
         modifier = Modifier.size(48.dp),
-        contentScale = ContentScale.Fit
+        contentScale = ContentScale.Fit,
     )
 }

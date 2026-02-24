@@ -13,6 +13,6 @@ fun ErrorText(message: String) {
         text = message,
         color = MaterialTheme.colorScheme.error,
         style = MaterialTheme.typography.bodySmall,
-        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+        modifier = Modifier.padding(start = 8.dp, top = 4.dp),
     )
 }

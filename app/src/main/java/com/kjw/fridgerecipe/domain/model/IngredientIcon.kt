@@ -2,8 +2,11 @@ package com.kjw.fridgerecipe.domain.model
 
 import com.kjw.fridgerecipe.R
 
-enum class IngredientIcon(val labelResId: Int, val id: String, val category: IngredientCategoryType) {
-
+enum class IngredientIcon(
+    val labelResId: Int,
+    val id: String,
+    val category: IngredientCategoryType,
+) {
     // 기타
     DEFAULT(R.string.icon_label_default, "default", IngredientCategoryType.ETC),
     KIMCHI(R.string.icon_label_kimchi, "kimchi", IngredientCategoryType.ETC),
@@ -81,11 +84,10 @@ enum class IngredientIcon(val labelResId: Int, val id: String, val category: Ing
     WATER(R.string.icon_label_water, "water", IngredientCategoryType.BEVERAGE),
     SODA(R.string.icon_label_soda, "soda", IngredientCategoryType.BEVERAGE),
     BEER(R.string.icon_label_beer, "beer", IngredientCategoryType.BEVERAGE),
-    SOJU(R.string.icon_label_soju, "soju", IngredientCategoryType.BEVERAGE);
+    SOJU(R.string.icon_label_soju, "soju", IngredientCategoryType.BEVERAGE),
+    ;
 
     companion object {
-        fun fromId(id: String?): IngredientIcon {
-            return entries.find { it.id == id } ?: DEFAULT
-        }
+        fun fromId(id: String?): IngredientIcon = entries.find { it.id == id } ?: DEFAULT
     }
 }

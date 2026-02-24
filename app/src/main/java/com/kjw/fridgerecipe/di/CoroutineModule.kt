@@ -16,11 +16,8 @@ annotation class ApplicationScope
 @Module
 @InstallIn(SingletonComponent::class)
 object CoroutineModule {
-
     @Singleton
     @ApplicationScope
     @Provides
-    fun provideApplicationScope(): CoroutineScope {
-        return CoroutineScope(SupervisorJob())
-    }
+    fun provideApplicationScope(): CoroutineScope = CoroutineScope(SupervisorJob())
 }

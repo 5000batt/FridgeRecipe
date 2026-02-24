@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface RecipeDao {
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRecipe(recipe: RecipeEntity): Long
 
@@ -33,7 +32,8 @@ interface RecipeDao {
     @Query("DELETE FROM recipes")
     suspend fun deleteAllRecipes()
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM recipes 
         WHERE ingredientsQuery = :ingredientsQuery 
         AND (:category IS NULL OR category = :category)
@@ -41,16 +41,20 @@ interface RecipeDao {
         AND (:timeFilter IS NULL OR timeFilter = :timeFilter)
         AND (:level IS NULL OR level = :level)
         AND useOnlySelected = :useOnlySelected
-    """)
+    """,
+    )
     suspend fun findRecipesByFilters(
         ingredientsQuery: String,
         category: RecipeCategoryType?,
         cookingTool: CookingToolType?,
         timeFilter: String?,
         level: LevelType?,
-        useOnlySelected: Boolean
+        useOnlySelected: Boolean,
     ): List<RecipeEntity>
 
     @Query("SELECT * FROM recipes WHERE title = :title AND ingredientsQuery = :ingredientsQuery LIMIT 1")
-    suspend fun findExistingRecipeByTitle(title: String, ingredientsQuery: String): RecipeEntity?
+    suspend fun findExistingRecipeByTitle(
+        title: String,
+        ingredientsQuery: String,
+    ): RecipeEntity?
 }

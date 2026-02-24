@@ -23,55 +23,62 @@ import com.kjw.fridgerecipe.BuildConfig
 @Composable
 fun AdMobBanner(
     modifier: Modifier = Modifier,
-    onAdLoaded: () -> Unit = {}
+    onAdLoaded: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp
 
     // 적응형 배너 크기 계산
-    val adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
-        context,
-        screenWidthDp,
-    )
+    val adSize =
+        AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+            context,
+            screenWidthDp,
+        )
 
     // 광고 단위 ID 설정
-    val adUnitId = if (BuildConfig.DEBUG) BuildConfig.ADMOB_BANNER_ID
-        else Firebase.remoteConfig.getString("admob_banner_id").ifBlank {
-        BuildConfig.ADMOB_BANNER_ID
-    }
+    val adUnitId =
+        if (BuildConfig.DEBUG) {
+            BuildConfig.ADMOB_BANNER_ID
+        } else {
+            Firebase.remoteConfig.getString("admob_banner_id").ifBlank {
+                BuildConfig.ADMOB_BANNER_ID
+            }
+        }
 
     Log.d("AdMobBanner", "사용 중인 admob_banner_id: $adUnitId")
 
     AndroidView(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(adSize.height.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(adSize.height.dp),
         factory = { context ->
             AdView(context).apply {
                 setAdSize(adSize)
                 this.adUnitId = adUnitId
-                
+
                 // 광고 리스너 설정 (로딩 완료 콜백 연결)
-                adListener = object : AdListener() {
-                    override fun onAdLoaded() {
-                        super.onAdLoaded()
-                        Log.d("AdMobBanner", "광고 로드 성공")
-                        onAdLoaded()
+                adListener =
+                    object : AdListener() {
+                        override fun onAdLoaded() {
+                            super.onAdLoaded()
+                            Log.d("AdMobBanner", "광고 로드 성공")
+                            onAdLoaded()
+                        }
+
+                        override fun onAdFailedToLoad(error: LoadAdError) {
+                            super.onAdFailedToLoad(error)
+                            Log.e("AdMobBanner", "광고 로드 실패: ${error.message}")
+                        }
                     }
 
-                    override fun onAdFailedToLoad(error: LoadAdError) {
-                        super.onAdFailedToLoad(error)
-                        Log.e("AdMobBanner", "광고 로드 실패: ${error.message}")
-                    }
-                }
-                
                 loadAd(AdRequest.Builder().build())
             }
         },
         onRelease = { adView ->
             // 메모리 누수 방지
             adView.destroy()
-        }
+        },
     )
 }

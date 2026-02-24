@@ -35,7 +35,7 @@ fun FadeScrollLazyColumn(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     gradientHeight: Dp = 24.dp,
-    content: LazyListScope.() -> Unit
+    content: LazyListScope.() -> Unit,
 ) {
     val density = LocalDensity.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -66,26 +66,28 @@ fun FadeScrollLazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = contentPadding,
             verticalArrangement = verticalArrangement,
-            content = content
+            content = content,
         )
 
         val backgroundColor = MaterialTheme.colorScheme.background
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(gradientHeight)
-                .align(Alignment.TopCenter)
-                .zIndex(1f)
-                .alpha(topGradientAlpha)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            backgroundColor,
-                            backgroundColor.copy(alpha = 0.8f),
-                            Color.Transparent
-                        )
-                    )
-                )
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(gradientHeight)
+                    .align(Alignment.TopCenter)
+                    .zIndex(1f)
+                    .alpha(topGradientAlpha)
+                    .background(
+                        Brush.verticalGradient(
+                            colors =
+                                listOf(
+                                    backgroundColor,
+                                    backgroundColor.copy(alpha = 0.8f),
+                                    Color.Transparent,
+                                ),
+                        ),
+                    ),
         )
     }
 }

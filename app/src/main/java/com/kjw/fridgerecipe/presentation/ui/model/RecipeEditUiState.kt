@@ -1,8 +1,8 @@
 package com.kjw.fridgerecipe.presentation.ui.model
 
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
-import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.presentation.util.UiText
 
 data class RecipeEditUiState(
@@ -22,24 +22,30 @@ data class RecipeEditUiState(
     val stepsError: UiText? = null,
     val stepsErrorType: ListErrorType = ListErrorType.NONE,
     val showDeleteDialog: Boolean = false,
-    val imageUri: String? = null
+    val imageUri: String? = null,
 )
 
 data class IngredientItemUiState(
     val name: String,
     val quantity: String,
-    val isEssential: Boolean
+    val isEssential: Boolean,
 )
 
 data class StepItemUiState(
     val number: Int,
-    val description: String
+    val description: String,
 )
 
 enum class RecipeValidationField {
-    TITLE, SERVINGS, TIME, INGREDIENTS, STEPS
+    TITLE,
+    SERVINGS,
+    TIME,
+    INGREDIENTS,
+    STEPS,
 }
 
 enum class ListErrorType {
-    NONE, IS_EMPTY, HAS_BLANK_ITEMS
+    NONE,
+    IS_EMPTY,
+    HAS_BLANK_ITEMS,
 }

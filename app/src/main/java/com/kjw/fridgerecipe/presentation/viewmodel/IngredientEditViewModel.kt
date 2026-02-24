@@ -8,15 +8,15 @@ import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
 import com.kjw.fridgerecipe.domain.model.StorageType
 import com.kjw.fridgerecipe.domain.model.UnitType
-import com.kjw.fridgerecipe.domain.usecase.InsertIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.DelIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientByIdUseCase
+import com.kjw.fridgerecipe.domain.usecase.InsertIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateIngredientUseCase
 import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.mapper.IngredientUiMapper
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientEditUiState
-import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientValidationField
+import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.util.UiText
 import com.kjw.fridgerecipe.presentation.validator.IngredientValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,155 +32,140 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
-class IngredientEditViewModel @Inject constructor(
-    private val getIngredientByIdUseCase: GetIngredientByIdUseCase,
-    private val insertIngredientUseCase: InsertIngredientUseCase,
-    private val updateIngredientUseCase: UpdateIngredientUseCase,
-    private val delIngredientUseCase: DelIngredientUseCase,
-    private val validator: IngredientValidator,
-    private val mapper: IngredientUiMapper
-) : ViewModel() {
+class IngredientEditViewModel
+    @Inject
+    constructor(
+        private val getIngredientByIdUseCase: GetIngredientByIdUseCase,
+        private val insertIngredientUseCase: InsertIngredientUseCase,
+        private val updateIngredientUseCase: UpdateIngredientUseCase,
+        private val delIngredientUseCase: DelIngredientUseCase,
+        private val validator: IngredientValidator,
+        private val mapper: IngredientUiMapper,
+    ) : ViewModel() {
+        private val _isLoading = MutableStateFlow(true)
+        val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(true)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+        private val _operationResultEvent = MutableSharedFlow<OperationResult>()
+        val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
 
-    private val _operationResultEvent = MutableSharedFlow<OperationResult>()
-    val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
+        private val _navigationEvent = MutableSharedFlow<Unit>()
+        val navigationEvent: SharedFlow<Unit> = _navigationEvent.asSharedFlow()
 
-    private val _navigationEvent = MutableSharedFlow<Unit>()
-    val navigationEvent: SharedFlow<Unit> = _navigationEvent.asSharedFlow()
+        private val _validationEvent = MutableSharedFlow<IngredientValidationField>()
+        val validationEvent: SharedFlow<IngredientValidationField> = _validationEvent.asSharedFlow()
 
-    private val _validationEvent = MutableSharedFlow<IngredientValidationField>()
-    val validationEvent: SharedFlow<IngredientValidationField> = _validationEvent.asSharedFlow()
+        private val _editUiState = MutableStateFlow(IngredientEditUiState())
+        val editUiState: StateFlow<IngredientEditUiState> = _editUiState.asStateFlow()
 
-    private val _editUiState = MutableStateFlow(IngredientEditUiState())
-    val editUiState: StateFlow<IngredientEditUiState> = _editUiState.asStateFlow()
+        private var editingIngredient: Ingredient? = null
 
-    private var editingIngredient: Ingredient? = null
-
-    fun loadIngredientById(id: Long) {
-        viewModelScope.launch {
-            val result = getIngredientByIdUseCase(id)
-            if (result is DataResult.Success) {
-                val ingredient = result.data
-                editingIngredient = ingredient
-                _editUiState.value = mapper.toEditUiState(ingredient)
-            } else {
-                editingIngredient = null
-                _editUiState.value = IngredientEditUiState()
+        fun loadIngredientById(id: Long) {
+            viewModelScope.launch {
+                val result = getIngredientByIdUseCase(id)
+                if (result is DataResult.Success) {
+                    val ingredient = result.data
+                    editingIngredient = ingredient
+                    _editUiState.value = mapper.toEditUiState(ingredient)
+                } else {
+                    editingIngredient = null
+                    _editUiState.value = IngredientEditUiState()
+                }
+                _isLoading.value = false
             }
+        }
+
+        fun onReadyToDisplay() {
             _isLoading.value = false
         }
-    }
 
-    fun onReadyToDisplay() {
-        _isLoading.value = false
-    }
-
-    fun clearState() {
-        editingIngredient = null
-        _editUiState.value = IngredientEditUiState()
-        _isLoading.value = false
-    }
-
-    fun onNameChanged(name: String) {
-        _editUiState.update { it.copy(name = name, nameError = null) }
-    }
-
-    fun onAmountChanged(amount: String) {
-        if (amount.isEmpty() || DECIMAL_REGEX.matches(amount)) {
-            _editUiState.update { it.copy(amount = amount, amountError = null) }
+        fun clearState() {
+            editingIngredient = null
+            _editUiState.value = IngredientEditUiState()
+            _isLoading.value = false
         }
-    }
 
-    fun onUnitChanged(unit: UnitType) {
-        _editUiState.update { it.copy(selectedUnit = unit) }
-    }
+        fun onNameChanged(name: String) {
+            _editUiState.update { it.copy(name = name, nameError = null) }
+        }
 
-    fun onStorageChanged(storage: StorageType) {
-        _editUiState.update { it.copy(selectedStorage = storage) }
-    }
-
-    fun onCategoryChanged(category: IngredientCategoryType) {
-        _editUiState.update { it.copy(selectedCategory = category) }
-    }
-
-    fun onDateSelected(date: LocalDate) {
-        _editUiState.update { it.copy(selectedDate = date, showDatePicker = false) }
-    }
-
-    fun onIconCategorySelected(category: IngredientCategoryType?) {
-        _editUiState.update { it.copy(selectedIconCategory = category) }
-    }
-
-    fun onIconSelected(icon: IngredientIcon) {
-        _editUiState.update { it.copy(selectedIcon = icon) }
-    }
-
-    fun onDatePickerDialogShow() {
-        _editUiState.update { it.copy(showDatePicker = true) }
-    }
-
-    fun onDatePickerDialogDismiss() {
-        _editUiState.update { it.copy(showDatePicker = false) }
-    }
-
-    fun onDeleteDialogShow() {
-        val name = editingIngredient?.name
-        _editUiState.update { it.copy(showDeleteDialog = true, selectedIngredientName = name) }
-    }
-
-    fun onDeleteDialogDismiss() {
-        _editUiState.update { it.copy(showDeleteDialog = false) }
-    }
-
-    private fun updateErrorState(failure: IngredientValidator.ValidationResult.Failure) {
-        _editUiState.update { state ->
-            when (failure.field) {
-                IngredientValidationField.NAME -> state.copy(nameError = failure.errorMessage)
-                IngredientValidationField.AMOUNT -> state.copy(amountError = failure.errorMessage)
+        fun onAmountChanged(amount: String) {
+            if (amount.isEmpty() || DECIMAL_REGEX.matches(amount)) {
+                _editUiState.update { it.copy(amount = amount, amountError = null) }
             }
         }
-    }
 
-    fun onSaveOrUpdateIngredient(isEditMode: Boolean) {
-        viewModelScope.launch {
-            val validationResult = validator.validate(_editUiState.value)
-            if (validationResult is IngredientValidator.ValidationResult.Failure) {
-                updateErrorState(validationResult)
-                _validationEvent.emit(validationResult.field)
-                return@launch
-            }
+        fun onUnitChanged(unit: UnitType) {
+            _editUiState.update { it.copy(selectedUnit = unit) }
+        }
 
-            val ingredientToSave = mapper.toDomain(_editUiState.value, editingIngredient?.id)
+        fun onStorageChanged(storage: StorageType) {
+            _editUiState.update { it.copy(selectedStorage = storage) }
+        }
 
-            val result = if (isEditMode) {
-                updateIngredientUseCase(ingredientToSave)
-            } else {
-                insertIngredientUseCase(ingredientToSave)
-            }
+        fun onCategoryChanged(category: IngredientCategoryType) {
+            _editUiState.update { it.copy(selectedCategory = category) }
+        }
 
-            when (result) {
-                is DataResult.Success -> {
-                    val messageResId = if (isEditMode) R.string.msg_updated else R.string.msg_saved
-                    _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(messageResId)))
-                    _navigationEvent.emit(Unit)
+        fun onDateSelected(date: LocalDate) {
+            _editUiState.update { it.copy(selectedDate = date, showDatePicker = false) }
+        }
+
+        fun onIconCategorySelected(category: IngredientCategoryType?) {
+            _editUiState.update { it.copy(selectedIconCategory = category) }
+        }
+
+        fun onIconSelected(icon: IngredientIcon) {
+            _editUiState.update { it.copy(selectedIcon = icon) }
+        }
+
+        fun onDatePickerDialogShow() {
+            _editUiState.update { it.copy(showDatePicker = true) }
+        }
+
+        fun onDatePickerDialogDismiss() {
+            _editUiState.update { it.copy(showDatePicker = false) }
+        }
+
+        fun onDeleteDialogShow() {
+            val name = editingIngredient?.name
+            _editUiState.update { it.copy(showDeleteDialog = true, selectedIngredientName = name) }
+        }
+
+        fun onDeleteDialogDismiss() {
+            _editUiState.update { it.copy(showDeleteDialog = false) }
+        }
+
+        private fun updateErrorState(failure: IngredientValidator.ValidationResult.Failure) {
+            _editUiState.update { state ->
+                when (failure.field) {
+                    IngredientValidationField.NAME -> state.copy(nameError = failure.errorMessage)
+                    IngredientValidationField.AMOUNT -> state.copy(amountError = failure.errorMessage)
                 }
-                is DataResult.Error -> {
-                    _operationResultEvent.emit(OperationResult.Failure(result.message))
-                }
-                else -> Unit
             }
         }
-    }
 
-    fun onDeleteIngredient() {
-        viewModelScope.launch {
-            editingIngredient?.let {
-                val result = delIngredientUseCase(it)
+        fun onSaveOrUpdateIngredient(isEditMode: Boolean) {
+            viewModelScope.launch {
+                val validationResult = validator.validate(_editUiState.value)
+                if (validationResult is IngredientValidator.ValidationResult.Failure) {
+                    updateErrorState(validationResult)
+                    _validationEvent.emit(validationResult.field)
+                    return@launch
+                }
+
+                val ingredientToSave = mapper.toDomain(_editUiState.value, editingIngredient?.id)
+
+                val result =
+                    if (isEditMode) {
+                        updateIngredientUseCase(ingredientToSave)
+                    } else {
+                        insertIngredientUseCase(ingredientToSave)
+                    }
+
                 when (result) {
                     is DataResult.Success -> {
-                        _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(R.string.msg_deleted)))
+                        val messageResId = if (isEditMode) R.string.msg_updated else R.string.msg_saved
+                        _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(messageResId)))
                         _navigationEvent.emit(Unit)
                     }
                     is DataResult.Error -> {
@@ -189,11 +174,28 @@ class IngredientEditViewModel @Inject constructor(
                     else -> Unit
                 }
             }
-            _editUiState.update { it.copy(showDeleteDialog = false) }
+        }
+
+        fun onDeleteIngredient() {
+            viewModelScope.launch {
+                editingIngredient?.let {
+                    val result = delIngredientUseCase(it)
+                    when (result) {
+                        is DataResult.Success -> {
+                            _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(R.string.msg_deleted)))
+                            _navigationEvent.emit(Unit)
+                        }
+                        is DataResult.Error -> {
+                            _operationResultEvent.emit(OperationResult.Failure(result.message))
+                        }
+                        else -> Unit
+                    }
+                }
+                _editUiState.update { it.copy(showDeleteDialog = false) }
+            }
+        }
+
+        companion object {
+            private val DECIMAL_REGEX = Regex("^\\d*\\.?\\d{0,2}\$")
         }
     }
-
-    companion object {
-        private val DECIMAL_REGEX = Regex("^\\d*\\.?\\d{0,2}\$")
-    }
-}

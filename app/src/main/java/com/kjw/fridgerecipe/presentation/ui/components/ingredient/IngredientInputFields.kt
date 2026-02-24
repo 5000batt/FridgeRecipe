@@ -34,7 +34,7 @@ fun IngredientInputFields(
     amountFocusRequester: FocusRequester,
     onNameChanged: (String) -> Unit,
     onAmountChanged: (String) -> Unit,
-    onUnitChanged: (UnitType) -> Unit
+    onUnitChanged: (UnitType) -> Unit,
 ) {
     // 이름
     CommonTextField(
@@ -44,14 +44,14 @@ fun IngredientInputFields(
         isError = nameError != null,
         errorMessage = nameError,
         modifier = Modifier.focusRequester(nameFocusRequester),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
     )
 
     // 수량 & 단위
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.Top,
         ) {
             CommonTextField(
                 value = amount,
@@ -59,13 +59,15 @@ fun IngredientInputFields(
                 label = stringResource(R.string.ingredient_edit_label_amount),
                 isError = amountError != null,
                 errorMessage = null,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Decimal,
-                    imeAction = ImeAction.Done
-                ),
-                modifier = Modifier
-                    .weight(1f)
-                    .focusRequester(amountFocusRequester)
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                        imeAction = ImeAction.Done,
+                    ),
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .focusRequester(amountFocusRequester),
             )
             Spacer(modifier = Modifier.width(8.dp))
 
@@ -76,7 +78,7 @@ fun IngredientInputFields(
                 options = UnitType.entries,
                 onOptionSelected = onUnitChanged,
                 itemLabel = { stringResource(it.labelResId) },
-                modifier = Modifier.weight(0.8f)
+                modifier = Modifier.weight(0.8f),
             )
         }
 

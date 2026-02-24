@@ -44,13 +44,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.kjw.fridgerecipe.BuildConfig
-import com.kjw.fridgerecipe.presentation.viewmodel.SettingsViewModel
 import androidx.core.net.toUri
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonTopBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.ConfirmDialog
@@ -61,12 +60,13 @@ import com.kjw.fridgerecipe.presentation.ui.components.settings.SettingsSectionT
 import com.kjw.fridgerecipe.presentation.ui.components.settings.SettingsSwitchItem
 import com.kjw.fridgerecipe.presentation.ui.components.settings.ThemeOptionChip
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
+import com.kjw.fridgerecipe.presentation.viewmodel.SettingsViewModel
 
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onShowSnackbar: (String, SnackbarType) -> Unit,
-    viewModel: SettingsViewModel = hiltViewModel()
+    viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -75,17 +75,19 @@ fun SettingsScreen(
 
     // 알림 권한 상태 동기화
     DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    val isGranted = ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.POST_NOTIFICATIONS
-                    ) == PackageManager.PERMISSION_GRANTED
-                    viewModel.syncNotificationState(isGranted)
+        val observer =
+            LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        val isGranted =
+                            ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.POST_NOTIFICATIONS,
+                            ) == PackageManager.PERMISSION_GRANTED
+                        viewModel.syncNotificationState(isGranted)
+                    }
                 }
             }
-        }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
@@ -95,16 +97,17 @@ fun SettingsScreen(
             topBar = {
                 CommonTopBar(
                     title = stringResource(R.string.title_settings),
-                    onNavigateBack = onNavigateBack
+                    onNavigateBack = onNavigateBack,
                 )
             },
-            containerColor = MaterialTheme.colorScheme.background
+            containerColor = MaterialTheme.colorScheme.background,
         ) { innerPadding ->
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .verticalScroll(rememberScrollState()),
             ) {
                 SettingsSectionTitle(stringResource(R.string.settings_section_notification))
                 uiState.isNotificationEnabled?.let { isEnabled ->
@@ -115,50 +118,57 @@ fun SettingsScreen(
                         onCheckedChange = { isChecked ->
                             if (isChecked) {
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    val isGranted = ContextCompat.checkSelfPermission(
-                                        context,
-                                        Manifest.permission.POST_NOTIFICATIONS
-                                    ) == PackageManager.PERMISSION_GRANTED
+                                    val isGranted =
+                                        ContextCompat.checkSelfPermission(
+                                            context,
+                                            Manifest.permission.POST_NOTIFICATIONS,
+                                        ) == PackageManager.PERMISSION_GRANTED
 
-                                    if (isGranted) viewModel.toggleNotification(true)
-                                    else viewModel.showPermissionDialog()
+                                    if (isGranted) {
+                                        viewModel.toggleNotification(true)
+                                    } else {
+                                        viewModel.showPermissionDialog()
+                                    }
                                 } else {
                                     viewModel.toggleNotification(true)
                                 }
                             } else {
                                 viewModel.toggleNotification(false)
                             }
-                        }
+                        },
                     )
                 }
 
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                )
 
                 SettingsSectionTitle(stringResource(R.string.settings_section_general))
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                     Text(
                         text = stringResource(R.string.settings_item_theme),
                         style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(bottom = 12.dp)
+                        modifier = Modifier.padding(bottom = 12.dp),
                     )
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         ThemeOptionChip(
                             text = stringResource(R.string.settings_theme_system),
                             selected = uiState.isDarkMode == null,
                             onClick = { viewModel.setTheme(null) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                         ThemeOptionChip(
                             text = stringResource(R.string.settings_theme_light),
                             selected = uiState.isDarkMode == false,
                             onClick = { viewModel.setTheme(false) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                         ThemeOptionChip(
                             text = stringResource(R.string.settings_theme_dark),
                             selected = uiState.isDarkMode == true,
                             onClick = { viewModel.setTheme(true) },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                     }
                 }
@@ -166,16 +176,17 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
                 ) {
                     Text(text = stringResource(R.string.settings_item_excluded), style = MaterialTheme.typography.bodyLarge)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = stringResource(R.string.settings_desc_excluded),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -187,13 +198,13 @@ fun SettingsScreen(
                             placeholder = { Text(stringResource(R.string.settings_hint_excluded)) },
                             modifier = Modifier.weight(1f),
                             singleLine = true,
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Button(
                             onClick = { viewModel.addExcludedIngredient() },
                             shape = RoundedCornerShape(12.dp),
-                            enabled = uiState.newExcludedIngredient.isNotBlank()
+                            enabled = uiState.newExcludedIngredient.isNotBlank(),
                         ) {
                             Text(stringResource(R.string.settings_btn_add))
                         }
@@ -204,7 +215,7 @@ fun SettingsScreen(
                     if (uiState.excludedIngredients.isNotEmpty()) {
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
                             uiState.excludedIngredients.forEach { item ->
                                 InputChip(
@@ -215,48 +226,56 @@ fun SettingsScreen(
                                         Icon(
                                             Icons.Default.Close,
                                             contentDescription = stringResource(R.string.settings_desc_remove_excluded, item),
-                                            modifier = Modifier
-                                                .size(16.dp)
-                                                .clickable { viewModel.removeExcludedIngredient(item) }
+                                            modifier =
+                                                Modifier
+                                                    .size(16.dp)
+                                                    .clickable { viewModel.removeExcludedIngredient(item) },
                                         )
                                     },
-                                    colors = InputChipDefaults.inputChipColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                                    ),
-                                    border = null
+                                    colors =
+                                        InputChipDefaults.inputChipColors(
+                                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                        ),
+                                    border = null,
                                 )
                             }
                         }
                     }
                 }
 
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                )
 
                 SettingsSectionTitle(stringResource(R.string.settings_section_data))
                 SettingsClickableItem(
                     title = stringResource(R.string.settings_item_reset_ingredients),
                     description = stringResource(R.string.settings_desc_reset_ingredients),
                     isDestructive = true,
-                    onClick = { viewModel.showResetIngredientsDialog() }
+                    onClick = { viewModel.showResetIngredientsDialog() },
                 )
 
                 SettingsClickableItem(
                     title = stringResource(R.string.settings_item_reset_recipes),
                     description = stringResource(R.string.settings_desc_reset_recipes),
                     isDestructive = true,
-                    onClick = { viewModel.showResetRecipesDialog() }
+                    onClick = { viewModel.showResetRecipesDialog() },
                 )
 
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                )
 
                 SettingsSectionTitle(stringResource(R.string.settings_section_info))
                 SettingsInfoItem(
                     title = stringResource(R.string.settings_item_version),
-                    value = "v${BuildConfig.VERSION_NAME}"
+                    value = "v${BuildConfig.VERSION_NAME}",
                 )
                 SettingsClickableItem(
                     title = stringResource(R.string.settings_item_contact),
-                    onClick = { sendEmail(context, onShowSnackbar) }
+                    onClick = { sendEmail(context, onShowSnackbar) },
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -270,7 +289,7 @@ fun SettingsScreen(
             message = stringResource(R.string.settings_dialog_reset_ingredients_msg),
             confirmText = stringResource(R.string.settings_btn_delete_data),
             onConfirm = { viewModel.resetIngredients() },
-            onDismiss = { viewModel.dismissResetIngredientsDialog() }
+            onDismiss = { viewModel.dismissResetIngredientsDialog() },
         )
     }
 
@@ -280,7 +299,7 @@ fun SettingsScreen(
             message = stringResource(R.string.settings_dialog_reset_recipes_msg),
             confirmText = stringResource(R.string.settings_btn_delete_data),
             onConfirm = { viewModel.resetRecipes() },
-            onDismiss = { viewModel.dismissResetRecipesDialog() }
+            onDismiss = { viewModel.dismissResetRecipesDialog() },
         )
     }
 
@@ -292,38 +311,44 @@ fun SettingsScreen(
             confirmColor = MaterialTheme.colorScheme.primary,
             onConfirm = {
                 viewModel.dismissPermissionDialog()
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.fromParts("package", context.packageName, null)
-                }
+                val intent =
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    }
                 context.startActivity(intent)
             },
-            onDismiss = { viewModel.dismissPermissionDialog() }
+            onDismiss = { viewModel.dismissPermissionDialog() },
         )
     }
 }
 
-private fun sendEmail(context: Context, onShowSnackbar: (String, SnackbarType) -> Unit) {
+private fun sendEmail(
+    context: Context,
+    onShowSnackbar: (String, SnackbarType) -> Unit,
+) {
     val subject = context.getString(R.string.settings_email_subject)
-    val body = context.getString(
-        R.string.settings_email_body_format,
-        BuildConfig.VERSION_NAME,
-        Build.MODEL,
-        Build.VERSION.SDK_INT
-    )
+    val body =
+        context.getString(
+            R.string.settings_email_body_format,
+            BuildConfig.VERSION_NAME,
+            Build.MODEL,
+            Build.VERSION.SDK_INT,
+        )
 
-    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-        data = "mailto:".toUri()
-        putExtra(Intent.EXTRA_EMAIL, arrayOf("5000batt@gmail.com"))
-        putExtra(Intent.EXTRA_SUBJECT, subject)
-        putExtra(Intent.EXTRA_TEXT, body)
-    }
+    val emailIntent =
+        Intent(Intent.ACTION_SENDTO).apply {
+            data = "mailto:".toUri()
+            putExtra(Intent.EXTRA_EMAIL, arrayOf("5000batt@gmail.com"))
+            putExtra(Intent.EXTRA_SUBJECT, subject)
+            putExtra(Intent.EXTRA_TEXT, body)
+        }
 
     try {
         context.startActivity(emailIntent)
     } catch (e: ActivityNotFoundException) {
         onShowSnackbar(
             context.getString(R.string.settings_error_no_email),
-            SnackbarType.ERROR
+            SnackbarType.ERROR,
         )
     }
 }

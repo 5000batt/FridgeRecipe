@@ -19,24 +19,29 @@ import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.domain.model.RecipeStep
 
 @Composable
-fun RecipeStepItem(index: Int, step: RecipeStep) {
+fun RecipeStepItem(
+    index: Int,
+    step: RecipeStep,
+) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 16.dp),
-        verticalAlignment = Alignment.Top
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+        verticalAlignment = Alignment.Top,
     ) {
         Box(
-            modifier = Modifier
-                .size(28.dp)
-                .background(MaterialTheme.colorScheme.primary, CircleShape),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .size(28.dp)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape),
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = index.toString(),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onPrimary,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
         }
 
@@ -47,7 +52,7 @@ fun RecipeStepItem(index: Int, step: RecipeStep) {
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(top = 2.dp),
-            lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2
+            lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2,
         )
     }
 }

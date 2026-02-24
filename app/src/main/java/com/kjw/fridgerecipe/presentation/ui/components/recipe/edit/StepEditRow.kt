@@ -22,7 +22,7 @@ fun StepEditRow(
     index: Int,
     description: String,
     onDescriptionChange: (String) -> Unit,
-    onRemoveClick: () -> Unit
+    onRemoveClick: () -> Unit,
 ) {
     Row(verticalAlignment = Alignment.Top) {
         Text(
@@ -30,7 +30,7 @@ fun StepEditRow(
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(top = 16.dp, end = 8.dp)
+            modifier = Modifier.padding(top = 16.dp, end = 8.dp),
         )
 
         CommonTextField(
@@ -40,17 +40,17 @@ fun StepEditRow(
             modifier = Modifier.weight(1f),
             singleLine = false,
             minLines = 2,
-            maxLines = 4
+            maxLines = 4,
         )
 
         IconButton(
             onClick = onRemoveClick,
-            modifier = Modifier.padding(top = 8.dp)
+            modifier = Modifier.padding(top = 8.dp),
         ) {
             Icon(
                 Icons.Default.Delete,
                 contentDescription = stringResource(R.string.recipe_edit_desc_delete),
-                tint = MaterialTheme.colorScheme.error
+                tint = MaterialTheme.colorScheme.error,
             )
         }
     }

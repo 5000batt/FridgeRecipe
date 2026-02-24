@@ -14,15 +14,12 @@ import kotlinx.serialization.encodeToString
  * [AppJson] 싱글톤을 사용하여 직렬화 성능을 최적화합니다.
  */
 class RecipeTypeConverters {
-
     private val json = AppJson.default
 
     // --- List Converters ---
 
     @TypeConverter
-    fun fromIngredientList(value: List<RecipeIngredient>?): String? {
-        return value?.let { json.encodeToString(it) }
-    }
+    fun fromIngredientList(value: List<RecipeIngredient>?): String? = value?.let { json.encodeToString(it) }
 
     @TypeConverter
     fun toIngredientList(value: String?): List<RecipeIngredient> {
@@ -35,9 +32,7 @@ class RecipeTypeConverters {
     }
 
     @TypeConverter
-    fun fromStepList(value: List<RecipeStep>?): String? {
-        return value?.let { json.encodeToString(it) }
-    }
+    fun fromStepList(value: List<RecipeStep>?): String? = value?.let { json.encodeToString(it) }
 
     @TypeConverter
     fun toStepList(value: String?): List<RecipeStep> {

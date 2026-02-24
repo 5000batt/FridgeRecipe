@@ -21,12 +21,12 @@ import androidx.compose.ui.unit.dp
 fun RecipeSectionHeader(
     title: String,
     btnText: String,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Button(onClick = onAddClick) {

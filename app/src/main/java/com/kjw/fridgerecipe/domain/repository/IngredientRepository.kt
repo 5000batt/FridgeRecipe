@@ -5,7 +5,6 @@ import com.kjw.fridgerecipe.domain.util.DataResult
 import kotlinx.coroutines.flow.Flow
 
 interface IngredientRepository {
-
     suspend fun insertIngredient(ingredient: Ingredient): DataResult<Unit>
 
     suspend fun deleteIngredient(ingredient: Ingredient): DataResult<Unit>

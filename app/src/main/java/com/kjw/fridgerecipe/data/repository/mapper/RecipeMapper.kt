@@ -9,35 +9,32 @@ import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 import com.kjw.fridgerecipe.domain.model.RecipeStep
 
-fun RecipeDto.toDomainModel(): Recipe {
-    return Recipe(
+fun RecipeDto.toDomainModel(): Recipe =
+    Recipe(
         id = null,
         title = this.title ?: "제목 없음",
         servings = extractNumber(this.info?.servings),
         time = extractNumber(this.info?.time),
         level = LevelType.fromId(this.info?.level),
         ingredients = this.ingredients?.map { it.toDomainModel() } ?: emptyList(),
-        steps = this.steps?.map { it.toDomainModel() } ?: emptyList()
+        steps = this.steps?.map { it.toDomainModel() } ?: emptyList(),
     )
-}
 
-fun RecipeIngredientDto.toDomainModel(): RecipeIngredient {
-    return RecipeIngredient(
+fun RecipeIngredientDto.toDomainModel(): RecipeIngredient =
+    RecipeIngredient(
         name = this.name ?: "재료",
         quantity = this.quantity ?: "-",
-        isEssential = this.isEssential ?: false
+        isEssential = this.isEssential ?: false,
     )
-}
 
-fun RecipeStepDto.toDomainModel(): RecipeStep {
-    return RecipeStep(
+fun RecipeStepDto.toDomainModel(): RecipeStep =
+    RecipeStep(
         number = this.number ?: 1,
-        description = this.description ?: "설명 없음"
+        description = this.description ?: "설명 없음",
     )
-}
 
-fun Recipe.toEntity(): RecipeEntity {
-    return RecipeEntity(
+fun Recipe.toEntity(): RecipeEntity =
+    RecipeEntity(
         id = this.id,
         title = this.title,
         servings = this.servings,
@@ -50,12 +47,11 @@ fun Recipe.toEntity(): RecipeEntity {
         cookingTool = this.cookingTool,
         timeFilter = this.timeFilter,
         ingredientsQuery = this.ingredientsQuery,
-        useOnlySelected = this.useOnlySelected
+        useOnlySelected = this.useOnlySelected,
     )
-}
 
-fun RecipeEntity.toDomainModel(): Recipe {
-    return Recipe(
+fun RecipeEntity.toDomainModel(): Recipe =
+    Recipe(
         id = this.id,
         title = this.title,
         servings = this.servings,
@@ -68,9 +64,8 @@ fun RecipeEntity.toDomainModel(): Recipe {
         cookingTool = this.cookingTool,
         timeFilter = this.timeFilter,
         ingredientsQuery = this.ingredientsQuery,
-        useOnlySelected = this.useOnlySelected
+        useOnlySelected = this.useOnlySelected,
     )
-}
 
 private fun extractNumber(text: String?): Int {
     if (text == null) return 0

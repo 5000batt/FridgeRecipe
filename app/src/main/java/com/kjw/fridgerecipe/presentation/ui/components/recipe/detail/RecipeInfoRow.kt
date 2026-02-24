@@ -30,22 +30,22 @@ import com.kjw.fridgerecipe.domain.model.Recipe
 fun RecipeInfoRow(recipe: Recipe) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         RecipeMetaInfo(
             icon = Icons.Default.Person,
             label = stringResource(R.string.recipe_servings_format, recipe.servings),
-            contentDescription = stringResource(R.string.recipe_meta_servings_desc)
+            contentDescription = stringResource(R.string.recipe_meta_servings_desc),
         )
         RecipeMetaInfo(
             icon = Icons.Default.AccessTime,
             label = stringResource(R.string.recipe_time_format, recipe.time),
-            contentDescription = stringResource(R.string.recipe_meta_time_desc)
+            contentDescription = stringResource(R.string.recipe_meta_time_desc),
         )
         RecipeMetaInfo(
             icon = Icons.Default.SignalCellularAlt,
             label = stringResource(recipe.level.labelResId),
-            contentDescription = stringResource(R.string.recipe_meta_level_desc)
+            contentDescription = stringResource(R.string.recipe_meta_level_desc),
         )
     }
 }
@@ -54,26 +54,27 @@ fun RecipeInfoRow(recipe: Recipe) {
 private fun RecipeMetaInfo(
     icon: ImageVector,
     label: String,
-    contentDescription: String
+    contentDescription: String,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(8.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+        modifier =
+            Modifier
+                .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(8.dp))
+                .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(18.dp)
+            modifier = Modifier.size(18.dp),
         )
         Spacer(modifier = Modifier.width(6.dp))
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

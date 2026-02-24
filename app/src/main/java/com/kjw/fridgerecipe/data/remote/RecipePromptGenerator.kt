@@ -1,50 +1,52 @@
 package com.kjw.fridgerecipe.data.remote
 
+import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
-import com.kjw.fridgerecipe.domain.model.CookingToolType
 import javax.inject.Inject
 
-class RecipePromptGenerator @Inject constructor() {
+class RecipePromptGenerator
+    @Inject
+    constructor() {
+        fun createRecipePrompt(
+            template: String,
+            ingredients: List<Ingredient>,
+            timeFilter: String?,
+            level: LevelType?,
+            categoryFilter: RecipeCategoryType?,
+            cookingToolFilter: CookingToolType?,
+            useOnlySelected: Boolean,
+            excludedIngredients: List<String>,
+        ): String {
+            val ingredientDetails = ingredients.joinToString(", ") { "${it.name} (${it.amount}${it.unit.symbol})" }
 
-    fun createRecipePrompt(
-        template: String,
-        ingredients: List<Ingredient>,
-        timeFilter: String?,
-        level: LevelType?,
-        categoryFilter: RecipeCategoryType?,
-        cookingToolFilter: CookingToolType?,
-        useOnlySelected: Boolean,
-        excludedIngredients: List<String>
-    ): String {
-        val ingredientDetails = ingredients.joinToString(", ") { "${it.name} (${it.amount}${it.unit.symbol})" }
+            val constraints =
+                buildList {
+                    add("- 사용 가능한 냉장고 재료: [$ingredientDetails]")
+                    timeFilter?.let { add("- 조리 시간: $it") }
+                    level?.let { add("- 난이도: ${it.id}") }
+                    categoryFilter?.let { add("- 음식 종류: ${it.id}") }
+                    cookingToolFilter?.let { add("- 조리 도구: ${it.id} (필수 사용)") }
 
-        val constraints = buildList {
-            add("- 사용 가능한 냉장고 재료: [$ingredientDetails]")
-            timeFilter?.let { add("- 조리 시간: $it") }
-            level?.let { add("- 난이도: ${it.id}") }
-            categoryFilter?.let { add("- 음식 종류: ${it.id}") }
-            cookingToolFilter?.let { add("- 조리 도구: ${it.id} (필수 사용)") }
+                    add("- 재료 표기 규칙: 'ingredients' 목록의 'name'은 반드시 핵심 명사만 사용하세요. (예: '다진 양파' -> '양파', '삶은 계란' -> '계란', '소고기(안심)' -> '소고기')")
+                    add("- 손질 상태(채썬, 삶은 등)는 'steps'의 조리 과정 설명에 포함시키세요.")
 
-            add("- 재료 표기 규칙: 'ingredients' 목록의 'name'은 반드시 핵심 명사만 사용하세요. (예: '다진 양파' -> '양파', '삶은 계란' -> '계란', '소고기(안심)' -> '소고기')")
-            add("- 손질 상태(채썬, 삶은 등)는 'steps'의 조리 과정 설명에 포함시키세요.")
+                    if (useOnlySelected) {
+                        add("- 추가 제약: 소금, 후추, 물 등 기본 양념 외에 위 목록에 없는 재료는 절대 사용 금지.")
+                    }
+                    if (excludedIngredients.isNotEmpty()) {
+                        add("- 제외 재료: [${excludedIngredients.joinToString(", ")}] (사용 금지)")
+                    }
+                }.joinToString("\n")
 
-            if (useOnlySelected) {
-                add("- 추가 제약: 소금, 후추, 물 등 기본 양념 외에 위 목록에 없는 재료는 절대 사용 금지.")
-            }
-            if (excludedIngredients.isNotEmpty()) {
-                add("- 제외 재료: [${excludedIngredients.joinToString(", ")}] (사용 금지)")
-            }
-        }.joinToString("\n")
+            val safeTemplate = template.ifBlank { DEFAULT_PROMPT_TEMPLATE }
 
-        val safeTemplate = template.ifBlank { DEFAULT_PROMPT_TEMPLATE }
+            return safeTemplate.replace("{{CONSTRAINTS}}", constraints)
+        }
 
-        return safeTemplate.replace("{{CONSTRAINTS}}", constraints)
-    }
-
-    companion object {
-        const val DEFAULT_PROMPT_TEMPLATE = """
+        companion object {
+            const val DEFAULT_PROMPT_TEMPLATE = """
 **Role**: 
 당신은 제한된 재료로도 훌륭한 맛을 내는 창의적인 전문 셰프입니다.
 
@@ -75,5 +77,5 @@ class RecipePromptGenerator @Inject constructor() {
   }
 }
         """
+        }
     }
-}

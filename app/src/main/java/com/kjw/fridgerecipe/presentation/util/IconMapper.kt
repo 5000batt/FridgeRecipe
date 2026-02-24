@@ -3,8 +3,8 @@ package com.kjw.fridgerecipe.presentation.util
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.IngredientIcon
 
-fun getIconResId(icon: IngredientIcon): Int {
-    return when (icon) {
+fun getIconResId(icon: IngredientIcon): Int =
+    when (icon) {
         // 기타
         IngredientIcon.DEFAULT -> R.drawable.default_image
         IngredientIcon.KIMCHI -> R.drawable.kimchi
@@ -76,4 +76,3 @@ fun getIconResId(icon: IngredientIcon): Int {
         IngredientIcon.BEER -> R.drawable.beer
         IngredientIcon.SOJU -> R.drawable.soju
     }
-}

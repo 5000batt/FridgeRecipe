@@ -15,31 +15,25 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-
     @Provides
     @Singleton
     fun provideDatabase(
         @ApplicationContext context: Context,
-        callback: AppDatabase.DatabaseCallback
-    ): AppDatabase {
-        return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "fridge_recipe_db"
-        )
-        .addCallback(callback)
-        .addMigrations(AppDatabase.MIGRATION_14_15)
-        .fallbackToDestructiveMigration(false)
-        .build()
-    }
+        callback: AppDatabase.DatabaseCallback,
+    ): AppDatabase =
+        Room
+            .databaseBuilder(
+                context,
+                AppDatabase::class.java,
+                "fridge_recipe_db",
+            ).addCallback(callback)
+            .addMigrations(AppDatabase.MIGRATION_14_15)
+            .fallbackToDestructiveMigration(false)
+            .build()
 
     @Provides
-    fun provideIngredientDao(appDatabase: AppDatabase): IngredientDao {
-        return appDatabase.ingredientDao()
-    }
+    fun provideIngredientDao(appDatabase: AppDatabase): IngredientDao = appDatabase.ingredientDao()
 
     @Provides
-    fun provideRecipeDao(appDatabase: AppDatabase): RecipeDao {
-        return appDatabase.recipeDao()
-    }
+    fun provideRecipeDao(appDatabase: AppDatabase): RecipeDao = appDatabase.recipeDao()
 }

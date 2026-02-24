@@ -7,14 +7,16 @@ import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.util.UiText
 import javax.inject.Inject
 
-class DelIngredientUseCase @Inject constructor(
-    private val ingredientRepository: IngredientRepository
-) {
-    suspend operator fun invoke(ingredient: Ingredient): DataResult<Unit> {
-        if (ingredient.id == null) {
-            return DataResult.Error(UiText.StringResource(R.string.error_delete_failed))
-        }
+class DelIngredientUseCase
+    @Inject
+    constructor(
+        private val ingredientRepository: IngredientRepository,
+    ) {
+        suspend operator fun invoke(ingredient: Ingredient): DataResult<Unit> {
+            if (ingredient.id == null) {
+                return DataResult.Error(UiText.StringResource(R.string.error_delete_failed))
+            }
 
-        return ingredientRepository.deleteIngredient(ingredient)
+            return ingredientRepository.deleteIngredient(ingredient)
+        }
     }
-}

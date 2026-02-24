@@ -12,8 +12,8 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.Firebase
 import com.google.firebase.remoteconfig.remoteConfig
-import com.kjw.fridgerecipe.data.util.UserDictionaryManager
 import com.kjw.fridgerecipe.data.util.IngredientAnalyzer
+import com.kjw.fridgerecipe.data.util.UserDictionaryManager
 import com.kjw.fridgerecipe.domain.model.ThemeMode
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.presentation.ui.screen.MainAppScreen
@@ -28,13 +28,15 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     @Inject
     lateinit var settingsRepository: SettingsRepository
+
     @Inject
     lateinit var rewardedAdManager: RewardedAdManager
+
     @Inject
     lateinit var userDictionaryManager: UserDictionaryManager
+
     @Inject
     lateinit var ingredientAnalyzer: IngredientAnalyzer
 
@@ -56,7 +58,8 @@ class MainActivity : ComponentActivity() {
         }
 
         // Remote Config 업데이트
-        Firebase.remoteConfig.fetchAndActivate()
+        Firebase.remoteConfig
+            .fetchAndActivate()
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     lifecycleScope.launch(Dispatchers.IO) {
@@ -81,17 +84,18 @@ class MainActivity : ComponentActivity() {
         setContent {
             val themeMode by settingsRepository.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
 
-            val isDarkTheme = when (themeMode) {
-                ThemeMode.LIGHT -> false
-                ThemeMode.DARK -> true
-                ThemeMode.SYSTEM -> isSystemInDarkTheme()
-            }
+            val isDarkTheme =
+                when (themeMode) {
+                    ThemeMode.LIGHT -> false
+                    ThemeMode.DARK -> true
+                    ThemeMode.SYSTEM -> isSystemInDarkTheme()
+                }
 
             FridgeRecipeTheme(darkTheme = isDarkTheme) {
                 MainAppScreen(
                     onShowAd = { onReward ->
                         rewardedAdManager.showAd(this@MainActivity, onReward)
-                    }
+                    },
                 )
             }
         }

@@ -18,7 +18,6 @@ import javax.inject.Inject
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class RecipeWithMatchTest {
-
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
 
@@ -30,67 +29,74 @@ class RecipeWithMatchTest {
         hiltRule.inject()
     }
 
-    private fun createIngredient(name: String) = Ingredient(
-        id = 1L,
-        name = name,
-        amount = 1.0,
-        unit = UnitType.COUNT,
-        expirationDate = LocalDate.now().plusDays(7),
-        storageLocation = StorageType.REFRIGERATED,
-        emoticon = IngredientIcon.VEGETABLE,
-        category = IngredientCategoryType.VEGETABLE
-    )
+    private fun createIngredient(name: String) =
+        Ingredient(
+            id = 1L,
+            name = name,
+            amount = 1.0,
+            unit = UnitType.COUNT,
+            expirationDate = LocalDate.now().plusDays(7),
+            storageLocation = StorageType.REFRIGERATED,
+            emoticon = IngredientIcon.VEGETABLE,
+            category = IngredientCategoryType.VEGETABLE,
+        )
 
-    private fun createRecipe(vararg ingredientNames: String) = Recipe(
-        id = 1L,
-        title = "테스트 레시피",
-        servings = 1,
-        time = 20,
-        level = LevelType.BEGINNER,
-        ingredients = ingredientNames.map { 
-            RecipeIngredient(name = it, quantity = "약간", isEssential = true) 
-        },
-        steps = emptyList()
-    )
-
-    @Test
-    fun testBasicMatch() = runBlocking {
-        val fridge = listOf(createIngredient("양파"))
-        val recipe = createRecipe("양파")
-        
-        val result = recipeMatcher.calculateMatch(recipe, fridge)
-        
-        assertTrue(result.isCookable)
-        assertEquals(1, result.matchCount)
-    }
+    private fun createRecipe(vararg ingredientNames: String) =
+        Recipe(
+            id = 1L,
+            title = "테스트 레시피",
+            servings = 1,
+            time = 20,
+            level = LevelType.BEGINNER,
+            ingredients =
+                ingredientNames.map {
+                    RecipeIngredient(name = it, quantity = "약간", isEssential = true)
+                },
+            steps = emptyList(),
+        )
 
     @Test
-    fun testNounExtractionMatch() = runBlocking {
-        val fridge = listOf(createIngredient("양파"))
-        val recipe = createRecipe("다진 양파")
-        
-        val result = recipeMatcher.calculateMatch(recipe, fridge)
-        
-        assertTrue("수식어가 있어도 명사가 같으면 매칭되어야 함", result.isCookable)
-    }
+    fun testBasicMatch() =
+        runBlocking {
+            val fridge = listOf(createIngredient("양파"))
+            val recipe = createRecipe("양파")
+
+            val result = recipeMatcher.calculateMatch(recipe, fridge)
+
+            assertTrue(result.isCookable)
+            assertEquals(1, result.matchCount)
+        }
 
     @Test
-    fun testFalsePositiveSuffix() = runBlocking {
-        val fridge = listOf(createIngredient("고추"))
-        val recipe = createRecipe("고추장")
+    fun testNounExtractionMatch() =
+        runBlocking {
+            val fridge = listOf(createIngredient("양파"))
+            val recipe = createRecipe("다진 양파")
 
-        val result = recipeMatcher.calculateMatch(recipe, fridge)
+            val result = recipeMatcher.calculateMatch(recipe, fridge)
 
-        assertFalse("고추장 레시피에 고추만 있으면 요리 불가여야 함", result.isCookable)
-    }
+            assertTrue("수식어가 있어도 명사가 같으면 매칭되어야 함", result.isCookable)
+        }
 
     @Test
-    fun testSynonymMatch() = runBlocking {
-        val fridge = listOf(createIngredient("계란"))
-        val recipe = createRecipe("달걀")
-        
-        val result = recipeMatcher.calculateMatch(recipe, fridge)
-        
-        assertTrue("계란과 달걀은 동의어로 매칭되어야 함", result.isCookable)
-    }
+    fun testFalsePositiveSuffix() =
+        runBlocking {
+            val fridge = listOf(createIngredient("고추"))
+            val recipe = createRecipe("고추장")
+
+            val result = recipeMatcher.calculateMatch(recipe, fridge)
+
+            assertFalse("고추장 레시피에 고추만 있으면 요리 불가여야 함", result.isCookable)
+        }
+
+    @Test
+    fun testSynonymMatch() =
+        runBlocking {
+            val fridge = listOf(createIngredient("계란"))
+            val recipe = createRecipe("달걀")
+
+            val result = recipeMatcher.calculateMatch(recipe, fridge)
+
+            assertTrue("계란과 달걀은 동의어로 매칭되어야 함", result.isCookable)
+        }
 }

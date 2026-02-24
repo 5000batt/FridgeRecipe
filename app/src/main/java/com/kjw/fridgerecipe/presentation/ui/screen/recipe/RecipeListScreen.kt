@@ -45,7 +45,7 @@ fun RecipeListScreen(
     onNavigateToRecipeDetail: (Long) -> Unit,
     onNavigateToRecipeEdit: (Long) -> Unit,
     onNavigateToSettings: () -> Unit,
-    onNavigateToMainTab: (MainTab) -> Unit
+    onNavigateToMainTab: (MainTab) -> Unit,
 ) {
     val recipeList by viewModel.recipeList.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -62,13 +62,13 @@ fun RecipeListScreen(
             topBar = {
                 CommonTopBar(
                     title = stringResource(MainTab.RECIPES.titleResId),
-                    onSettingClick = onNavigateToSettings
+                    onSettingClick = onNavigateToSettings,
                 )
             },
             bottomBar = {
                 BottomNavigationBar(
                     currentTab = MainTab.RECIPES,
-                    onTabSelected = onNavigateToMainTab
+                    onTabSelected = onNavigateToMainTab,
                 )
             },
             floatingActionButton = {
@@ -76,43 +76,46 @@ fun RecipeListScreen(
                     text = stringResource(R.string.fab_add_recipe),
                     icon = Icons.Filled.Add,
                     state = listState,
-                    onClick = { onNavigateToRecipeEdit(RecipeEditRoute.DEFAULT_ID) }
+                    onClick = { onNavigateToRecipeEdit(RecipeEditRoute.DEFAULT_ID) },
                 )
             },
-            containerColor = MaterialTheme.colorScheme.background
+            containerColor = MaterialTheme.colorScheme.background,
         ) { innerPadding ->
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 16.dp)
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(horizontal = 16.dp),
             ) {
                 CommonSearchBar(
                     query = searchQuery,
                     onQueryChange = { viewModel.onSearchQueryChanged(it) },
                     placeholderText = stringResource(R.string.recipe_search_placeholder),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    val sortOptions = listOf(
-                        RecipeListViewModel.SortType.LATEST to R.string.recipe_sort_latest,
-                        RecipeListViewModel.SortType.OLDEST to R.string.recipe_sort_oldest,
-                        RecipeListViewModel.SortType.MATCH_RATE to R.string.recipe_sort_match_rate,
-                    )
+                    val sortOptions =
+                        listOf(
+                            RecipeListViewModel.SortType.LATEST to R.string.recipe_sort_latest,
+                            RecipeListViewModel.SortType.OLDEST to R.string.recipe_sort_oldest,
+                            RecipeListViewModel.SortType.MATCH_RATE to R.string.recipe_sort_match_rate,
+                        )
 
                     sortOptions.forEach { (type, labelRes) ->
                         FilterChip(
                             selected = sortType == type,
                             onClick = { viewModel.onSortTypeChanged(type) },
                             label = { Text(stringResource(labelRes)) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                            colors =
+                                FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                ),
                         )
                     }
                 }
@@ -122,28 +125,29 @@ fun RecipeListScreen(
                         EmptyStateView(
                             icon = Icons.Default.Search,
                             title = stringResource(R.string.recipe_search_empty_title, searchQuery),
-                            message = stringResource(R.string.recipe_search_empty_desc)
+                            message = stringResource(R.string.recipe_search_empty_desc),
                         )
                     } else {
                         EmptyStateView(
                             icon = Icons.Default.SoupKitchen,
                             title = stringResource(R.string.recipe_empty_title),
-                            message = stringResource(R.string.recipe_empty_desc)
+                            message = stringResource(R.string.recipe_empty_desc),
                         )
                     }
                 } else {
                     FadeScrollLazyColumn(
                         modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(
-                            top = 8.dp,
-                            bottom = 80.dp
-                        ),
+                        contentPadding =
+                            PaddingValues(
+                                top = 8.dp,
+                                bottom = 80.dp,
+                            ),
                         state = listState,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         items(
                             items = recipeList,
-                            key = { it.recipe.id ?: 0 }
+                            key = { it.recipe.id ?: 0 },
                         ) { item ->
                             RecipeListItem(
                                 recipe = item.recipe,
@@ -153,7 +157,7 @@ fun RecipeListScreen(
                                     item.recipe.id?.let { id ->
                                         onNavigateToRecipeDetail(id)
                                     }
-                                }
+                                },
                             )
                         }
                     }

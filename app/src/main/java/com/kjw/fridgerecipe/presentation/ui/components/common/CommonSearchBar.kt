@@ -22,7 +22,7 @@ fun CommonSearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     placeholderText: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     OutlinedTextField(
         value = query,
@@ -34,7 +34,7 @@ fun CommonSearchBar(
             Icon(
                 Icons.Filled.Search,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.primary,
             )
         },
         trailingIcon = {
@@ -42,16 +42,17 @@ fun CommonSearchBar(
                 Icon(
                     imageVector = Icons.Default.Clear,
                     contentDescription = stringResource(R.string.search_clear),
-                    modifier = Modifier.clickable { onQueryChange("") }
+                    modifier = Modifier.clickable { onQueryChange("") },
                 )
             }
         },
         shape = RoundedCornerShape(16.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surface,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outline
-        )
+        colors =
+            OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            ),
     )
 }

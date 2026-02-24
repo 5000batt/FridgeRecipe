@@ -5,10 +5,10 @@ import com.kjw.fridgerecipe.domain.repository.IngredientRepository
 import com.kjw.fridgerecipe.domain.util.DataResult
 import javax.inject.Inject
 
-class GetIngredientByIdUseCase @Inject constructor(
-    private val repository: IngredientRepository
-) {
-    suspend operator fun invoke(id: Long): DataResult<Ingredient> {
-        return repository.getIngredientById(id)
+class GetIngredientByIdUseCase
+    @Inject
+    constructor(
+        private val repository: IngredientRepository,
+    ) {
+        suspend operator fun invoke(id: Long): DataResult<Ingredient> = repository.getIngredientById(id)
     }
-}

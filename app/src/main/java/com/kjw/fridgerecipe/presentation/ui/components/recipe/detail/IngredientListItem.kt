@@ -24,27 +24,28 @@ import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 @Composable
 fun IngredientListItem(
     ingredient: RecipeIngredient,
-    isMissing: Boolean = false
+    isMissing: Boolean = false,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 6.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(bottom = 6.dp),
     ) {
         if (ingredient.isEssential) {
             Icon(
                 imageVector = Icons.Default.Star,
                 contentDescription = stringResource(R.string.recipe_ingredient_essential_desc),
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(20.dp),
             )
         } else {
             Icon(
                 imageVector = Icons.Default.FiberManualRecord,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.outlineVariant,
-                modifier = Modifier.size(12.dp).padding(2.dp)
+                modifier = Modifier.size(12.dp).padding(2.dp),
             )
         }
 
@@ -55,14 +56,14 @@ fun IngredientListItem(
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = if (isMissing) FontWeight.Bold else FontWeight.Normal,
             color = if (isMissing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
 
         if (isMissing) {
             Text(
                 text = stringResource(R.string.recipe_detail_missing),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.error
+                color = MaterialTheme.colorScheme.error,
             )
         }
 

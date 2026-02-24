@@ -11,10 +11,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class DataSourceModule {
-
     @Binds
     @Singleton
-    abstract fun bindRecipeRemoteDataSource(
-        impl: RecipeRemoteDataSourceImpl
-    ): RecipeRemoteDataSource
+    abstract fun bindRecipeRemoteDataSource(impl: RecipeRemoteDataSourceImpl): RecipeRemoteDataSource
 }

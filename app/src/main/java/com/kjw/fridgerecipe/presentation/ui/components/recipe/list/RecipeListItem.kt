@@ -48,49 +48,53 @@ fun RecipeListItem(
     recipe: Recipe,
     matchPercentage: Int? = null,
     isCookable: Boolean = false,
-    onRecipeClick: () -> Unit
+    onRecipeClick: () -> Unit,
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = LocalIndication.current,
-                onClick = onRecipeClick
-            ),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = LocalIndication.current,
+                    onClick = onRecipeClick,
+                ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             if (recipe.imageUri != null) {
                 AsyncImage(
                     model = recipe.imageUri,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                    modifier =
+                        Modifier
+                            .size(100.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
                 )
             } else {
                 Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .size(100.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         Icons.Default.SoupKitchen,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.size(40.dp),
                     )
                 }
             }
@@ -98,10 +102,11 @@ fun RecipeListItem(
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(100.dp),
-                verticalArrangement = Arrangement.SpaceBetween
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .height(100.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
                     text = recipe.title,
@@ -109,63 +114,73 @@ fun RecipeListItem(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(top = 4.dp)
+                    modifier = Modifier.padding(top = 4.dp),
                 )
 
                 if (matchPercentage != null) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Surface(
-                        color = if (isCookable) MaterialTheme.colorScheme.primaryContainer
-                        else MaterialTheme.colorScheme.surfaceVariant,
-                        shape = RoundedCornerShape(4.dp)
+                        color =
+                            if (isCookable) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.surfaceVariant
+                            },
+                        shape = RoundedCornerShape(4.dp),
                     ) {
                         Text(
                             text = stringResource(R.string.recipe_match_rate_format, matchPercentage),
                             style = MaterialTheme.typography.labelSmall,
-                            color = if (isCookable) MaterialTheme.colorScheme.onPrimaryContainer
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            color =
+                                if (isCookable) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                         )
                     }
                 }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
+                    horizontalArrangement = Arrangement.Start,
                 ) {
                     RecipeInfoChip(
                         icon = Icons.Default.Person,
-                        text = stringResource(R.string.recipe_servings_format, recipe.servings)
+                        text = stringResource(R.string.recipe_servings_format, recipe.servings),
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Box(
-                        modifier = Modifier
-                            .size(2.dp)
-                            .background(MaterialTheme.colorScheme.outline, CircleShape)
+                        modifier =
+                            Modifier
+                                .size(2.dp)
+                                .background(MaterialTheme.colorScheme.outline, CircleShape),
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
 
                     RecipeInfoChip(
                         icon = Icons.Default.AccessTime,
-                        text = stringResource(R.string.recipe_time_format, recipe.time)
+                        text = stringResource(R.string.recipe_time_format, recipe.time),
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Box(
-                        modifier = Modifier
-                            .size(2.dp)
-                            .background(MaterialTheme.colorScheme.outline, CircleShape)
+                        modifier =
+                            Modifier
+                                .size(2.dp)
+                                .background(MaterialTheme.colorScheme.outline, CircleShape),
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
 
                     RecipeInfoChip(
                         icon = Icons.Default.SignalCellularAlt,
-                        text = stringResource(recipe.level.labelResId)
+                        text = stringResource(recipe.level.labelResId),
                     )
                 }
             }
@@ -176,14 +191,14 @@ fun RecipeListItem(
 @Composable
 private fun RecipeInfoChip(
     icon: ImageVector,
-    text: String
+    text: String,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(14.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         Spacer(modifier = Modifier.width(4.dp))
@@ -191,7 +206,7 @@ private fun RecipeInfoChip(
         Text(
             text = text,
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

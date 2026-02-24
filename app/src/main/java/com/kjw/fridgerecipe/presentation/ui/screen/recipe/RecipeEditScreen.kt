@@ -37,14 +37,14 @@ import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.presentation.navigation.RecipeEditRoute
 import com.kjw.fridgerecipe.presentation.ui.components.common.BottomActionBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonTopBar
-import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.common.ConfirmDialog
 import com.kjw.fridgerecipe.presentation.ui.components.common.ErrorText
 import com.kjw.fridgerecipe.presentation.ui.components.common.FridgeBottomButton
+import com.kjw.fridgerecipe.presentation.ui.components.common.LoadingContent
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.IngredientEditRow
-import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.RecipeMetadataForm
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.RecipeBasicInfoForm
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.RecipeImageSelector
+import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.RecipeMetadataForm
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.RecipeSectionHeader
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.StepEditRow
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
@@ -59,7 +59,7 @@ fun RecipeEditScreen(
     onNavigateToRecipeList: () -> Unit,
     viewModel: RecipeEditViewModel = hiltViewModel(),
     recipeId: Long,
-    onShowSnackbar: (String, SnackbarType) -> Unit
+    onShowSnackbar: (String, SnackbarType) -> Unit,
 ) {
     val isEditMode = recipeId != RecipeEditRoute.DEFAULT_ID
     val uiState by viewModel.editUiState.collectAsState()
@@ -72,10 +72,11 @@ fun RecipeEditScreen(
     val servingsFocusRequester = remember { FocusRequester() }
     val timeFocusRequester = remember { FocusRequester() }
 
-    val photoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia(),
-        onResult = { uri -> viewModel.onImageSelected(uri) }
-    )
+    val photoPickerLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.PickVisualMedia(),
+            onResult = { uri -> viewModel.onImageSelected(uri) },
+        )
 
     LaunchedEffect(recipeId, isEditMode) {
         if (isEditMode) {
@@ -133,12 +134,13 @@ fun RecipeEditScreen(
         Scaffold(
             topBar = {
                 CommonTopBar(
-                    title = if (isEditMode) {
-                        stringResource(R.string.title_recipe_edit)
-                    } else {
-                        stringResource(R.string.title_recipe_add)
-                    },
-                    onNavigateBack = onNavigateBack
+                    title =
+                        if (isEditMode) {
+                            stringResource(R.string.title_recipe_edit)
+                        } else {
+                            stringResource(R.string.title_recipe_add)
+                        },
+                    onNavigateBack = onNavigateBack,
                 )
             },
             bottomBar = {
@@ -146,7 +148,7 @@ fun RecipeEditScreen(
                     if (isEditMode) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             FridgeBottomButton(
                                 text = stringResource(R.string.recipe_edit_btn_delete),
@@ -154,20 +156,20 @@ fun RecipeEditScreen(
                                 modifier = Modifier.weight(1f),
                                 icon = { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.recipe_edit_btn_delete)) },
                                 containerColor = MaterialTheme.colorScheme.errorContainer,
-                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
                             )
 
                             FridgeBottomButton(
                                 text = stringResource(R.string.recipe_edit_btn_complete),
                                 onClick = { viewModel.onSaveOrUpdateRecipe(isEditMode = true) },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
                             )
                         }
                     } else {
                         FridgeBottomButton(
                             text = stringResource(R.string.recipe_edit_btn_save),
                             onClick = { viewModel.onSaveOrUpdateRecipe(isEditMode = false) },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }
@@ -175,16 +177,18 @@ fun RecipeEditScreen(
             containerColor = MaterialTheme.colorScheme.background,
         ) { innerPadding ->
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
             ) {
                 LazyColumn(
                     state = listState,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
                 ) {
                     item {
                         Spacer(modifier = Modifier.height(8.dp))
@@ -193,9 +197,9 @@ fun RecipeEditScreen(
                             imageUri = uiState.imageUri,
                             onClick = {
                                 photoPickerLauncher.launch(
-                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
                                 )
-                            }
+                            },
                         )
                     }
 
@@ -214,7 +218,7 @@ fun RecipeEditScreen(
                             timeError = uiState.timeError?.asString(),
                             titleFocusRequester = titleFocusRequester,
                             servingsFocusRequester = servingsFocusRequester,
-                            timeFocusRequester = timeFocusRequester
+                            timeFocusRequester = timeFocusRequester,
                         )
                     }
 
@@ -227,7 +231,7 @@ fun RecipeEditScreen(
                             categoryState = uiState.categoryState,
                             onCategoryChange = { viewModel.onCategoryChanged(it) },
                             cookingToolState = uiState.cookingToolState,
-                            onCookingToolChange = { viewModel.onCookingToolChanged(it) }
+                            onCookingToolChange = { viewModel.onCookingToolChanged(it) },
                         )
                     }
 
@@ -237,7 +241,7 @@ fun RecipeEditScreen(
                         RecipeSectionHeader(
                             title = stringResource(R.string.recipe_edit_section_ingredients),
                             btnText = stringResource(R.string.recipe_edit_btn_add),
-                            onAddClick = { viewModel.onAddIngredient() }
+                            onAddClick = { viewModel.onAddIngredient() },
                         )
 
                         if (uiState.ingredientsState.isNotEmpty()) {
@@ -245,7 +249,7 @@ fun RecipeEditScreen(
                                 text = stringResource(R.string.recipe_edit_guide_ingredients),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.padding(vertical = 8.dp)
+                                modifier = Modifier.padding(vertical = 8.dp),
                             )
                         }
 
@@ -262,7 +266,7 @@ fun RecipeEditScreen(
                             onNameChange = { viewModel.onIngredientNameChanged(index, it) },
                             quantity = ingredient.quantity,
                             onQuantityChange = { viewModel.onIngredientQuantityChanged(index, it) },
-                            onRemoveClick = { viewModel.onRemoveIngredient(index) }
+                            onRemoveClick = { viewModel.onRemoveIngredient(index) },
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -274,7 +278,7 @@ fun RecipeEditScreen(
                         RecipeSectionHeader(
                             title = stringResource(R.string.recipe_edit_section_steps),
                             btnText = stringResource(R.string.recipe_edit_btn_add_step),
-                            onAddClick = { viewModel.onAddStep() }
+                            onAddClick = { viewModel.onAddStep() },
                         )
 
                         if (uiState.stepsError != null) ErrorText(uiState.stepsError!!.asString())
@@ -287,7 +291,7 @@ fun RecipeEditScreen(
                             index = index,
                             description = step.description,
                             onDescriptionChange = { viewModel.onStepDescriptionChanged(index, it) },
-                            onRemoveClick = { viewModel.onRemoveStep(index) }
+                            onRemoveClick = { viewModel.onRemoveStep(index) },
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -305,7 +309,7 @@ fun RecipeEditScreen(
             message = stringResource(R.string.recipe_edit_dialog_delete_msg, uiState.title),
             confirmText = stringResource(R.string.recipe_edit_btn_delete),
             onConfirm = { viewModel.onDeleteRecipe() },
-            onDismiss = { viewModel.onDeleteDialogDismiss() }
+            onDismiss = { viewModel.onDeleteDialogDismiss() },
         )
     }
 }

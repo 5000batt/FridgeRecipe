@@ -30,23 +30,34 @@ fun CommonTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     trailingIcon: @Composable (() -> Unit)? = null,
     suffix: @Composable (() -> Unit)? = null,
-    shape: RoundedCornerShape = RoundedCornerShape(12.dp)
+    shape: RoundedCornerShape = RoundedCornerShape(12.dp),
 ) {
-    val transparentColors = OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = Color.Transparent,
-        unfocusedContainerColor = Color.Transparent,
-        focusedBorderColor = MaterialTheme.colorScheme.primary,
-        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-        errorBorderColor = MaterialTheme.colorScheme.error
-    )
+    val transparentColors =
+        OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            errorBorderColor = MaterialTheme.colorScheme.error,
+        )
 
     Column(modifier = modifier) {
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
-            label = if (label != null) { { Text(label) } } else null,
-            placeholder = if (placeholder != null) { { Text(placeholder) } } else null,
+            label =
+                if (label != null) {
+                    { Text(label) }
+                } else {
+                    null
+                },
+            placeholder =
+                if (placeholder != null) {
+                    { Text(placeholder) }
+                } else {
+                    null
+                },
             isError = isError,
             singleLine = singleLine,
             minLines = minLines,
@@ -56,7 +67,7 @@ fun CommonTextField(
             trailingIcon = trailingIcon,
             suffix = suffix,
             shape = shape,
-            colors = transparentColors
+            colors = transparentColors,
         )
 
         if (isError && errorMessage != null) {

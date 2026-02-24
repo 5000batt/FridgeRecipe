@@ -34,13 +34,14 @@ import javax.inject.Inject
     version = 15,
     autoMigrations = [
         AutoMigration(from = 12, to = 13, spec = AppDatabase.RecipeMigration::class),
-        AutoMigration(from = 13, to = 14, spec = AppDatabase.IngredientMigration::class)
+        AutoMigration(from = 13, to = 14, spec = AppDatabase.IngredientMigration::class),
     ],
-    exportSchema = true
+    exportSchema = true,
 )
 @TypeConverters(LocalDateConverter::class, RecipeTypeConverters::class, IngredientTypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun ingredientDao(): IngredientDao
+
     abstract fun recipeDao(): RecipeDao
 
     @RenameColumn(tableName = "recipes", fromColumnName = "search_categoryFilter", toColumnName = "category")
@@ -58,78 +59,131 @@ abstract class AppDatabase : RoomDatabase() {
     class IngredientMigration : AutoMigrationSpec
 
     companion object {
-        val MIGRATION_14_15 = object : Migration(14, 15) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                // 1. 새로운 스키마를 가진 임시 테이블 생성 (servings, time을 INTEGER로)
-                db.execSQL("""
-                    CREATE TABLE IF NOT EXISTS `recipes_new` (
-                        `id` INTEGER PRIMARY KEY AUTOINCREMENT, 
-                        `title` TEXT NOT NULL, 
-                        `servings` INTEGER NOT NULL, 
-                        `time` INTEGER NOT NULL, 
-                        `level` TEXT NOT NULL, 
-                        `ingredients` TEXT NOT NULL, 
-                        `steps` TEXT NOT NULL, 
-                        `imageUri` TEXT, 
-                        `category` TEXT, 
-                        `cookingTool` TEXT, 
-                        `timeFilter` TEXT, 
-                        `ingredientsQuery` TEXT, 
-                        `useOnlySelected` INTEGER NOT NULL
+        val MIGRATION_14_15 =
+            object : Migration(14, 15) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    // 1. 새로운 스키마를 가진 임시 테이블 생성 (servings, time을 INTEGER로)
+                    db.execSQL(
+                        """
+                        CREATE TABLE IF NOT EXISTS `recipes_new` (
+                            `id` INTEGER PRIMARY KEY AUTOINCREMENT, 
+                            `title` TEXT NOT NULL, 
+                            `servings` INTEGER NOT NULL, 
+                            `time` INTEGER NOT NULL, 
+                            `level` TEXT NOT NULL, 
+                            `ingredients` TEXT NOT NULL, 
+                            `steps` TEXT NOT NULL, 
+                            `imageUri` TEXT, 
+                            `category` TEXT, 
+                            `cookingTool` TEXT, 
+                            `timeFilter` TEXT, 
+                            `ingredientsQuery` TEXT, 
+                            `useOnlySelected` INTEGER NOT NULL
+                        )
+                        """.trimIndent(),
                     )
-                """.trimIndent())
 
-                // 2. 기존 데이터를 임시 테이블로 복사 (CAST를 사용하여 String -> Int 변환)
-                db.execSQL("""
-                    INSERT INTO `recipes_new` (
-                        id, title, servings, time, level, ingredients, steps, 
-                        imageUri, category, cookingTool, timeFilter, ingredientsQuery, useOnlySelected
+                    // 2. 기존 데이터를 임시 테이블로 복사 (CAST를 사용하여 String -> Int 변환)
+                    db.execSQL(
+                        """
+                        INSERT INTO `recipes_new` (
+                            id, title, servings, time, level, ingredients, steps, 
+                            imageUri, category, cookingTool, timeFilter, ingredientsQuery, useOnlySelected
+                        )
+                        SELECT 
+                            id, title, 
+                            CAST(servings AS INTEGER), 
+                            CAST(time AS INTEGER), 
+                            level, ingredients, steps, 
+                            imageUri, category, cookingTool, timeFilter, ingredientsQuery, useOnlySelected
+                        FROM `recipes`
+                        """.trimIndent(),
                     )
-                    SELECT 
-                        id, title, 
-                        CAST(servings AS INTEGER), 
-                        CAST(time AS INTEGER), 
-                        level, ingredients, steps, 
-                        imageUri, category, cookingTool, timeFilter, ingredientsQuery, useOnlySelected
-                    FROM `recipes`
-                """.trimIndent())
 
-                // 3. 기존 테이블 삭제
-                db.execSQL("DROP TABLE `recipes`")
+                    // 3. 기존 테이블 삭제
+                    db.execSQL("DROP TABLE `recipes`")
 
-                // 4. 임시 테이블을 원래 이름으로 변경
-                db.execSQL("ALTER TABLE `recipes_new` RENAME TO `recipes`")
+                    // 4. 임시 테이블을 원래 이름으로 변경
+                    db.execSQL("ALTER TABLE `recipes_new` RENAME TO `recipes`")
+                }
             }
-        }
     }
 
-    class DatabaseCallback @Inject constructor(
-        @ApplicationScope private val applicationScope: CoroutineScope,
-        private val ingredientDaoProvider: dagger.Lazy<IngredientDao>
-    ) : RoomDatabase.Callback() {
-        override fun onCreate(db: SupportSQLiteDatabase) {
-            super.onCreate(db)
+    class DatabaseCallback
+        @Inject
+        constructor(
+            @ApplicationScope private val applicationScope: CoroutineScope,
+            private val ingredientDaoProvider: dagger.Lazy<IngredientDao>,
+        ) : RoomDatabase.Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
 
-            if (BuildConfig.DEBUG) {
-                applicationScope.launch {
-                    val dao = ingredientDaoProvider.get()
-                    seedDatabase(dao)
+                if (BuildConfig.DEBUG) {
+                    applicationScope.launch {
+                        val dao = ingredientDaoProvider.get()
+                        seedDatabase(dao)
+                    }
+                }
+            }
+
+            private suspend fun seedDatabase(dao: IngredientDao) {
+                testDataList.map { it.toEntity() }.forEach { entity ->
+                    dao.insertIngredient(entity)
                 }
             }
         }
-
-        private suspend fun seedDatabase(dao: IngredientDao) {
-            testDataList.map { it.toEntity() }.forEach { entity ->
-                dao.insertIngredient(entity)
-            }
-        }
-    }
 }
 
-val testDataList = listOf(
-    Ingredient(id = 1L, name = "양파", amount = 3.0, unit = UnitType.COUNT, expirationDate = LocalDate.now().plusDays(0), storageLocation = StorageType.REFRIGERATED, category = IngredientCategoryType.VEGETABLE, emoticon = IngredientIcon.ONION),
-    Ingredient(id = 2L, name = "소고기", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(1), storageLocation = StorageType.REFRIGERATED, category = IngredientCategoryType.MEAT, emoticon = IngredientIcon.BEEF),
-    Ingredient(id = 3L, name = "버섯", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(2), storageLocation = StorageType.REFRIGERATED, category = IngredientCategoryType.VEGETABLE, emoticon = IngredientIcon.MUSHROOM),
-    Ingredient(id = 4L, name = "카레가루", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(10), storageLocation = StorageType.ROOM_TEMPERATURE, category = IngredientCategoryType.MEAT, emoticon = IngredientIcon.DEFAULT),
-    Ingredient(id = 5L, name = "감자", amount = 500.0, unit = UnitType.GRAM, expirationDate = LocalDate.now().plusDays(-1), storageLocation = StorageType.ROOM_TEMPERATURE, category = IngredientCategoryType.VEGETABLE, emoticon = IngredientIcon.POTATO),
-)
+val testDataList =
+    listOf(
+        Ingredient(
+            id = 1L,
+            name = "양파",
+            amount = 3.0,
+            unit = UnitType.COUNT,
+            expirationDate = LocalDate.now().plusDays(0),
+            storageLocation = StorageType.REFRIGERATED,
+            category = IngredientCategoryType.VEGETABLE,
+            emoticon = IngredientIcon.ONION,
+        ),
+        Ingredient(
+            id = 2L,
+            name = "소고기",
+            amount = 500.0,
+            unit = UnitType.GRAM,
+            expirationDate = LocalDate.now().plusDays(1),
+            storageLocation = StorageType.REFRIGERATED,
+            category = IngredientCategoryType.MEAT,
+            emoticon = IngredientIcon.BEEF,
+        ),
+        Ingredient(
+            id = 3L,
+            name = "버섯",
+            amount = 500.0,
+            unit = UnitType.GRAM,
+            expirationDate = LocalDate.now().plusDays(2),
+            storageLocation = StorageType.REFRIGERATED,
+            category = IngredientCategoryType.VEGETABLE,
+            emoticon = IngredientIcon.MUSHROOM,
+        ),
+        Ingredient(
+            id = 4L,
+            name = "카레가루",
+            amount = 500.0,
+            unit = UnitType.GRAM,
+            expirationDate = LocalDate.now().plusDays(10),
+            storageLocation = StorageType.ROOM_TEMPERATURE,
+            category = IngredientCategoryType.MEAT,
+            emoticon = IngredientIcon.DEFAULT,
+        ),
+        Ingredient(
+            id = 5L,
+            name = "감자",
+            amount = 500.0,
+            unit = UnitType.GRAM,
+            expirationDate = LocalDate.now().plusDays(-1),
+            storageLocation = StorageType.ROOM_TEMPERATURE,
+            category = IngredientCategoryType.VEGETABLE,
+            emoticon = IngredientIcon.POTATO,
+        ),
+    )
