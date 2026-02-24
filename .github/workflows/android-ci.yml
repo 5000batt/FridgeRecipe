@@ -22,9 +22,6 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Run Ktlint Check
-        run: ./gradlew ktlintCheck
-
       - name: Create local.properties
         run: |
           echo "admob_app_id=${{ secrets.ADMOB_APP_ID }}" >> local.properties
@@ -35,6 +32,9 @@ jobs:
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
+
+      - name: Run Ktlint Check
+        run: ./gradlew ktlintCheck
 
       - name: Build with Gradle
         run: ./gradlew assembleDebug
