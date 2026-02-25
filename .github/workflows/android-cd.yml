@@ -61,3 +61,35 @@ jobs:
           releaseFiles: ${{steps.sign_app.outputs.signedReleaseFile}}
           track: internal
           whatsNewDirectory: whatsnew
+
+      - name: Send Slack Notification (Success)
+        if: success()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_CD_WEBHOOK_URL }}
+          SLACK_TITLE: "🚀 FridgeRecipe 내부 테스트 배포 성공!"
+          SLACK_MESSAGE: |
+            *버전 코드:* ${{ env.VERSION_CODE }}
+            *내용:* 구글 플레이 스토어 내부 테스트 트랙에 새 버전이 업로드되었습니다.
+            테스터분들은 스토어 앱에서 업데이트를 진행해 주세요!
+            
+            *커밋 메시지:* ${{ github.event.head_commit.message }}
+          SLACK_COLOR: "#36a64f"
+          SLACK_USERNAME: "Release Bot"
+          SLACK_ICON_EMOJI: ":tada:"
+
+      - name: Send Slack Notification (Failure)
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_CD_WEBHOOK_URL }}
+          SLACK_TITLE: "🚨 FridgeRecipe 내부 테스트 배포 실패!"
+          SLACK_MESSAGE: |
+            *상태:* 구글 플레이 스토어 업로드 중 오류가 발생했습니다.
+            워크플로우 로그를 확인하여 원인을 파악해 주세요.
+            
+            *커밋:* ${{ github.event.head_commit.message }}
+            *실행 링크:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SLACK_COLOR: "#ff0000"
+          SLACK_USERNAME: "Release Bot"
+          SLACK_ICON_EMOJI: ":warning:"
