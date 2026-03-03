@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.Recipe
+import com.kjw.fridgerecipe.presentation.mapper.labelResId
 
 @Composable
 fun RecipeListItem(

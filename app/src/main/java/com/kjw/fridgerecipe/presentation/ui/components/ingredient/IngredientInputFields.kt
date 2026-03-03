@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.UnitType
+import com.kjw.fridgerecipe.presentation.mapper.labelResId
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonDropdown
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonTextField
 import com.kjw.fridgerecipe.presentation.ui.components.common.ErrorText

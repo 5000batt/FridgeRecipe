@@ -4,6 +4,7 @@ import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
+import com.kjw.fridgerecipe.presentation.mapper.labelResId
 import com.kjw.fridgerecipe.presentation.ui.model.FilterOption
 
 object RecipeConstants {

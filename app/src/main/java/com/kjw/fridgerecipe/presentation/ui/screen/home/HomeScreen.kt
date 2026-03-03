@@ -72,6 +72,7 @@ import com.kjw.fridgerecipe.BuildConfig
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.domain.model.StorageType
+import com.kjw.fridgerecipe.presentation.mapper.labelResId
 import com.kjw.fridgerecipe.presentation.navigation.MainTab
 import com.kjw.fridgerecipe.presentation.ui.components.common.BottomNavigationBar
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonTopBar

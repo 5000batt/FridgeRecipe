@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kjw.fridgerecipe.domain.model.ExpirationStatus
 import com.kjw.fridgerecipe.domain.model.Ingredient
+import com.kjw.fridgerecipe.presentation.mapper.labelResId
 import com.kjw.fridgerecipe.presentation.util.getIconResId
 import java.time.format.DateTimeFormatter
 

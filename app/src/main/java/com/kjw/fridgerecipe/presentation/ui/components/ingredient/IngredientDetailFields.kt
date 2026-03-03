@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.domain.model.StorageType
+import com.kjw.fridgerecipe.presentation.mapper.labelResId
 import com.kjw.fridgerecipe.presentation.ui.components.common.CommonDropdown
 import java.time.LocalDate
 
