@@ -8,13 +8,18 @@ import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
-import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.domain.usecase.AddTicketUseCase
 import com.kjw.fridgerecipe.domain.usecase.CheckAndResetTicketUseCase
 import com.kjw.fridgerecipe.domain.usecase.CheckIngredientConflictsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
+import com.kjw.fridgerecipe.domain.usecase.ObserveExcludedIngredientsUseCase
+import com.kjw.fridgerecipe.domain.usecase.ObserveFirstLaunchUseCase
+import com.kjw.fridgerecipe.domain.usecase.ObserveIngredientCheckSkipUseCase
 import com.kjw.fridgerecipe.domain.usecase.ObserveTicketCountUseCase
+import com.kjw.fridgerecipe.domain.usecase.SetFirstLaunchCompleteUseCase
+import com.kjw.fridgerecipe.domain.usecase.SetIngredientCheckSkipUseCase
+import com.kjw.fridgerecipe.domain.usecase.SetNotificationEnabledUseCase
 import com.kjw.fridgerecipe.domain.usecase.UseTicketUseCase
 import com.kjw.fridgerecipe.domain.util.DataError
 import com.kjw.fridgerecipe.domain.util.DataResult
@@ -43,7 +48,12 @@ class HomeViewModel
         private val getIngredientsUseCase: GetIngredientsUseCase,
         private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase,
         private val checkIngredientConflictsUseCase: CheckIngredientConflictsUseCase,
-        private val settingsRepository: SettingsRepository,
+        private val observeIngredientCheckSkipUseCase: ObserveIngredientCheckSkipUseCase,
+        private val observeFirstLaunchUseCase: ObserveFirstLaunchUseCase,
+        private val observeExcludedIngredientsUseCase: ObserveExcludedIngredientsUseCase,
+        private val setFirstLaunchCompleteUseCase: SetFirstLaunchCompleteUseCase,
+        private val setNotificationEnabledUseCase: SetNotificationEnabledUseCase,
+        private val setIngredientCheckSkipUseCase: SetIngredientCheckSkipUseCase,
         private val observeTicketCountUseCase: ObserveTicketCountUseCase,
         private val checkAndResetTicketUseCase: CheckAndResetTicketUseCase,
         private val useTicketUseCase: UseTicketUseCase,
@@ -124,13 +134,13 @@ class HomeViewModel
 
         private fun observeSettings() {
             viewModelScope.launch {
-                settingsRepository.isIngredientCheckSkip.collect { isSkip ->
+                observeIngredientCheckSkipUseCase().collect { isSkip ->
                     _homeUiState.update { it.copy(isIngredientCheckSkip = isSkip) }
                 }
             }
 
             viewModelScope.launch {
-                settingsRepository.isFirstLaunch.collect { isFirst ->
+                observeFirstLaunchUseCase().collect { isFirst ->
                     _homeUiState.update { it.copy(isFirstLaunch = isFirst) }
                 }
             }
@@ -139,14 +149,14 @@ class HomeViewModel
         // 가이드 완료 시 호출
         fun completeOnboarding() {
             viewModelScope.launch {
-                settingsRepository.setFirstLaunchComplete()
+                setFirstLaunchCompleteUseCase()
             }
         }
 
         // 알림 권한 여부
         fun setNotificationEnabled(isEnabled: Boolean) {
             viewModelScope.launch {
-                settingsRepository.setNotificationEnabled(isEnabled)
+                setNotificationEnabledUseCase(isEnabled)
             }
         }
 
@@ -172,7 +182,7 @@ class HomeViewModel
         fun onConfirmIngredientCheck(doNotShowAgain: Boolean) {
             _homeUiState.update { it.copy(showIngredientCheckDialog = false) }
             if (doNotShowAgain) {
-                viewModelScope.launch { settingsRepository.setIngredientCheckSkip(true) }
+                viewModelScope.launch { setIngredientCheckSkipUseCase(true) }
             }
             checkIngredientConflicts()
         }
@@ -237,7 +247,7 @@ class HomeViewModel
                         currentIngredientsQuery = ingredientsQuery
                     }
 
-                    val excludedList = settingsRepository.excludedIngredients.first().toList()
+                    val excludedList = observeExcludedIngredientsUseCase().first().toList()
                     val selectedIngredientNames = selectedIngredients.map { it.name }
                     val finalExcludedList = excludedList.filter { it !in selectedIngredientNames }
 
