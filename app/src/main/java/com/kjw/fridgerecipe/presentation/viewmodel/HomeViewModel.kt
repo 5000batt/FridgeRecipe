@@ -14,6 +14,7 @@ import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.domain.usecase.CheckIngredientConflictsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
+import com.kjw.fridgerecipe.domain.util.DataError
 import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.ui.model.ErrorDialogState
 import com.kjw.fridgerecipe.presentation.ui.model.HomeUiState
@@ -292,13 +293,25 @@ class HomeViewModel
                         }
                         is DataResult.Error -> {
                             if (isTicketUsed) ticketRepository.addTicket(1)
+
+                            val (titleRes, messageRes) =
+                                when (result.error) {
+                                    DataError.QUOTA_EXCEEDED -> R.string.error_title_quota to R.string.error_msg_quota
+                                    DataError.SERVER_ERROR -> R.string.error_title_server to R.string.error_msg_server
+                                    DataError.API_KEY_ERROR -> R.string.error_title_update to R.string.error_msg_update
+                                    DataError.PARSING_ERROR -> R.string.error_title_parsing to R.string.error_msg_parsing
+                                    DataError.NETWORK_ERROR -> R.string.error_title_network to R.string.error_msg_network
+                                    DataError.RESPONSE_BLOCKED -> R.string.error_title_blocked to R.string.error_msg_blocked
+                                    else -> R.string.error_title_generic to R.string.error_msg_generic
+                                }
+
                             _homeUiState.update {
                                 it.copy(
                                     isRecipeLoading = false,
                                     errorDialogState =
                                         ErrorDialogState(
-                                            title = result.title ?: UiText.StringResource(R.string.error_title_generic),
-                                            message = result.message,
+                                            title = UiText.StringResource(titleRes),
+                                            message = UiText.StringResource(messageRes),
                                         ),
                                 )
                             }

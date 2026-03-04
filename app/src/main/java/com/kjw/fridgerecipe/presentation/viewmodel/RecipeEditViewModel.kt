@@ -13,6 +13,7 @@ import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipeByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.InsertRecipeUseCase
 import com.kjw.fridgerecipe.domain.usecase.SaveRecipeImageUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateRecipeUseCase
+import com.kjw.fridgerecipe.domain.util.DataError
 import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.mapper.RecipeUiMapper
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientItemUiState
@@ -95,7 +96,7 @@ class RecipeEditViewModel
                         val savedPath = result.data
                         _editUiState.update { state -> state.copy(imageUri = savedPath) }
                     } else if (result is DataResult.Error) {
-                        _operationResultEvent.emit(OperationResult.Failure(result.message))
+                        _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(R.string.error_msg_generic)))
                     }
                 }
             }
@@ -126,7 +127,15 @@ class RecipeEditViewModel
                         _navigationEvent.emit(NavigationEvent.NavigateBack)
                     }
                     is DataResult.Error -> {
-                        _operationResultEvent.emit(OperationResult.Failure(result.message))
+                        val uiErrorMessage =
+                            when (result.error) {
+                                DataError.RECIPE_ALREADY_EXISTS -> UiText.StringResource(R.string.error_recipe_id_exists)
+                                DataError.SAVE_FAILED -> UiText.StringResource(R.string.error_save_failed)
+                                DataError.UPDATE_FAILED -> UiText.StringResource(R.string.error_update_failed)
+                                DataError.RECIPE_NOT_FOUND -> UiText.StringResource(R.string.error_recipe_not_found)
+                                else -> UiText.StringResource(R.string.error_msg_generic)
+                            }
+                        _operationResultEvent.emit(OperationResult.Failure(uiErrorMessage))
                     }
                     else -> Unit
                 }
@@ -163,7 +172,12 @@ class RecipeEditViewModel
                             _navigationEvent.emit(NavigationEvent.NavigateToList)
                         }
                         is DataResult.Error -> {
-                            _operationResultEvent.emit(OperationResult.Failure(result.message))
+                            val uiErrorMessage =
+                                when (result.error) {
+                                    DataError.DELETE_FAILED -> UiText.StringResource(R.string.error_delete_failed)
+                                    else -> UiText.StringResource(R.string.error_msg_generic)
+                                }
+                            _operationResultEvent.emit(OperationResult.Failure(uiErrorMessage))
                         }
                         else -> Unit
                     }

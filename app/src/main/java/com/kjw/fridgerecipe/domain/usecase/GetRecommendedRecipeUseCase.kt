@@ -1,6 +1,5 @@
 package com.kjw.fridgerecipe.domain.usecase
 
-import android.util.Log
 import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
@@ -65,13 +64,11 @@ class GetRecommendedRecipeUseCase
                     }
 
                 if (availableCache.isNotEmpty()) {
-                    Log.d("RecipeUseCase", "캐시된 목록 (다른 레시피) 반환")
                     return DataResult.Success(availableCache.random())
                 }
             }
 
             // 2. AI 호출 (캐시가 없거나 모두 순회했을 때)
-            Log.d("RecipeUseCase", "AI 호출 (캐시 없음 또는 모두 순회)")
             onAiCall()
 
             return recipeRepository.getAiRecipes(

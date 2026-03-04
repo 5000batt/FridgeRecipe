@@ -12,6 +12,7 @@ import com.kjw.fridgerecipe.domain.usecase.DelIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.InsertIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateIngredientUseCase
+import com.kjw.fridgerecipe.domain.util.DataError
 import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.mapper.IngredientUiMapper
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientEditUiState
@@ -169,7 +170,13 @@ class IngredientEditViewModel
                         _navigationEvent.emit(Unit)
                     }
                     is DataResult.Error -> {
-                        _operationResultEvent.emit(OperationResult.Failure(result.message))
+                        val uiErrorMessage =
+                            when (result.error) {
+                                DataError.SAVE_FAILED -> UiText.StringResource(R.string.error_save_failed)
+                                DataError.UPDATE_FAILED -> UiText.StringResource(R.string.error_update_failed)
+                                else -> UiText.StringResource(R.string.error_msg_generic)
+                            }
+                        _operationResultEvent.emit(OperationResult.Failure(uiErrorMessage))
                     }
                     else -> Unit
                 }
@@ -186,7 +193,12 @@ class IngredientEditViewModel
                             _navigationEvent.emit(Unit)
                         }
                         is DataResult.Error -> {
-                            _operationResultEvent.emit(OperationResult.Failure(result.message))
+                            val uiErrorMessage =
+                                when (result.error) {
+                                    DataError.DELETE_FAILED -> UiText.StringResource(R.string.error_delete_failed)
+                                    else -> UiText.StringResource(R.string.error_msg_generic)
+                                }
+                            _operationResultEvent.emit(OperationResult.Failure(uiErrorMessage))
                         }
                         else -> Unit
                     }

@@ -1,7 +1,5 @@
 package com.kjw.fridgerecipe.domain.util
 
-import com.kjw.fridgerecipe.presentation.util.UiText
-
 /**
  * 데이터 요청 결과를 캡슐화하는 sealed class.
  */
@@ -11,8 +9,7 @@ sealed class DataResult<out T> {
     ) : DataResult<T>()
 
     data class Error(
-        val message: UiText,
-        val title: UiText? = null,
+        val error: DataError,
         val cause: Throwable? = null,
     ) : DataResult<Nothing>()
 
