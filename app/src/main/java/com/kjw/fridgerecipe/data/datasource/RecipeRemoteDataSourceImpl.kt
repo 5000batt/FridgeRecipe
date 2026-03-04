@@ -13,7 +13,7 @@ import com.kjw.fridgerecipe.data.remote.RecipeDto
 import com.kjw.fridgerecipe.data.remote.RecipePromptGenerator
 import com.kjw.fridgerecipe.data.util.AppJson
 import com.kjw.fridgerecipe.domain.model.CookingToolType
-import com.kjw.fridgerecipe.domain.model.GeminiException
+import com.kjw.fridgerecipe.data.remote.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType

@@ -6,7 +6,7 @@ import com.kjw.fridgerecipe.data.local.dao.RecipeDao
 import com.kjw.fridgerecipe.data.repository.mapper.toDomainModel
 import com.kjw.fridgerecipe.data.repository.mapper.toEntity
 import com.kjw.fridgerecipe.domain.model.CookingToolType
-import com.kjw.fridgerecipe.domain.model.GeminiException
+import com.kjw.fridgerecipe.data.remote.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe

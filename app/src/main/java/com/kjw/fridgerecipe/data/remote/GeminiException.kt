@@ -1,4 +1,4 @@
-package com.kjw.fridgerecipe.domain.model
+package com.kjw.fridgerecipe.data.remote
 
 sealed class GeminiException(
     message: String,
