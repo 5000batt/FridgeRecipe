@@ -8,12 +8,12 @@ import com.google.firebase.ai.type.ResponseStoppedException
 import com.google.firebase.ai.type.ServerException
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.kjw.fridgerecipe.data.remote.AiRecipeResponse
+import com.kjw.fridgerecipe.data.remote.GeminiException
 import com.kjw.fridgerecipe.data.remote.GeminiModelProvider
 import com.kjw.fridgerecipe.data.remote.RecipeDto
 import com.kjw.fridgerecipe.data.remote.RecipePromptGenerator
 import com.kjw.fridgerecipe.data.util.AppJson
 import com.kjw.fridgerecipe.domain.model.CookingToolType
-import com.kjw.fridgerecipe.data.remote.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
