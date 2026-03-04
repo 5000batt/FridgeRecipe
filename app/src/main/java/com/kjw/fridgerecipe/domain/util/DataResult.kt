@@ -13,8 +13,6 @@ sealed class DataResult<out T> {
         val cause: Throwable? = null,
     ) : DataResult<Nothing>()
 
-    data object Loading : DataResult<Nothing>()
-
     /**
      * 성공 시 데이터를 반환하고, 그 외의 경우 null을 반환합니다.
      */

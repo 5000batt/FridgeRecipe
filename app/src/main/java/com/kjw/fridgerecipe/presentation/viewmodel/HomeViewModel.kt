@@ -9,7 +9,6 @@ import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
-import com.kjw.fridgerecipe.domain.model.TicketException
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.domain.usecase.CheckIngredientConflictsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
@@ -214,7 +213,6 @@ class HomeViewModel
             _homeUiState.update { it.copy(showConflictDialog = false, conflictIngredients = emptyList()) }
 
             viewModelScope.launch {
-                var isTicketUsed = false
                 val startTime = System.currentTimeMillis()
                 val minDataLoadingTime = 3000L // 최소 데이터 로딩 시간
                 val minAdDisplayTime = 2500L // 광고 로드 후 최소 노출 시간
@@ -238,7 +236,6 @@ class HomeViewModel
                     val finalExcludedList = excludedList.filter { it !in selectedIngredientNames }
 
                     val currentFilters = _homeUiState.value.filterState
-
                     val domainTimeFilter = if (currentFilters.timeLimit == FILTER_ANY) null else currentFilters.timeLimit
 
                     // 레시피 데이터 호출
@@ -252,14 +249,6 @@ class HomeViewModel
                             cookingToolFilter = currentFilters.cookingTool,
                             useOnlySelected = currentFilters.useOnlySelected,
                             excludedIngredients = finalExcludedList,
-                            onAiCall = {
-                                if (_homeUiState.value.remainingTickets <= 0) {
-                                    _homeUiState.update { it.copy(showAdDialog = true, isRecipeLoading = false) }
-                                    throw TicketException.Exhausted
-                                }
-                                ticketRepository.useTicket()
-                                isTicketUsed = true
-                            },
                         )
 
                     // 최소 레시피 데이터 로딩 시간 대기
@@ -281,20 +270,25 @@ class HomeViewModel
 
                     when (result) {
                         is DataResult.Success -> {
-                            val newRecipe = result.data
+                            val newRecipe = result.data.recipe
+                            val isFromCache = result.data.isFromCache
+
                             _homeUiState.update { it.copy(recommendedRecipe = newRecipe, isRecipeLoading = false) }
 
                             newRecipe.id?.let { recipeId ->
                                 seenRecipeIds.value = seenRecipeIds.value + recipeId
                                 _sideEffect.emit(HomeSideEffect.NavigateToRecipeDetail(recipeId))
 
-                                if (!isTicketUsed) {
+                                if (isFromCache) {
                                     _sideEffect.emit(HomeSideEffect.ShowSnackbar(UiText.StringResource(R.string.msg_recipe_found_saved)))
                                 }
                             }
                         }
                         is DataResult.Error -> {
-                            if (isTicketUsed) ticketRepository.addTicket(1)
+                            if (result.error == DataError.TICKET_EXHAUSTED) {
+                                _homeUiState.update { it.copy(showAdDialog = true, isRecipeLoading = false) }
+                                return@launch
+                            }
 
                             val (titleRes, messageRes) =
                                 when (result.error) {
@@ -318,12 +312,8 @@ class HomeViewModel
                                 )
                             }
                         }
-                        else -> _homeUiState.update { it.copy(isRecipeLoading = false) }
                     }
-                } catch (e: TicketException.Exhausted) {
-                    // 티켓 소진 시 조용히 중단
                 } catch (e: Exception) {
-                    if (isTicketUsed) ticketRepository.addTicket(1)
                     _homeUiState.update {
                         it.copy(
                             isRecipeLoading = false,

@@ -21,4 +21,7 @@ enum class DataError {
     API_KEY_ERROR,
     PARSING_ERROR,
     RESPONSE_BLOCKED,
+
+    // 티켓 관련 에러
+    TICKET_EXHAUSTED,
 }
