@@ -4,10 +4,12 @@ import com.kjw.fridgerecipe.data.repository.ImageRepositoryImpl
 import com.kjw.fridgerecipe.data.repository.IngredientRepositoryImpl
 import com.kjw.fridgerecipe.data.repository.RecipeRepositoryImpl
 import com.kjw.fridgerecipe.data.repository.SettingsRepositoryImpl
+import com.kjw.fridgerecipe.data.repository.TicketRepositoryImpl
 import com.kjw.fridgerecipe.domain.repository.ImageRepository
 import com.kjw.fridgerecipe.domain.repository.IngredientRepository
 import com.kjw.fridgerecipe.domain.repository.RecipeRepository
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
+import com.kjw.fridgerecipe.domain.repository.TicketRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -19,11 +21,15 @@ import javax.inject.Singleton
 abstract class RepositoryModule {
     @Binds
     @Singleton
-    abstract fun bindIngredientRepository(implementation: IngredientRepositoryImpl): IngredientRepository
+    abstract fun bindIngredientRepository(ingredientRepositoryImpl: IngredientRepositoryImpl): IngredientRepository
 
     @Binds
     @Singleton
-    abstract fun bindRecipeRepository(implementation: RecipeRepositoryImpl): RecipeRepository
+    abstract fun bindRecipeRepository(recipeRepositoryImpl: RecipeRepositoryImpl): RecipeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTicketRepository(ticketRepositoryImpl: TicketRepositoryImpl): TicketRepository
 
     @Binds
     @Singleton

@@ -1,12 +1,12 @@
 package com.kjw.fridgerecipe.domain.usecase
 
-import com.kjw.fridgerecipe.data.repository.TicketRepository
 import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.repository.RecipeRepository
+import com.kjw.fridgerecipe.domain.repository.TicketRepository
 import com.kjw.fridgerecipe.domain.util.DataError
 import com.kjw.fridgerecipe.domain.util.DataResult
 import kotlinx.coroutines.flow.first

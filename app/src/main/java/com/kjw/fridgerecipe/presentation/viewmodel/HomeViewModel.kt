@@ -3,16 +3,19 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.R
-import com.kjw.fridgerecipe.data.repository.TicketRepository
 import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.repository.SettingsRepository
+import com.kjw.fridgerecipe.domain.usecase.AddTicketUseCase
+import com.kjw.fridgerecipe.domain.usecase.CheckAndResetTicketUseCase
 import com.kjw.fridgerecipe.domain.usecase.CheckIngredientConflictsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
+import com.kjw.fridgerecipe.domain.usecase.ObserveTicketCountUseCase
+import com.kjw.fridgerecipe.domain.usecase.UseTicketUseCase
 import com.kjw.fridgerecipe.domain.util.DataError
 import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.ui.model.ErrorDialogState
@@ -41,7 +44,10 @@ class HomeViewModel
         private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase,
         private val checkIngredientConflictsUseCase: CheckIngredientConflictsUseCase,
         private val settingsRepository: SettingsRepository,
-        private val ticketRepository: TicketRepository,
+        private val observeTicketCountUseCase: ObserveTicketCountUseCase,
+        private val checkAndResetTicketUseCase: CheckAndResetTicketUseCase,
+        private val useTicketUseCase: UseTicketUseCase,
+        private val addTicketUseCase: AddTicketUseCase,
     ) : ViewModel() {
         sealed interface HomeSideEffect {
             data class NavigateToRecipeDetail(
@@ -104,7 +110,7 @@ class HomeViewModel
 
         private fun observeTickets() {
             viewModelScope.launch {
-                ticketRepository.ticketCount.collect { count ->
+                observeTicketCountUseCase().collect { count ->
                     _homeUiState.update { it.copy(remainingTickets = count) }
                 }
             }
@@ -112,7 +118,7 @@ class HomeViewModel
 
         fun checkTicketReset() {
             viewModelScope.launch {
-                ticketRepository.checkAndResetTicket()
+                checkAndResetTicketUseCase()
             }
         }
 
@@ -199,13 +205,13 @@ class HomeViewModel
 
         fun testAddTicket() {
             viewModelScope.launch {
-                ticketRepository.addTicket(3)
+                addTicketUseCase(3)
             }
         }
 
         fun testUseTicket() {
             viewModelScope.launch {
-                ticketRepository.useTicket()
+                useTicketUseCase()
             }
         }
 
@@ -373,7 +379,7 @@ class HomeViewModel
 
         fun onAdWatched() {
             viewModelScope.launch {
-                ticketRepository.addTicket(1)
+                addTicketUseCase(1)
                 dismissAdDialog()
             }
         }

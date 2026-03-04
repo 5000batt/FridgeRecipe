@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import com.kjw.fridgerecipe.di.TicketDataStore
+import com.kjw.fridgerecipe.domain.repository.TicketRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -17,11 +18,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class TicketRepository
+class TicketRepositoryImpl
     @Inject
     constructor(
         @TicketDataStore private val dataStore: DataStore<Preferences>,
-    ) {
+    ) : TicketRepository {
         private object PreferencesKeys {
             val DATE_EPOCH = longPreferencesKey("last_open_date_epoch")
             val TICKET_COUNT = intPreferencesKey("ticket_count")
@@ -32,7 +33,7 @@ class TicketRepository
             const val TAG = "TicketRepo"
         }
 
-        val ticketCount: Flow<Int> =
+        override val ticketCount: Flow<Int> =
             dataStore.data
                 .catch { exception ->
                     if (exception is IOException) {
@@ -53,7 +54,7 @@ class TicketRepository
                     }
                 }
 
-        suspend fun checkAndResetTicket() {
+        override suspend fun checkAndResetTicket() {
             val currentEpochDay = LocalDate.now().toEpochDay()
             try {
                 dataStore.edit { preferences ->
@@ -70,7 +71,7 @@ class TicketRepository
             }
         }
 
-        suspend fun useTicket() {
+        override suspend fun useTicket() {
             try {
                 dataStore.edit { preferences ->
                     val current = preferences[PreferencesKeys.TICKET_COUNT] ?: MAX_FREE_TICKETS
@@ -84,7 +85,7 @@ class TicketRepository
             }
         }
 
-        suspend fun addTicket(amount: Int = 1) {
+        override suspend fun addTicket(amount: Int) {
             try {
                 dataStore.edit { preferences ->
                     val current = preferences[PreferencesKeys.TICKET_COUNT] ?: 0
