@@ -239,12 +239,14 @@ class HomeViewModel
 
                     val currentFilters = _homeUiState.value.filterState
 
+                    val domainTimeFilter = if (currentFilters.timeLimit == FILTER_ANY) null else currentFilters.timeLimit
+
                     // 레시피 데이터 호출
                     val result =
                         getRecommendedRecipeUseCase(
                             ingredients = selectedIngredients,
                             seenIds = seenRecipeIds.value,
-                            timeFilter = currentFilters.timeLimit,
+                            timeFilter = domainTimeFilter,
                             level = currentFilters.level,
                             categoryFilter = currentFilters.category,
                             cookingToolFilter = currentFilters.cookingTool,

@@ -14,7 +14,6 @@ import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.repository.RecipeRepository
 import com.kjw.fridgerecipe.domain.util.DataError
 import com.kjw.fridgerecipe.domain.util.DataResult
-import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -29,8 +28,6 @@ class RecipeRepositoryImpl
             const val TAG = "RecipeRepo"
         }
 
-        private fun sanitizeFilter(value: String?): String? = if (value == FILTER_ANY || value.isNullOrBlank()) null else value
-
         override suspend fun getAiRecipes(
             ingredients: List<Ingredient>,
             ingredientsQuery: String,
@@ -42,12 +39,10 @@ class RecipeRepositoryImpl
             excludedIngredients: List<String>,
         ): DataResult<Recipe> =
             try {
-                val safeTime = sanitizeFilter(timeFilter)
-
                 val recipeDto =
                     remoteDataSource.getAiRecipe(
                         ingredients = ingredients,
-                        timeFilter = safeTime,
+                        timeFilter = timeFilter,
                         level = level,
                         categoryFilter = categoryFilter,
                         cookingToolFilter = cookingToolFilter,
@@ -59,7 +54,7 @@ class RecipeRepositoryImpl
                     recipeDto.toDomainModel().copy(
                         category = categoryFilter,
                         cookingTool = cookingToolFilter,
-                        timeFilter = safeTime,
+                        timeFilter = timeFilter,
                         level = level ?: recipeDto.toDomainModel().level,
                         ingredientsQuery = ingredientsQuery,
                         useOnlySelected = useOnlySelected,
@@ -127,7 +122,7 @@ class RecipeRepositoryImpl
                         ingredientsQuery = ingredientsQuery,
                         category = categoryFilter,
                         cookingTool = cookingToolFilter,
-                        timeFilter = sanitizeFilter(timeFilter),
+                        timeFilter = timeFilter,
                         level = level,
                         useOnlySelected = useOnlySelected,
                     )
