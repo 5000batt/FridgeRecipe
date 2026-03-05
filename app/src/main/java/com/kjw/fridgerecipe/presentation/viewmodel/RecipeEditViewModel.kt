@@ -23,7 +23,6 @@ import com.kjw.fridgerecipe.presentation.ui.model.RecipeEditUiState
 import com.kjw.fridgerecipe.presentation.ui.model.RecipeValidationField
 import com.kjw.fridgerecipe.presentation.ui.model.StepItemUiState
 import com.kjw.fridgerecipe.presentation.util.UiText
-import com.kjw.fridgerecipe.presentation.validator.RecipeValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,7 +44,6 @@ class RecipeEditViewModel
         private val delRecipeUseCase: DelRecipeUseCase,
         private val saveRecipeImageUseCase: SaveRecipeImageUseCase,
         private val mapper: RecipeUiMapper,
-        private val validator: RecipeValidator,
     ) : ViewModel() {
         sealed class NavigationEvent {
             data object NavigateBack : NavigationEvent()
@@ -104,13 +102,6 @@ class RecipeEditViewModel
 
         fun onSaveOrUpdateRecipe(isEditMode: Boolean) {
             viewModelScope.launch {
-                val validationResult = validator.validate(_editUiState.value)
-                if (validationResult is RecipeValidator.ValidationResult.Failure) {
-                    updateErrorState(validationResult)
-                    _validationEvent.emit(validationResult.field)
-                    return@launch
-                }
-
                 val recipeToSave = mapper.toDomain(_editUiState.value, currentRecipe?.id)
 
                 val result =
@@ -127,37 +118,76 @@ class RecipeEditViewModel
                         _navigationEvent.emit(NavigationEvent.NavigateBack)
                     }
                     is DataResult.Error -> {
-                        val uiErrorMessage =
-                            when (result.error) {
-                                DataError.RECIPE_ALREADY_EXISTS -> UiText.StringResource(R.string.error_recipe_id_exists)
-                                DataError.SAVE_FAILED -> UiText.StringResource(R.string.error_save_failed)
-                                DataError.UPDATE_FAILED -> UiText.StringResource(R.string.error_update_failed)
-                                DataError.RECIPE_NOT_FOUND -> UiText.StringResource(R.string.error_recipe_not_found)
-                                else -> UiText.StringResource(R.string.error_msg_generic)
+                        when (result.error) {
+                            DataError.RECIPE_EMPTY_TITLE -> {
+                                _editUiState.update { it.copy(titleError = UiText.StringResource(R.string.error_recipe_title_empty)) }
+                                _validationEvent.emit(RecipeValidationField.TITLE)
                             }
-                        _operationResultEvent.emit(OperationResult.Failure(uiErrorMessage))
-                    }
-                    else -> Unit
-                }
-            }
-        }
+                            DataError.RECIPE_INVALID_SERVINGS -> {
+                                _editUiState.update { it.copy(servingsError = UiText.StringResource(R.string.error_recipe_servings_empty)) }
+                                _validationEvent.emit(RecipeValidationField.SERVINGS)
+                            }
+                            DataError.RECIPE_INVALID_TIME -> {
+                                _editUiState.update { it.copy(timeError = UiText.StringResource(R.string.error_recipe_time_empty)) }
+                                _validationEvent.emit(RecipeValidationField.TIME)
+                            }
+                            DataError.RECIPE_EMPTY_INGREDIENTS -> {
+                                _editUiState.update {
+                                    it.copy(
+                                        ingredientsError = UiText.StringResource(R.string.error_recipe_ingredients_empty),
+                                        ingredientsErrorType = ListErrorType.IS_EMPTY,
+                                    )
+                                }
+                                _validationEvent.emit(RecipeValidationField.INGREDIENTS)
+                            }
+                            DataError.RECIPE_INVALID_INGREDIENT_ITEM -> {
+                                _editUiState.update {
+                                    it.copy(
+                                        ingredientsError = UiText.StringResource(R.string.error_recipe_ingredients_blank),
+                                        ingredientsErrorType = ListErrorType.HAS_BLANK_ITEMS,
+                                    )
+                                }
+                                _validationEvent.emit(RecipeValidationField.INGREDIENTS)
+                            }
+                            DataError.RECIPE_EMPTY_STEPS -> {
+                                _editUiState.update {
+                                    it.copy(
+                                        stepsError = UiText.StringResource(R.string.error_recipe_steps_empty),
+                                        stepsErrorType = ListErrorType.IS_EMPTY,
+                                    )
+                                }
+                                _validationEvent.emit(RecipeValidationField.STEPS)
+                            }
+                            DataError.RECIPE_INVALID_STEP_ITEM -> {
+                                _editUiState.update {
+                                    it.copy(
+                                        stepsError = UiText.StringResource(R.string.error_recipe_steps_blank),
+                                        stepsErrorType = ListErrorType.HAS_BLANK_ITEMS,
+                                    )
+                                }
+                                _validationEvent.emit(RecipeValidationField.STEPS)
+                            }
 
-        private fun updateErrorState(failure: RecipeValidator.ValidationResult.Failure) {
-            _editUiState.update { state ->
-                when (failure.field) {
-                    RecipeValidationField.TITLE -> state.copy(titleError = failure.errorMessage)
-                    RecipeValidationField.SERVINGS -> state.copy(servingsError = failure.errorMessage)
-                    RecipeValidationField.TIME -> state.copy(timeError = failure.errorMessage)
-                    RecipeValidationField.INGREDIENTS ->
-                        state.copy(
-                            ingredientsError = failure.errorMessage,
-                            ingredientsErrorType = failure.listErrorType,
-                        )
-                    RecipeValidationField.STEPS ->
-                        state.copy(
-                            stepsError = failure.errorMessage,
-                            stepsErrorType = failure.listErrorType,
-                        )
+                            DataError.SAVE_FAILED,
+                            DataError.UPDATE_FAILED,
+                            DataError.RECIPE_NOT_FOUND,
+                            DataError.RECIPE_ALREADY_EXISTS,
+                            -> {
+                                val uiErrorMessage =
+                                    when (result.error) {
+                                        DataError.SAVE_FAILED -> UiText.StringResource(R.string.error_save_failed)
+                                        DataError.UPDATE_FAILED -> UiText.StringResource(R.string.error_update_failed)
+                                        DataError.RECIPE_NOT_FOUND -> UiText.StringResource(R.string.error_recipe_not_found)
+                                        DataError.RECIPE_ALREADY_EXISTS -> UiText.StringResource(R.string.error_recipe_id_exists)
+                                        else -> UiText.StringResource(R.string.error_msg_generic)
+                                    }
+                                _operationResultEvent.emit(OperationResult.Failure(uiErrorMessage))
+                            }
+                            else -> {
+                                _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(R.string.error_msg_generic)))
+                            }
+                        }
+                    }
                 }
             }
         }

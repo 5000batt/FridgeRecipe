@@ -6,15 +6,23 @@ enum class DataError {
     DELETE_FAILED,
     UNKNOWN,
 
-    // 재료 관련 에러
-    EMPTY_NAME,
-    INVALID_AMOUNT,
+    // 재료 관련
+    INGREDIENT_EMPTY_NAME,
+    INGREDIENT_INVALID_AMOUNT,
+    INGREDIENT_NOT_FOUND,
 
-    // 레시피 관련 에러
+    // 레시피 관련
     RECIPE_ALREADY_EXISTS,
     RECIPE_NOT_FOUND,
+    RECIPE_EMPTY_TITLE,
+    RECIPE_INVALID_SERVINGS,
+    RECIPE_INVALID_TIME,
+    RECIPE_EMPTY_INGREDIENTS,
+    RECIPE_INVALID_INGREDIENT_ITEM,
+    RECIPE_EMPTY_STEPS,
+    RECIPE_INVALID_STEP_ITEM,
 
-    // AI(Gemini) 관련 에러
+    // AI(Gemini) 관련
     NETWORK_ERROR,
     QUOTA_EXCEEDED,
     SERVER_ERROR,
@@ -22,6 +30,6 @@ enum class DataError {
     PARSING_ERROR,
     RESPONSE_BLOCKED,
 
-    // 티켓 관련 에러
+    // 티켓 관련
     TICKET_EXHAUSTED,
 }

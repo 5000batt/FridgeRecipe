@@ -14,11 +14,11 @@ class InsertIngredientUseCase
         suspend operator fun invoke(ingredient: Ingredient): DataResult<Unit> {
             // 비즈니스 유효성 검사
             if (ingredient.name.isBlank()) {
-                return DataResult.Error(DataError.EMPTY_NAME)
+                return DataResult.Error(DataError.INGREDIENT_EMPTY_NAME)
             }
 
             if (ingredient.amount <= 0) {
-                return DataResult.Error(DataError.INVALID_AMOUNT)
+                return DataResult.Error(DataError.INGREDIENT_INVALID_AMOUNT)
             }
 
             return ingredientRepository.insertIngredient(ingredient)

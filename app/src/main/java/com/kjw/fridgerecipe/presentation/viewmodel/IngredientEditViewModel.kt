@@ -19,7 +19,6 @@ import com.kjw.fridgerecipe.presentation.ui.model.IngredientEditUiState
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientValidationField
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.util.UiText
-import com.kjw.fridgerecipe.presentation.validator.IngredientValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +39,6 @@ class IngredientEditViewModel
         private val insertIngredientUseCase: InsertIngredientUseCase,
         private val updateIngredientUseCase: UpdateIngredientUseCase,
         private val delIngredientUseCase: DelIngredientUseCase,
-        private val validator: IngredientValidator,
         private val mapper: IngredientUiMapper,
     ) : ViewModel() {
         private val _isLoading = MutableStateFlow(true)
@@ -136,24 +134,8 @@ class IngredientEditViewModel
             _editUiState.update { it.copy(showDeleteDialog = false) }
         }
 
-        private fun updateErrorState(failure: IngredientValidator.ValidationResult.Failure) {
-            _editUiState.update { state ->
-                when (failure.field) {
-                    IngredientValidationField.NAME -> state.copy(nameError = failure.errorMessage)
-                    IngredientValidationField.AMOUNT -> state.copy(amountError = failure.errorMessage)
-                }
-            }
-        }
-
         fun onSaveOrUpdateIngredient(isEditMode: Boolean) {
             viewModelScope.launch {
-                val validationResult = validator.validate(_editUiState.value)
-                if (validationResult is IngredientValidator.ValidationResult.Failure) {
-                    updateErrorState(validationResult)
-                    _validationEvent.emit(validationResult.field)
-                    return@launch
-                }
-
                 val ingredientToSave = mapper.toDomain(_editUiState.value, editingIngredient?.id)
 
                 val result =
@@ -170,15 +152,34 @@ class IngredientEditViewModel
                         _navigationEvent.emit(Unit)
                     }
                     is DataResult.Error -> {
-                        val uiErrorMessage =
-                            when (result.error) {
-                                DataError.SAVE_FAILED -> UiText.StringResource(R.string.error_save_failed)
-                                DataError.UPDATE_FAILED -> UiText.StringResource(R.string.error_update_failed)
-                                else -> UiText.StringResource(R.string.error_msg_generic)
+                        when (result.error) {
+                            DataError.INGREDIENT_EMPTY_NAME -> {
+                                _editUiState.update { it.copy(nameError = UiText.StringResource(R.string.error_validation_name_empty)) }
+                                _validationEvent.emit(IngredientValidationField.NAME)
                             }
-                        _operationResultEvent.emit(OperationResult.Failure(uiErrorMessage))
+                            DataError.INGREDIENT_INVALID_AMOUNT -> {
+                                _editUiState.update { it.copy(amountError = UiText.StringResource(R.string.error_validation_amount_empty)) }
+                                _validationEvent.emit(IngredientValidationField.AMOUNT)
+                            }
+
+                            DataError.SAVE_FAILED,
+                            DataError.UPDATE_FAILED,
+                            DataError.INGREDIENT_NOT_FOUND,
+                            -> {
+                                val uiErrorMessage =
+                                    when (result.error) {
+                                        DataError.SAVE_FAILED -> UiText.StringResource(R.string.error_save_failed)
+                                        DataError.UPDATE_FAILED -> UiText.StringResource(R.string.error_update_failed)
+                                        DataError.INGREDIENT_NOT_FOUND -> UiText.StringResource(R.string.error_ingredient_not_found)
+                                        else -> UiText.StringResource(R.string.error_msg_generic)
+                                    }
+                                _operationResultEvent.emit(OperationResult.Failure(uiErrorMessage))
+                            }
+                            else -> {
+                                _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(R.string.error_msg_generic)))
+                            }
+                        }
                     }
-                    else -> Unit
                 }
             }
         }

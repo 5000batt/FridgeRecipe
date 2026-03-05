@@ -22,6 +22,7 @@ fun StepEditRow(
     index: Int,
     description: String,
     onDescriptionChange: (String) -> Unit,
+    isDescriptionError: Boolean = false,
     onRemoveClick: () -> Unit,
 ) {
     Row(verticalAlignment = Alignment.Top) {
@@ -36,6 +37,7 @@ fun StepEditRow(
         CommonTextField(
             value = description,
             onValueChange = onDescriptionChange,
+            isError = isDescriptionError,
             label = stringResource(R.string.recipe_edit_label_step_desc),
             modifier = Modifier.weight(1f),
             singleLine = false,

@@ -231,6 +231,7 @@
     <string name="error_validation_name_empty">재료 이름을 입력해주세요.</string>
     <string name="error_validation_amount_empty">숫자만 입력해주세요.</string>
     <string name="error_validation_amount_zero">0보다 큰 값을 입력해주세요.</string>
+    <string name="error_ingredient_not_found">재료를 찾을 수 없습니다.</string>
 
     <!--  ReciepeViewModel  -->
     <string name="error_title_generic">오류 발생</string>

@@ -47,6 +47,7 @@ import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.RecipeImageSe
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.RecipeMetadataForm
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.RecipeSectionHeader
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.StepEditRow
+import com.kjw.fridgerecipe.presentation.ui.model.ListErrorType
 import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.ui.model.RecipeValidationField
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
@@ -259,13 +260,17 @@ fun RecipeEditScreen(
                     }
 
                     itemsIndexed(uiState.ingredientsState) { index, ingredient ->
+                        val isHasBlankItem = uiState.ingredientsErrorType == ListErrorType.HAS_BLANK_ITEMS
+
                         IngredientEditRow(
                             isEssential = ingredient.isEssential,
                             onEssentialChange = { viewModel.onIngredientEssentialChanged(index, it) },
                             name = ingredient.name,
                             onNameChange = { viewModel.onIngredientNameChanged(index, it) },
+                            isNameError = isHasBlankItem && ingredient.name.isBlank(),
                             quantity = ingredient.quantity,
                             onQuantityChange = { viewModel.onIngredientQuantityChanged(index, it) },
+                            isQuantityError = isHasBlankItem && ingredient.quantity.isBlank(),
                             onRemoveClick = { viewModel.onRemoveIngredient(index) },
                         )
 
@@ -287,10 +292,13 @@ fun RecipeEditScreen(
                     }
 
                     itemsIndexed(uiState.stepsState) { index, step ->
+                        val isHasBlankError = uiState.stepsErrorType == ListErrorType.HAS_BLANK_ITEMS
+
                         StepEditRow(
                             index = index,
                             description = step.description,
                             onDescriptionChange = { viewModel.onStepDescriptionChanged(index, it) },
+                            isDescriptionError = isHasBlankError && step.description.isBlank(),
                             onRemoveClick = { viewModel.onRemoveStep(index) },
                         )
 

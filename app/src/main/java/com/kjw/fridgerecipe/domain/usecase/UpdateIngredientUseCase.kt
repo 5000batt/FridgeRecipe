@@ -9,21 +9,22 @@ import javax.inject.Inject
 class UpdateIngredientUseCase
     @Inject
     constructor(
-        private val repository: IngredientRepository,
+        private val ingredientRepository: IngredientRepository,
     ) {
         suspend operator fun invoke(ingredient: Ingredient): DataResult<Unit> {
+            // 비즈니스 유효성 검사
             if (ingredient.id == null) {
-                return DataResult.Error(DataError.UNKNOWN)
+                return DataResult.Error(DataError.INGREDIENT_NOT_FOUND)
             }
 
             if (ingredient.name.isBlank()) {
-                return DataResult.Error(DataError.EMPTY_NAME)
+                return DataResult.Error(DataError.INGREDIENT_EMPTY_NAME)
             }
 
             if (ingredient.amount <= 0) {
-                return DataResult.Error(DataError.INVALID_AMOUNT)
+                return DataResult.Error(DataError.INGREDIENT_INVALID_AMOUNT)
             }
 
-            return repository.updateIngredient(ingredient)
+            return ingredientRepository.updateIngredient(ingredient)
         }
     }
