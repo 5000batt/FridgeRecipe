@@ -23,20 +23,20 @@ class RecipeMatcher
     ) {
         private val jsonParser = Json { ignoreUnknownKeys = true }
 
-        /**
-         * Remote Config에서 최신 동의어 맵을 가져옵니다.
-         */
-        private fun getRemoteSynonyms(): Map<String, String> {
-            return try {
-                val jsonString = remoteConfig.getString("ingredient_synonyms")
-                if (jsonString.isBlank()) return emptyMap()
+        @Volatile private var cachedSynonyms: Map<String, String>? = null
 
-                val jsonObject = jsonParser.parseToJsonElement(jsonString).jsonObject
-                jsonObject.mapValues { it.value.jsonPrimitive.content }
+        private fun getRemoteSynonyms(): Map<String, String> =
+            cachedSynonyms ?: parseSynonyms().also { cachedSynonyms = it }
+
+        private fun parseSynonyms(): Map<String, String> =
+            try {
+                val jsonString = remoteConfig.getString("ingredient_synonyms")
+                if (jsonString.isBlank()) emptyMap()
+                else jsonParser.parseToJsonElement(jsonString).jsonObject
+                    .mapValues { it.value.jsonPrimitive.content }
             } catch (e: Exception) {
                 emptyMap()
             }
-        }
 
         /**
          * 단어를 동의어 사전에 정의된 표준어로 변환합니다.
