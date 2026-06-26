@@ -7,11 +7,13 @@ import com.kjw.fridgerecipe.domain.usecase.CalculateRecipeMatchUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetSavedRecipesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -35,23 +37,27 @@ class RecipeListViewModel
         private val _sortType = MutableStateFlow(SortType.LATEST)
         val sortType: StateFlow<SortType> = _sortType.asStateFlow()
 
+        private val matchedRecipes: Flow<List<RecipeWithMatch>> =
+            combine(
+                getSavedRecipesUseCase().distinctUntilChanged(),
+                getIngredientsUseCase().distinctUntilChanged(),
+            ) { recipes, ingredients ->
+                recipes.map { recipe ->
+                    calculateRecipeMatchUseCase(recipe, ingredients)
+                }
+            }
+
         val recipeList: StateFlow<List<RecipeWithMatch>> =
             combine(
-                getSavedRecipesUseCase(),
-                getIngredientsUseCase(),
+                matchedRecipes,
                 _searchQuery,
                 _sortType,
-            ) { recipes, ingredients, query, sort ->
-                val mappedList =
-                    recipes.map { recipe ->
-                        calculateRecipeMatchUseCase(recipe, ingredients)
-                    }
-
+            ) { matched, query, sort ->
                 val filteredList =
                     if (query.isBlank()) {
-                        mappedList
+                        matched
                     } else {
-                        mappedList.filter { it.recipe.title.contains(query, ignoreCase = true) }
+                        matched.filter { it.recipe.title.contains(query, ignoreCase = true) }
                     }
 
                 when (sort) {
