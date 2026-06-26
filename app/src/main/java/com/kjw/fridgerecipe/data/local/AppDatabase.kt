@@ -31,7 +31,7 @@ import javax.inject.Inject
 
 @Database(
     entities = [IngredientEntity::class, RecipeEntity::class],
-    version = 15,
+    version = 16,
     autoMigrations = [
         AutoMigration(from = 12, to = 13, spec = AppDatabase.RecipeMigration::class),
         AutoMigration(from = 13, to = 14, spec = AppDatabase.IngredientMigration::class),
@@ -59,6 +59,17 @@ abstract class AppDatabase : RoomDatabase() {
     class IngredientMigration : AutoMigrationSpec
 
     companion object {
+        val MIGRATION_15_16 =
+            object : Migration(15, 16) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL(
+                        "CREATE INDEX IF NOT EXISTS " +
+                            "`index_recipes_ingredientsQuery_useOnlySelected_category_cookingTool` " +
+                            "ON `recipes` (`ingredientsQuery`, `useOnlySelected`, `category`, `cookingTool`)",
+                    )
+                }
+            }
+
         val MIGRATION_14_15 =
             object : Migration(14, 15) {
                 override fun migrate(db: SupportSQLiteDatabase) {

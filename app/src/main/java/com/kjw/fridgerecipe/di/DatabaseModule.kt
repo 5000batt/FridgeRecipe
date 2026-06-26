@@ -27,7 +27,7 @@ object DatabaseModule {
                 AppDatabase::class.java,
                 "fridge_recipe_db",
             ).addCallback(callback)
-            .addMigrations(AppDatabase.MIGRATION_14_15)
+            .addMigrations(AppDatabase.MIGRATION_14_15, AppDatabase.MIGRATION_15_16)
             .fallbackToDestructiveMigration(false)
             .build()
 
