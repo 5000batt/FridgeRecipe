@@ -17,20 +17,10 @@ class IngredientRepositoryImpl
         private val ingredientDao: IngredientDao,
     ) : IngredientRepository {
         override suspend fun insertIngredient(ingredient: Ingredient): DataResult<Unit> =
-            try {
-                ingredientDao.insertIngredient(ingredient.toEntity())
-                DataResult.Success(Unit)
-            } catch (e: Exception) {
-                DataResult.Error(error = DataError.SAVE_FAILED, cause = e)
-            }
+            safeDbCall(DataError.SAVE_FAILED) { ingredientDao.insertIngredient(ingredient.toEntity()) }
 
         override suspend fun deleteIngredient(ingredient: Ingredient): DataResult<Unit> =
-            try {
-                ingredientDao.deleteIngredient(ingredient.toEntity())
-                DataResult.Success(Unit)
-            } catch (e: Exception) {
-                DataResult.Error(error = DataError.DELETE_FAILED, cause = e)
-            }
+            safeDbCall(DataError.DELETE_FAILED) { ingredientDao.deleteIngredient(ingredient.toEntity()) }
 
         override fun getAllIngredients(): Flow<List<Ingredient>> =
             ingredientDao.getAllIngredients().map { entities ->
@@ -38,12 +28,7 @@ class IngredientRepositoryImpl
             }
 
         override suspend fun getAllIngredientsSuspend(): DataResult<List<Ingredient>> =
-            try {
-                val entities = ingredientDao.getAllIngredientsSuspend()
-                DataResult.Success(entities.map { it.toDomainModel() })
-            } catch (e: Exception) {
-                DataResult.Error(error = DataError.UNKNOWN, cause = e)
-            }
+            safeDbCall { ingredientDao.getAllIngredientsSuspend().map { it.toDomainModel() } }
 
         override suspend fun getIngredientById(id: Long): DataResult<Ingredient> =
             try {
@@ -58,18 +43,8 @@ class IngredientRepositoryImpl
             }
 
         override suspend fun updateIngredient(ingredient: Ingredient): DataResult<Unit> =
-            try {
-                ingredientDao.updateIngredient(ingredient.toEntity())
-                DataResult.Success(Unit)
-            } catch (e: Exception) {
-                DataResult.Error(error = DataError.UPDATE_FAILED, cause = e)
-            }
+            safeDbCall(DataError.UPDATE_FAILED) { ingredientDao.updateIngredient(ingredient.toEntity()) }
 
         override suspend fun deleteAllIngredients(): DataResult<Unit> =
-            try {
-                ingredientDao.deleteAllIngredients()
-                DataResult.Success(Unit)
-            } catch (e: Exception) {
-                DataResult.Error(error = DataError.DELETE_FAILED, cause = e)
-            }
+            safeDbCall(DataError.DELETE_FAILED) { ingredientDao.deleteAllIngredients() }
     }

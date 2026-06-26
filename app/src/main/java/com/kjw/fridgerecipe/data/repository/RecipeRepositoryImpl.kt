@@ -116,50 +116,26 @@ class RecipeRepositoryImpl
             level: LevelType?,
             useOnlySelected: Boolean,
         ): DataResult<List<Recipe>> =
-            try {
-                val entities =
-                    recipeDao.findRecipesByFilters(
-                        ingredientsQuery = ingredientsQuery,
-                        category = categoryFilter,
-                        cookingTool = cookingToolFilter,
-                        timeFilter = timeFilter,
-                        level = level,
-                        useOnlySelected = useOnlySelected,
-                    )
-                DataResult.Success(entities.map { it.toDomainModel() })
-            } catch (e: Exception) {
-                DataResult.Error(error = DataError.UNKNOWN, cause = e)
+            safeDbCall {
+                recipeDao.findRecipesByFilters(
+                    ingredientsQuery = ingredientsQuery,
+                    category = categoryFilter,
+                    cookingTool = cookingToolFilter,
+                    timeFilter = timeFilter,
+                    level = level,
+                    useOnlySelected = useOnlySelected,
+                ).map { it.toDomainModel() }
             }
 
         override suspend fun insertRecipe(recipe: Recipe): DataResult<Long> =
-            try {
-                val id = recipeDao.insertRecipe(recipe.toEntity())
-                DataResult.Success(id)
-            } catch (e: Exception) {
-                DataResult.Error(error = DataError.SAVE_FAILED, cause = e)
-            }
+            safeDbCall(DataError.SAVE_FAILED) { recipeDao.insertRecipe(recipe.toEntity()) }
 
         override suspend fun updateRecipe(recipe: Recipe): DataResult<Unit> =
-            try {
-                recipeDao.updateRecipe(recipe.toEntity())
-                DataResult.Success(Unit)
-            } catch (e: Exception) {
-                DataResult.Error(error = DataError.UPDATE_FAILED, cause = e)
-            }
+            safeDbCall(DataError.UPDATE_FAILED) { recipeDao.updateRecipe(recipe.toEntity()) }
 
         override suspend fun deleteRecipe(recipe: Recipe): DataResult<Unit> =
-            try {
-                recipeDao.deleteRecipe(recipe.toEntity())
-                DataResult.Success(Unit)
-            } catch (e: Exception) {
-                DataResult.Error(error = DataError.DELETE_FAILED, cause = e)
-            }
+            safeDbCall(DataError.DELETE_FAILED) { recipeDao.deleteRecipe(recipe.toEntity()) }
 
         override suspend fun deleteAllRecipes(): DataResult<Unit> =
-            try {
-                recipeDao.deleteAllRecipes()
-                DataResult.Success(Unit)
-            } catch (e: Exception) {
-                DataResult.Error(error = DataError.DELETE_FAILED, cause = e)
-            }
+            safeDbCall(DataError.DELETE_FAILED) { recipeDao.deleteAllRecipes() }
     }
