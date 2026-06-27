@@ -25,6 +25,7 @@ class GetRecommendedRecipeUseCase
     ) {
         suspend operator fun invoke(
             ingredients: List<Ingredient>,
+            ingredientsQuery: String,
             seenIds: Set<Long>,
             timeFilter: String?,
             level: LevelType?,
@@ -33,11 +34,6 @@ class GetRecommendedRecipeUseCase
             useOnlySelected: Boolean,
             excludedIngredients: List<String> = emptyList(),
         ): DataResult<RecommendedRecipeResult> {
-            val ingredientsQuery =
-                ingredients
-                    .map { it.name }
-                    .sorted()
-                    .joinToString(",")
 
             // 1. 캐시 확인
             val cachedResult =

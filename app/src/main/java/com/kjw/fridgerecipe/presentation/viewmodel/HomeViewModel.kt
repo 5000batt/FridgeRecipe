@@ -264,6 +264,7 @@ class HomeViewModel
                     val result =
                         getRecommendedRecipeUseCase(
                             ingredients = selectedIngredients,
+                            ingredientsQuery = ingredientsQuery,
                             seenIds = seenRecipeIds.value,
                             timeFilter = domainTimeFilter,
                             level = currentFilters.level,
