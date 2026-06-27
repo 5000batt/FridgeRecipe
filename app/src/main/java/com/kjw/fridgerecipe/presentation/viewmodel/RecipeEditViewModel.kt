@@ -18,10 +18,10 @@ import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.mapper.RecipeUiMapper
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientItemUiState
 import com.kjw.fridgerecipe.presentation.ui.model.ListErrorType
-import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.ui.model.RecipeEditUiState
 import com.kjw.fridgerecipe.presentation.ui.model.RecipeValidationField
 import com.kjw.fridgerecipe.presentation.ui.model.StepItemUiState
+import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.presentation.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -45,23 +45,26 @@ class RecipeEditViewModel
         private val saveRecipeImageUseCase: SaveRecipeImageUseCase,
         private val mapper: RecipeUiMapper,
     ) : ViewModel() {
-        sealed class NavigationEvent {
-            data object NavigateBack : NavigationEvent()
+        sealed interface RecipeEditSideEffect {
+            data class ShowSnackbar(
+                val message: UiText,
+                val type: SnackbarType,
+            ) : RecipeEditSideEffect
 
-            data object NavigateToList : NavigationEvent()
+            data object NavigateBack : RecipeEditSideEffect
+
+            data object NavigateToList : RecipeEditSideEffect
+
+            data class ScrollToField(
+                val field: RecipeValidationField,
+            ) : RecipeEditSideEffect
         }
 
         private val _isLoading = MutableStateFlow(true)
         val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-        private val _operationResultEvent = MutableSharedFlow<OperationResult>()
-        val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
-
-        private val _navigationEvent = MutableSharedFlow<NavigationEvent>()
-        val navigationEvent: SharedFlow<NavigationEvent> = _navigationEvent.asSharedFlow()
-
-        private val _validationEvent = MutableSharedFlow<RecipeValidationField>()
-        val validationEvent: SharedFlow<RecipeValidationField> = _validationEvent.asSharedFlow()
+        private val _sideEffect = MutableSharedFlow<RecipeEditSideEffect>()
+        val sideEffect: SharedFlow<RecipeEditSideEffect> = _sideEffect.asSharedFlow()
 
         private val _editUiState = MutableStateFlow(RecipeEditUiState())
         val editUiState: StateFlow<RecipeEditUiState> = _editUiState.asStateFlow()
@@ -94,7 +97,7 @@ class RecipeEditViewModel
                         val savedPath = result.data
                         _editUiState.update { state -> state.copy(imageUri = savedPath) }
                     } else if (result is DataResult.Error) {
-                        _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(R.string.error_msg_generic)))
+                        _sideEffect.emit(RecipeEditSideEffect.ShowSnackbar(UiText.StringResource(R.string.error_msg_generic), SnackbarType.ERROR))
                     }
                 }
             }
@@ -114,22 +117,22 @@ class RecipeEditViewModel
                 when (result) {
                     is DataResult.Success -> {
                         val messageResId = if (isEditMode) R.string.msg_updated else R.string.msg_saved
-                        _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(messageResId)))
-                        _navigationEvent.emit(NavigationEvent.NavigateBack)
+                        _sideEffect.emit(RecipeEditSideEffect.ShowSnackbar(UiText.StringResource(messageResId), SnackbarType.SUCCESS))
+                        _sideEffect.emit(RecipeEditSideEffect.NavigateBack)
                     }
                     is DataResult.Error -> {
                         when (result.error) {
                             DataError.RECIPE_EMPTY_TITLE -> {
                                 _editUiState.update { it.copy(titleError = UiText.StringResource(R.string.error_recipe_title_empty)) }
-                                _validationEvent.emit(RecipeValidationField.TITLE)
+                                _sideEffect.emit(RecipeEditSideEffect.ScrollToField(RecipeValidationField.TITLE))
                             }
                             DataError.RECIPE_INVALID_SERVINGS -> {
                                 _editUiState.update { it.copy(servingsError = UiText.StringResource(R.string.error_recipe_servings_empty)) }
-                                _validationEvent.emit(RecipeValidationField.SERVINGS)
+                                _sideEffect.emit(RecipeEditSideEffect.ScrollToField(RecipeValidationField.SERVINGS))
                             }
                             DataError.RECIPE_INVALID_TIME -> {
                                 _editUiState.update { it.copy(timeError = UiText.StringResource(R.string.error_recipe_time_empty)) }
-                                _validationEvent.emit(RecipeValidationField.TIME)
+                                _sideEffect.emit(RecipeEditSideEffect.ScrollToField(RecipeValidationField.TIME))
                             }
                             DataError.RECIPE_EMPTY_INGREDIENTS -> {
                                 _editUiState.update {
@@ -138,7 +141,7 @@ class RecipeEditViewModel
                                         ingredientsErrorType = ListErrorType.IS_EMPTY,
                                     )
                                 }
-                                _validationEvent.emit(RecipeValidationField.INGREDIENTS)
+                                _sideEffect.emit(RecipeEditSideEffect.ScrollToField(RecipeValidationField.INGREDIENTS))
                             }
                             DataError.RECIPE_INVALID_INGREDIENT_ITEM -> {
                                 _editUiState.update {
@@ -147,7 +150,7 @@ class RecipeEditViewModel
                                         ingredientsErrorType = ListErrorType.HAS_BLANK_ITEMS,
                                     )
                                 }
-                                _validationEvent.emit(RecipeValidationField.INGREDIENTS)
+                                _sideEffect.emit(RecipeEditSideEffect.ScrollToField(RecipeValidationField.INGREDIENTS))
                             }
                             DataError.RECIPE_EMPTY_STEPS -> {
                                 _editUiState.update {
@@ -156,7 +159,7 @@ class RecipeEditViewModel
                                         stepsErrorType = ListErrorType.IS_EMPTY,
                                     )
                                 }
-                                _validationEvent.emit(RecipeValidationField.STEPS)
+                                _sideEffect.emit(RecipeEditSideEffect.ScrollToField(RecipeValidationField.STEPS))
                             }
                             DataError.RECIPE_INVALID_STEP_ITEM -> {
                                 _editUiState.update {
@@ -165,7 +168,7 @@ class RecipeEditViewModel
                                         stepsErrorType = ListErrorType.HAS_BLANK_ITEMS,
                                     )
                                 }
-                                _validationEvent.emit(RecipeValidationField.STEPS)
+                                _sideEffect.emit(RecipeEditSideEffect.ScrollToField(RecipeValidationField.STEPS))
                             }
 
                             DataError.SAVE_FAILED,
@@ -181,10 +184,10 @@ class RecipeEditViewModel
                                         DataError.RECIPE_ALREADY_EXISTS -> UiText.StringResource(R.string.error_recipe_id_exists)
                                         else -> UiText.StringResource(R.string.error_msg_generic)
                                     }
-                                _operationResultEvent.emit(OperationResult.Failure(uiErrorMessage))
+                                _sideEffect.emit(RecipeEditSideEffect.ShowSnackbar(uiErrorMessage, SnackbarType.ERROR))
                             }
                             else -> {
-                                _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(R.string.error_msg_generic)))
+                                _sideEffect.emit(RecipeEditSideEffect.ShowSnackbar(UiText.StringResource(R.string.error_msg_generic), SnackbarType.ERROR))
                             }
                         }
                     }
@@ -198,8 +201,8 @@ class RecipeEditViewModel
                     val result = delRecipeUseCase(it)
                     when (result) {
                         is DataResult.Success -> {
-                            _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(R.string.msg_deleted)))
-                            _navigationEvent.emit(NavigationEvent.NavigateToList)
+                            _sideEffect.emit(RecipeEditSideEffect.ShowSnackbar(UiText.StringResource(R.string.msg_deleted), SnackbarType.SUCCESS))
+                            _sideEffect.emit(RecipeEditSideEffect.NavigateToList)
                         }
                         is DataResult.Error -> {
                             val uiErrorMessage =
@@ -207,7 +210,7 @@ class RecipeEditViewModel
                                     DataError.DELETE_FAILED -> UiText.StringResource(R.string.error_delete_failed)
                                     else -> UiText.StringResource(R.string.error_msg_generic)
                                 }
-                            _operationResultEvent.emit(OperationResult.Failure(uiErrorMessage))
+                            _sideEffect.emit(RecipeEditSideEffect.ShowSnackbar(uiErrorMessage, SnackbarType.ERROR))
                         }
                         else -> Unit
                     }

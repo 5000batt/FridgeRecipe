@@ -17,7 +17,7 @@ import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.mapper.IngredientUiMapper
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientEditUiState
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientValidationField
-import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
+import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.presentation.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -41,17 +41,24 @@ class IngredientEditViewModel
         private val delIngredientUseCase: DelIngredientUseCase,
         private val mapper: IngredientUiMapper,
     ) : ViewModel() {
+        sealed interface IngredientEditSideEffect {
+            data class ShowSnackbar(
+                val message: UiText,
+                val type: SnackbarType,
+            ) : IngredientEditSideEffect
+
+            data object NavigateBack : IngredientEditSideEffect
+
+            data class ScrollToField(
+                val field: IngredientValidationField,
+            ) : IngredientEditSideEffect
+        }
+
         private val _isLoading = MutableStateFlow(true)
         val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-        private val _operationResultEvent = MutableSharedFlow<OperationResult>()
-        val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
-
-        private val _navigationEvent = MutableSharedFlow<Unit>()
-        val navigationEvent: SharedFlow<Unit> = _navigationEvent.asSharedFlow()
-
-        private val _validationEvent = MutableSharedFlow<IngredientValidationField>()
-        val validationEvent: SharedFlow<IngredientValidationField> = _validationEvent.asSharedFlow()
+        private val _sideEffect = MutableSharedFlow<IngredientEditSideEffect>()
+        val sideEffect: SharedFlow<IngredientEditSideEffect> = _sideEffect.asSharedFlow()
 
         private val _editUiState = MutableStateFlow(IngredientEditUiState())
         val editUiState: StateFlow<IngredientEditUiState> = _editUiState.asStateFlow()
@@ -148,18 +155,18 @@ class IngredientEditViewModel
                 when (result) {
                     is DataResult.Success -> {
                         val messageResId = if (isEditMode) R.string.msg_updated else R.string.msg_saved
-                        _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(messageResId)))
-                        _navigationEvent.emit(Unit)
+                        _sideEffect.emit(IngredientEditSideEffect.ShowSnackbar(UiText.StringResource(messageResId), SnackbarType.SUCCESS))
+                        _sideEffect.emit(IngredientEditSideEffect.NavigateBack)
                     }
                     is DataResult.Error -> {
                         when (result.error) {
                             DataError.INGREDIENT_EMPTY_NAME -> {
                                 _editUiState.update { it.copy(nameError = UiText.StringResource(R.string.error_validation_name_empty)) }
-                                _validationEvent.emit(IngredientValidationField.NAME)
+                                _sideEffect.emit(IngredientEditSideEffect.ScrollToField(IngredientValidationField.NAME))
                             }
                             DataError.INGREDIENT_INVALID_AMOUNT -> {
                                 _editUiState.update { it.copy(amountError = UiText.StringResource(R.string.error_validation_amount_empty)) }
-                                _validationEvent.emit(IngredientValidationField.AMOUNT)
+                                _sideEffect.emit(IngredientEditSideEffect.ScrollToField(IngredientValidationField.AMOUNT))
                             }
 
                             DataError.SAVE_FAILED,
@@ -173,10 +180,10 @@ class IngredientEditViewModel
                                         DataError.INGREDIENT_NOT_FOUND -> UiText.StringResource(R.string.error_ingredient_not_found)
                                         else -> UiText.StringResource(R.string.error_msg_generic)
                                     }
-                                _operationResultEvent.emit(OperationResult.Failure(uiErrorMessage))
+                                _sideEffect.emit(IngredientEditSideEffect.ShowSnackbar(uiErrorMessage, SnackbarType.ERROR))
                             }
                             else -> {
-                                _operationResultEvent.emit(OperationResult.Failure(UiText.StringResource(R.string.error_msg_generic)))
+                                _sideEffect.emit(IngredientEditSideEffect.ShowSnackbar(UiText.StringResource(R.string.error_msg_generic), SnackbarType.ERROR))
                             }
                         }
                     }
@@ -190,8 +197,8 @@ class IngredientEditViewModel
                     val result = delIngredientUseCase(it)
                     when (result) {
                         is DataResult.Success -> {
-                            _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(R.string.msg_deleted)))
-                            _navigationEvent.emit(Unit)
+                            _sideEffect.emit(IngredientEditSideEffect.ShowSnackbar(UiText.StringResource(R.string.msg_deleted), SnackbarType.SUCCESS))
+                            _sideEffect.emit(IngredientEditSideEffect.NavigateBack)
                         }
                         is DataResult.Error -> {
                             val uiErrorMessage =
@@ -199,7 +206,7 @@ class IngredientEditViewModel
                                     DataError.DELETE_FAILED -> UiText.StringResource(R.string.error_delete_failed)
                                     else -> UiText.StringResource(R.string.error_msg_generic)
                                 }
-                            _operationResultEvent.emit(OperationResult.Failure(uiErrorMessage))
+                            _sideEffect.emit(IngredientEditSideEffect.ShowSnackbar(uiErrorMessage, SnackbarType.ERROR))
                         }
                         else -> Unit
                     }

@@ -144,7 +144,7 @@ fun HomeScreen(
                     homeViewModel.resetHomeState()
                 }
                 is HomeViewModel.HomeSideEffect.ShowSnackbar -> {
-                    onShowSnackbar(event.message.asString(context), SnackbarType.SUCCESS)
+                    onShowSnackbar(event.message.asString(context), event.type)
                 }
             }
         }

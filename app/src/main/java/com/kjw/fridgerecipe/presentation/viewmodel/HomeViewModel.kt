@@ -27,6 +27,7 @@ import com.kjw.fridgerecipe.presentation.ui.model.ErrorDialogState
 import com.kjw.fridgerecipe.presentation.ui.model.HomeUiState
 import com.kjw.fridgerecipe.presentation.ui.model.RecipeFilterState
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
+import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.presentation.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -67,6 +68,7 @@ class HomeViewModel
 
             data class ShowSnackbar(
                 val message: UiText,
+                val type: SnackbarType = SnackbarType.SUCCESS,
             ) : HomeSideEffect
         }
 

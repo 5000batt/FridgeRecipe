@@ -48,7 +48,6 @@ import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.RecipeMetadat
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.RecipeSectionHeader
 import com.kjw.fridgerecipe.presentation.ui.components.recipe.edit.StepEditRow
 import com.kjw.fridgerecipe.presentation.ui.model.ListErrorType
-import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.ui.model.RecipeValidationField
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.presentation.viewmodel.RecipeEditViewModel
@@ -88,45 +87,36 @@ fun RecipeEditScreen(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.operationResultEvent.collect { result ->
-            when (result) {
-                is OperationResult.Success -> onShowSnackbar(result.message.asString(context), SnackbarType.SUCCESS)
-                is OperationResult.Failure -> onShowSnackbar(result.message.asString(context), SnackbarType.ERROR)
-            }
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.navigationEvent.collect { event ->
-            when (event) {
-                is RecipeEditViewModel.NavigationEvent.NavigateBack -> onNavigateBack()
-                is RecipeEditViewModel.NavigationEvent.NavigateToList -> onNavigateToRecipeList()
-            }
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.validationEvent.collect { field ->
-            when (field) {
-                RecipeValidationField.TITLE -> {
-                    listState.animateScrollToItem(1)
-                    titleFocusRequester.requestFocus()
-                }
-                RecipeValidationField.SERVINGS -> {
-                    listState.animateScrollToItem(1)
-                    servingsFocusRequester.requestFocus()
-                }
-                RecipeValidationField.TIME -> {
-                    listState.animateScrollToItem(1)
-                    timeFocusRequester.requestFocus()
-                }
-                RecipeValidationField.INGREDIENTS -> {
-                    listState.animateScrollToItem(3)
-                }
-                RecipeValidationField.STEPS -> {
-                    val stepsHeaderIndex = 4 + uiState.ingredientsState.size
-                    listState.animateScrollToItem(stepsHeaderIndex)
-                }
+        viewModel.sideEffect.collect { effect ->
+            when (effect) {
+                is RecipeEditViewModel.RecipeEditSideEffect.ShowSnackbar ->
+                    onShowSnackbar(effect.message.asString(context), effect.type)
+                is RecipeEditViewModel.RecipeEditSideEffect.NavigateBack ->
+                    onNavigateBack()
+                is RecipeEditViewModel.RecipeEditSideEffect.NavigateToList ->
+                    onNavigateToRecipeList()
+                is RecipeEditViewModel.RecipeEditSideEffect.ScrollToField ->
+                    when (effect.field) {
+                        RecipeValidationField.TITLE -> {
+                            listState.animateScrollToItem(1)
+                            titleFocusRequester.requestFocus()
+                        }
+                        RecipeValidationField.SERVINGS -> {
+                            listState.animateScrollToItem(1)
+                            servingsFocusRequester.requestFocus()
+                        }
+                        RecipeValidationField.TIME -> {
+                            listState.animateScrollToItem(1)
+                            timeFocusRequester.requestFocus()
+                        }
+                        RecipeValidationField.INGREDIENTS -> {
+                            listState.animateScrollToItem(3)
+                        }
+                        RecipeValidationField.STEPS -> {
+                            val stepsHeaderIndex = 4 + uiState.ingredientsState.size
+                            listState.animateScrollToItem(stepsHeaderIndex)
+                        }
+                    }
             }
         }
     }
