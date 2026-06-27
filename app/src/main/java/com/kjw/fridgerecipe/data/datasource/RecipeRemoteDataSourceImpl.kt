@@ -13,6 +13,7 @@ import com.kjw.fridgerecipe.data.remote.GeminiModelProvider
 import com.kjw.fridgerecipe.data.remote.RecipeDto
 import com.kjw.fridgerecipe.data.remote.RecipePromptGenerator
 import com.kjw.fridgerecipe.data.util.AppJson
+import com.kjw.fridgerecipe.data.util.extractJsonFromAiResponse
 import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
@@ -68,7 +69,7 @@ class RecipeRemoteDataSourceImpl
                 Log.d("RemoteDataSource", "AI 원본 응답: $aiResponseText")
 
                 // JSON 파싱
-                val jsonString = extractJsonString(aiResponseText)
+                val jsonString = extractJsonFromAiResponse(aiResponseText)
                 val recipeResponse = jsonParser.decodeFromString<AiRecipeResponse>(jsonString)
 
                 return recipeResponse.recipe
@@ -76,28 +77,6 @@ class RecipeRemoteDataSourceImpl
                 Log.e("RemoteDataSource", "AI 레시피 호출 실패", e)
                 throw mapToGeminiException(e)
             }
-        }
-
-        // Json 문자열만 추출
-        private fun extractJsonString(text: String): String {
-            val codeBlockRegex = Regex("```(?:json)?\\s*([\\s\\S]*?)\\s*```")
-            val matchResult = codeBlockRegex.find(text)
-
-            val rawJson =
-                if (matchResult != null) {
-                    matchResult.groupValues[1]
-                } else {
-                    text
-                }
-
-            val startIndex = rawJson.indexOf('{')
-            val endIndex = rawJson.lastIndexOf('}')
-
-            if (startIndex == -1 || endIndex == -1 || startIndex >= endIndex) {
-                throw GeminiException.ParsingError()
-            }
-
-            return rawJson.substring(startIndex, endIndex + 1)
         }
 
         private fun mapToGeminiException(e: Exception): GeminiException {
