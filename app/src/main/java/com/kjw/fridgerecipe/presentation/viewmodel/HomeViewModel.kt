@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -134,15 +135,18 @@ class HomeViewModel
 
         private fun observeSettings() {
             viewModelScope.launch {
-                observeIngredientCheckSkipUseCase().collect { isSkip ->
-                    _homeUiState.update { it.copy(isIngredientCheckSkip = isSkip) }
-                }
-            }
-
-            viewModelScope.launch {
-                observeFirstLaunchUseCase().collect { isFirst ->
-                    _homeUiState.update { it.copy(isFirstLaunch = isFirst) }
-                }
+                combine(
+                    observeIngredientCheckSkipUseCase(),
+                    observeFirstLaunchUseCase(),
+                ) { isSkip, isFirst -> isSkip to isFirst }
+                    .collect { (isSkip, isFirst) ->
+                        _homeUiState.update {
+                            it.copy(
+                                isIngredientCheckSkip = isSkip,
+                                isFirstLaunch = isFirst,
+                            )
+                        }
+                    }
             }
         }
 
