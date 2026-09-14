@@ -12,13 +12,13 @@ import com.kjw.fridgerecipe.domain.usecase.DelIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientByIdUseCase
 import com.kjw.fridgerecipe.domain.usecase.InsertIngredientUseCase
 import com.kjw.fridgerecipe.domain.usecase.UpdateIngredientUseCase
+import com.kjw.fridgerecipe.domain.util.DataError
 import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.mapper.IngredientUiMapper
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientEditUiState
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientValidationField
-import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
+import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.presentation.util.UiText
-import com.kjw.fridgerecipe.presentation.validator.IngredientValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,20 +39,26 @@ class IngredientEditViewModel
         private val insertIngredientUseCase: InsertIngredientUseCase,
         private val updateIngredientUseCase: UpdateIngredientUseCase,
         private val delIngredientUseCase: DelIngredientUseCase,
-        private val validator: IngredientValidator,
         private val mapper: IngredientUiMapper,
     ) : ViewModel() {
+        sealed interface IngredientEditSideEffect {
+            data class ShowSnackbar(
+                val message: UiText,
+                val type: SnackbarType,
+            ) : IngredientEditSideEffect
+
+            data object NavigateBack : IngredientEditSideEffect
+
+            data class ScrollToField(
+                val field: IngredientValidationField,
+            ) : IngredientEditSideEffect
+        }
+
         private val _isLoading = MutableStateFlow(true)
         val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-        private val _operationResultEvent = MutableSharedFlow<OperationResult>()
-        val operationResultEvent: SharedFlow<OperationResult> = _operationResultEvent.asSharedFlow()
-
-        private val _navigationEvent = MutableSharedFlow<Unit>()
-        val navigationEvent: SharedFlow<Unit> = _navigationEvent.asSharedFlow()
-
-        private val _validationEvent = MutableSharedFlow<IngredientValidationField>()
-        val validationEvent: SharedFlow<IngredientValidationField> = _validationEvent.asSharedFlow()
+        private val _sideEffect = MutableSharedFlow<IngredientEditSideEffect>()
+        val sideEffect: SharedFlow<IngredientEditSideEffect> = _sideEffect.asSharedFlow()
 
         private val _editUiState = MutableStateFlow(IngredientEditUiState())
         val editUiState: StateFlow<IngredientEditUiState> = _editUiState.asStateFlow()
@@ -135,24 +141,8 @@ class IngredientEditViewModel
             _editUiState.update { it.copy(showDeleteDialog = false) }
         }
 
-        private fun updateErrorState(failure: IngredientValidator.ValidationResult.Failure) {
-            _editUiState.update { state ->
-                when (failure.field) {
-                    IngredientValidationField.NAME -> state.copy(nameError = failure.errorMessage)
-                    IngredientValidationField.AMOUNT -> state.copy(amountError = failure.errorMessage)
-                }
-            }
-        }
-
         fun onSaveOrUpdateIngredient(isEditMode: Boolean) {
             viewModelScope.launch {
-                val validationResult = validator.validate(_editUiState.value)
-                if (validationResult is IngredientValidator.ValidationResult.Failure) {
-                    updateErrorState(validationResult)
-                    _validationEvent.emit(validationResult.field)
-                    return@launch
-                }
-
                 val ingredientToSave = mapper.toDomain(_editUiState.value, editingIngredient?.id)
 
                 val result =
@@ -165,13 +155,43 @@ class IngredientEditViewModel
                 when (result) {
                     is DataResult.Success -> {
                         val messageResId = if (isEditMode) R.string.msg_updated else R.string.msg_saved
-                        _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(messageResId)))
-                        _navigationEvent.emit(Unit)
+                        _sideEffect.emit(IngredientEditSideEffect.ShowSnackbar(UiText.StringResource(messageResId), SnackbarType.SUCCESS))
+                        _sideEffect.emit(IngredientEditSideEffect.NavigateBack)
                     }
                     is DataResult.Error -> {
-                        _operationResultEvent.emit(OperationResult.Failure(result.message))
+                        when (result.error) {
+                            DataError.INGREDIENT_EMPTY_NAME -> {
+                                _editUiState.update { it.copy(nameError = UiText.StringResource(R.string.error_validation_name_empty)) }
+                                _sideEffect.emit(IngredientEditSideEffect.ScrollToField(IngredientValidationField.NAME))
+                            }
+                            DataError.INGREDIENT_INVALID_AMOUNT -> {
+                                _editUiState.update { it.copy(amountError = UiText.StringResource(R.string.error_validation_amount_empty)) }
+                                _sideEffect.emit(IngredientEditSideEffect.ScrollToField(IngredientValidationField.AMOUNT))
+                            }
+
+                            DataError.SAVE_FAILED,
+                            DataError.UPDATE_FAILED,
+                            DataError.INGREDIENT_NOT_FOUND,
+                            -> {
+                                val uiErrorMessage =
+                                    when (result.error) {
+                                        DataError.SAVE_FAILED -> UiText.StringResource(R.string.error_save_failed)
+                                        DataError.UPDATE_FAILED -> UiText.StringResource(R.string.error_update_failed)
+                                        DataError.INGREDIENT_NOT_FOUND -> UiText.StringResource(R.string.error_ingredient_not_found)
+                                        else -> UiText.StringResource(R.string.error_msg_generic)
+                                    }
+                                _sideEffect.emit(IngredientEditSideEffect.ShowSnackbar(uiErrorMessage, SnackbarType.ERROR))
+                            }
+                            else -> {
+                                _sideEffect.emit(
+                                    IngredientEditSideEffect.ShowSnackbar(
+                                        UiText.StringResource(R.string.error_msg_generic),
+                                        SnackbarType.ERROR,
+                                    ),
+                                )
+                            }
+                        }
                     }
-                    else -> Unit
                 }
             }
         }
@@ -182,11 +202,18 @@ class IngredientEditViewModel
                     val result = delIngredientUseCase(it)
                     when (result) {
                         is DataResult.Success -> {
-                            _operationResultEvent.emit(OperationResult.Success(UiText.StringResource(R.string.msg_deleted)))
-                            _navigationEvent.emit(Unit)
+                            _sideEffect.emit(
+                                IngredientEditSideEffect.ShowSnackbar(UiText.StringResource(R.string.msg_deleted), SnackbarType.SUCCESS),
+                            )
+                            _sideEffect.emit(IngredientEditSideEffect.NavigateBack)
                         }
                         is DataResult.Error -> {
-                            _operationResultEvent.emit(OperationResult.Failure(result.message))
+                            val uiErrorMessage =
+                                when (result.error) {
+                                    DataError.DELETE_FAILED -> UiText.StringResource(R.string.error_delete_failed)
+                                    else -> UiText.StringResource(R.string.error_msg_generic)
+                                }
+                            _sideEffect.emit(IngredientEditSideEffect.ShowSnackbar(uiErrorMessage, SnackbarType.ERROR))
                         }
                         else -> Unit
                     }

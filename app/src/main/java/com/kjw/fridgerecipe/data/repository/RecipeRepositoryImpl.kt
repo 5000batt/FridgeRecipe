@@ -1,21 +1,19 @@
 package com.kjw.fridgerecipe.data.repository
 
 import android.util.Log
-import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.data.datasource.RecipeRemoteDataSource
 import com.kjw.fridgerecipe.data.local.dao.RecipeDao
+import com.kjw.fridgerecipe.data.remote.GeminiException
 import com.kjw.fridgerecipe.data.repository.mapper.toDomainModel
 import com.kjw.fridgerecipe.data.repository.mapper.toEntity
 import com.kjw.fridgerecipe.domain.model.CookingToolType
-import com.kjw.fridgerecipe.domain.model.GeminiException
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.Recipe
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.repository.RecipeRepository
+import com.kjw.fridgerecipe.domain.util.DataError
 import com.kjw.fridgerecipe.domain.util.DataResult
-import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
-import com.kjw.fridgerecipe.presentation.util.UiText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -30,8 +28,6 @@ class RecipeRepositoryImpl
             const val TAG = "RecipeRepo"
         }
 
-        private fun sanitizeFilter(value: String?): String? = if (value == FILTER_ANY || value.isNullOrBlank()) null else value
-
         override suspend fun getAiRecipes(
             ingredients: List<Ingredient>,
             ingredientsQuery: String,
@@ -43,12 +39,10 @@ class RecipeRepositoryImpl
             excludedIngredients: List<String>,
         ): DataResult<Recipe> =
             try {
-                val safeTime = sanitizeFilter(timeFilter)
-
                 val recipeDto =
                     remoteDataSource.getAiRecipe(
                         ingredients = ingredients,
-                        timeFilter = safeTime,
+                        timeFilter = timeFilter,
                         level = level,
                         categoryFilter = categoryFilter,
                         cookingToolFilter = cookingToolFilter,
@@ -60,7 +54,7 @@ class RecipeRepositoryImpl
                     recipeDto.toDomainModel().copy(
                         category = categoryFilter,
                         cookingTool = cookingToolFilter,
-                        timeFilter = safeTime,
+                        timeFilter = timeFilter,
                         level = level ?: recipeDto.toDomainModel().level,
                         ingredientsQuery = ingredientsQuery,
                         useOnlySelected = useOnlySelected,
@@ -79,35 +73,20 @@ class RecipeRepositoryImpl
             } catch (e: GeminiException) {
                 // Gemini 관련 구체적 에러 매핑
                 Log.e(TAG, "Gemini AI Error", e)
-                val (titleRes, messageRes) =
+                val errorType =
                     when (e) {
-                        is GeminiException.QuotaExceeded ->
-                            R.string.error_title_quota to R.string.error_msg_quota
-                        is GeminiException.ServerOverloaded ->
-                            R.string.error_title_server to R.string.error_msg_server
-                        is GeminiException.ApiKeyError ->
-                            R.string.error_title_update to R.string.error_msg_update
-                        is GeminiException.ParsingError ->
-                            R.string.error_title_parsing to R.string.error_msg_parsing
-                        is GeminiException.NetworkError ->
-                            R.string.error_title_network to R.string.error_msg_network
-                        is GeminiException.ResponseBlocked ->
-                            R.string.error_title_blocked to R.string.error_msg_blocked
-                        else ->
-                            R.string.error_title_generic to R.string.error_msg_generic
+                        is GeminiException.QuotaExceeded -> DataError.QUOTA_EXCEEDED
+                        is GeminiException.ServerOverloaded -> DataError.SERVER_ERROR
+                        is GeminiException.ApiKeyError -> DataError.API_KEY_ERROR
+                        is GeminiException.ParsingError -> DataError.PARSING_ERROR
+                        is GeminiException.NetworkError -> DataError.NETWORK_ERROR
+                        is GeminiException.ResponseBlocked -> DataError.RESPONSE_BLOCKED
+                        else -> DataError.UNKNOWN
                     }
-                DataResult.Error(
-                    message = UiText.StringResource(messageRes),
-                    title = UiText.StringResource(titleRes),
-                    cause = e,
-                )
+                DataResult.Error(error = errorType, cause = e)
             } catch (e: Exception) {
                 Log.e(TAG, "General Recipe Error", e)
-                DataResult.Error(
-                    message = UiText.StringResource(R.string.error_msg_recipe_fetch_failed),
-                    title = UiText.StringResource(R.string.error_title_generic),
-                    cause = e,
-                )
+                DataResult.Error(error = DataError.UNKNOWN, cause = e)
             }
 
         override fun getAllSavedRecipes(): Flow<List<Recipe>> =
@@ -123,10 +102,10 @@ class RecipeRepositoryImpl
                 if (entity != null) {
                     DataResult.Success(entity.toDomainModel())
                 } else {
-                    DataResult.Error(message = UiText.StringResource(R.string.error_recipe_not_found))
+                    DataResult.Error(error = DataError.RECIPE_NOT_FOUND)
                 }
             } catch (e: Exception) {
-                DataResult.Error(message = UiText.StringResource(R.string.error_msg_generic), cause = e)
+                DataResult.Error(error = DataError.UNKNOWN, cause = e)
             }
 
         override suspend fun findRecipesByFilters(
@@ -137,50 +116,26 @@ class RecipeRepositoryImpl
             level: LevelType?,
             useOnlySelected: Boolean,
         ): DataResult<List<Recipe>> =
-            try {
-                val entities =
-                    recipeDao.findRecipesByFilters(
+            safeDbCall {
+                recipeDao
+                    .findRecipesByFilters(
                         ingredientsQuery = ingredientsQuery,
                         category = categoryFilter,
                         cookingTool = cookingToolFilter,
-                        timeFilter = sanitizeFilter(timeFilter),
+                        timeFilter = timeFilter,
                         level = level,
                         useOnlySelected = useOnlySelected,
-                    )
-                DataResult.Success(entities.map { it.toDomainModel() })
-            } catch (e: Exception) {
-                DataResult.Error(message = UiText.StringResource(R.string.error_msg_generic), cause = e)
+                    ).map { it.toDomainModel() }
             }
 
         override suspend fun insertRecipe(recipe: Recipe): DataResult<Long> =
-            try {
-                val id = recipeDao.insertRecipe(recipe.toEntity())
-                DataResult.Success(id)
-            } catch (e: Exception) {
-                DataResult.Error(message = UiText.StringResource(R.string.error_save_failed), cause = e)
-            }
+            safeDbCall(DataError.SAVE_FAILED) { recipeDao.insertRecipe(recipe.toEntity()) }
 
         override suspend fun updateRecipe(recipe: Recipe): DataResult<Unit> =
-            try {
-                recipeDao.updateRecipe(recipe.toEntity())
-                DataResult.Success(Unit)
-            } catch (e: Exception) {
-                DataResult.Error(message = UiText.StringResource(R.string.error_update_failed), cause = e)
-            }
+            safeDbCall(DataError.UPDATE_FAILED) { recipeDao.updateRecipe(recipe.toEntity()) }
 
         override suspend fun deleteRecipe(recipe: Recipe): DataResult<Unit> =
-            try {
-                recipeDao.deleteRecipe(recipe.toEntity())
-                DataResult.Success(Unit)
-            } catch (e: Exception) {
-                DataResult.Error(message = UiText.StringResource(R.string.error_delete_failed), cause = e)
-            }
+            safeDbCall(DataError.DELETE_FAILED) { recipeDao.deleteRecipe(recipe.toEntity()) }
 
-        override suspend fun deleteAllRecipes(): DataResult<Unit> =
-            try {
-                recipeDao.deleteAllRecipes()
-                DataResult.Success(Unit)
-            } catch (e: Exception) {
-                DataResult.Error(message = UiText.StringResource(R.string.error_msg_generic), cause = e)
-            }
+        override suspend fun deleteAllRecipes(): DataResult<Unit> = safeDbCall(DataError.DELETE_FAILED) { recipeDao.deleteAllRecipes() }
     }

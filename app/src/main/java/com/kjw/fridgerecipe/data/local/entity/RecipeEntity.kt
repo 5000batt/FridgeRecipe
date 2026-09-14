@@ -1,6 +1,7 @@
 package com.kjw.fridgerecipe.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.LevelType
@@ -8,7 +9,10 @@ import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
 import com.kjw.fridgerecipe.domain.model.RecipeIngredient
 import com.kjw.fridgerecipe.domain.model.RecipeStep
 
-@Entity(tableName = "recipes")
+@Entity(
+    tableName = "recipes",
+    indices = [Index(value = ["ingredientsQuery", "useOnlySelected", "category", "cookingTool"])],
+)
 data class RecipeEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long? = null,

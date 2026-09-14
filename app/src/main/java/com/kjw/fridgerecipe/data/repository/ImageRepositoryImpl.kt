@@ -4,10 +4,9 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import com.kjw.fridgerecipe.R
 import com.kjw.fridgerecipe.domain.repository.ImageRepository
+import com.kjw.fridgerecipe.domain.util.DataError
 import com.kjw.fridgerecipe.domain.util.DataResult
-import com.kjw.fridgerecipe.presentation.util.UiText
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -40,7 +39,7 @@ class ImageRepositoryImpl
                     val scaledBitmap =
                         contentResolver.openInputStream(uri)?.use { inputStream ->
                             BitmapFactory.decodeStream(inputStream, null, options)
-                        } ?: return@withContext DataResult.Error(UiText.StringResource(R.string.error_msg_generic))
+                        } ?: return@withContext DataResult.Error(error = DataError.UNKNOWN)
 
                     val directory = File(context.filesDir, "recipe_images")
                     if (!directory.exists()) directory.mkdirs()
@@ -56,7 +55,7 @@ class ImageRepositoryImpl
                     DataResult.Success(file.absolutePath)
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    DataResult.Error(UiText.StringResource(R.string.error_msg_generic), cause = e)
+                    DataResult.Error(error = DataError.UNKNOWN)
                 }
             }
 

@@ -3,9 +3,14 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.domain.model.ThemeMode
-import com.kjw.fridgerecipe.domain.repository.SettingsRepository
 import com.kjw.fridgerecipe.domain.usecase.DeleteAllIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.DeleteAllRecipesUseCase
+import com.kjw.fridgerecipe.domain.usecase.ObserveExcludedIngredientsUseCase
+import com.kjw.fridgerecipe.domain.usecase.ObserveNotificationEnabledUseCase
+import com.kjw.fridgerecipe.domain.usecase.ObserveThemeModeUseCase
+import com.kjw.fridgerecipe.domain.usecase.SetExcludedIngredientsUseCase
+import com.kjw.fridgerecipe.domain.usecase.SetNotificationEnabledUseCase
+import com.kjw.fridgerecipe.domain.usecase.SetThemeModeUseCase
 import com.kjw.fridgerecipe.presentation.ui.model.SettingsUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +31,12 @@ class SettingsViewModel
     constructor(
         private val deleteAllRecipesUseCase: DeleteAllRecipesUseCase,
         private val deleteAllIngredientsUseCase: DeleteAllIngredientsUseCase,
-        private val settingsRepository: SettingsRepository,
+        private val observeThemeModeUseCase: ObserveThemeModeUseCase,
+        private val setThemeModeUseCase: SetThemeModeUseCase,
+        private val observeNotificationEnabledUseCase: ObserveNotificationEnabledUseCase,
+        private val setNotificationEnabledUseCase: SetNotificationEnabledUseCase,
+        private val observeExcludedIngredientsUseCase: ObserveExcludedIngredientsUseCase,
+        private val setExcludedIngredientsUseCase: SetExcludedIngredientsUseCase,
     ) : ViewModel() {
         private val internalState = MutableStateFlow(SettingsUiState())
         private val _isLoading = MutableStateFlow(true)
@@ -35,9 +45,9 @@ class SettingsViewModel
         val uiState: StateFlow<SettingsUiState> =
             combine(
                 internalState,
-                settingsRepository.themeMode,
-                settingsRepository.isNotificationEnabled,
-                settingsRepository.excludedIngredients,
+                observeThemeModeUseCase(),
+                observeNotificationEnabledUseCase(),
+                observeExcludedIngredientsUseCase(),
             ) { state, currentThemeMode, isNotiEnabled, excludedSet ->
 
                 val isDarkMode =
@@ -62,17 +72,17 @@ class SettingsViewModel
 
         fun syncNotificationState(isSystemPermissionGranted: Boolean) {
             viewModelScope.launch {
-                val currentEnabled = settingsRepository.isNotificationEnabled.first()
+                val currentEnabled = observeNotificationEnabledUseCase().first()
 
                 if (!isSystemPermissionGranted && currentEnabled) {
-                    settingsRepository.setNotificationEnabled(false)
+                    setNotificationEnabledUseCase(false)
                 }
             }
         }
 
         fun toggleNotification(isEnabled: Boolean) {
             viewModelScope.launch {
-                settingsRepository.setNotificationEnabled(isEnabled)
+                setNotificationEnabledUseCase(isEnabled)
             }
         }
 
@@ -92,7 +102,7 @@ class SettingsViewModel
                         true -> ThemeMode.DARK
                         null -> ThemeMode.SYSTEM
                     }
-                settingsRepository.setThemeMode(mode)
+                setThemeModeUseCase(mode)
             }
         }
 
@@ -107,7 +117,7 @@ class SettingsViewModel
             if (newItem.isNotBlank() && newItem !in currentList) {
                 viewModelScope.launch {
                     val newSet = currentList.toSet() + newItem
-                    settingsRepository.setExcludedIngredients(newSet)
+                    setExcludedIngredientsUseCase(newSet)
                     internalState.update { it.copy(newExcludedIngredient = "") }
                 }
             }
@@ -117,7 +127,7 @@ class SettingsViewModel
             viewModelScope.launch {
                 val currentList = uiState.value.excludedIngredients
                 val newSet = currentList.toSet() - item
-                settingsRepository.setExcludedIngredients(newSet)
+                setExcludedIngredientsUseCase(newSet)
             }
         }
 

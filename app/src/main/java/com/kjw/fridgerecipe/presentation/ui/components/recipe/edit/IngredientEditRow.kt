@@ -23,8 +23,10 @@ fun IngredientEditRow(
     onEssentialChange: (Boolean) -> Unit,
     name: String,
     onNameChange: (String) -> Unit,
+    isNameError: Boolean = false,
     quantity: String,
     onQuantityChange: (String) -> Unit,
+    isQuantityError: Boolean = false,
     onRemoveClick: () -> Unit,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -33,6 +35,7 @@ fun IngredientEditRow(
         CommonTextField(
             value = name,
             onValueChange = onNameChange,
+            isError = isNameError,
             label = stringResource(R.string.recipe_edit_label_ingredient_name),
             modifier = Modifier.weight(1f),
         )
@@ -42,6 +45,7 @@ fun IngredientEditRow(
         CommonTextField(
             value = quantity,
             onValueChange = onQuantityChange,
+            isError = isQuantityError,
             label = stringResource(R.string.recipe_edit_label_ingredient_qty),
             modifier = Modifier.weight(0.6f),
         )

@@ -53,7 +53,7 @@ class ExpirationCheckWorker
                         Result.success()
                     }
                     is DataResult.Error -> {
-                        android.util.Log.e("ExpirationCheckWorker", "Failed to load ingredients: ${result.message}")
+                        android.util.Log.e("ExpirationCheckWorker", "Failed to load ingredients: ${result.error}")
                         Result.retry() // 에러 시 재시도
                     }
                     else -> Result.failure()

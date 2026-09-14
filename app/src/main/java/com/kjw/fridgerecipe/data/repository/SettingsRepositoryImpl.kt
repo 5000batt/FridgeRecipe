@@ -1,6 +1,5 @@
 package com.kjw.fridgerecipe.data.repository
 
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -30,19 +29,17 @@ class SettingsRepositoryImpl
             val IS_FIRST_LAUNCH = booleanPreferencesKey("is_first_launch")
         }
 
-        override val themeMode: Flow<ThemeMode> =
+        private fun <T> dataStoreFlow(
+            key: Preferences.Key<T>,
+            default: T,
+        ): Flow<T> =
             dataStore.data
-                .catch { exception ->
-                    if (exception is IOException) {
-                        Log.e("SettingsRepo", "Error reading preferences", exception)
-                        emit(emptyPreferences())
-                    } else {
-                        throw exception
-                    }
-                }.map { preferences ->
-                    val modeValue = preferences[PreferencesKeys.THEME_MODE] ?: ThemeMode.SYSTEM.value
-                    ThemeMode.fromValue(modeValue)
-                }
+                .catch { e -> if (e is IOException) emit(emptyPreferences()) else throw e }
+                .map { prefs -> prefs[key] ?: default }
+
+        override val themeMode: Flow<ThemeMode> =
+            dataStoreFlow(PreferencesKeys.THEME_MODE, ThemeMode.SYSTEM.value)
+                .map { ThemeMode.fromValue(it) }
 
         override suspend fun setThemeMode(mode: ThemeMode) {
             dataStore.edit { preferences ->
@@ -51,16 +48,7 @@ class SettingsRepositoryImpl
         }
 
         override val isNotificationEnabled: Flow<Boolean> =
-            dataStore.data
-                .catch { exception ->
-                    if (exception is IOException) {
-                        emit(emptyPreferences())
-                    } else {
-                        throw exception
-                    }
-                }.map { preferences ->
-                    preferences[PreferencesKeys.NOTIFICATION_ENABLED] ?: true
-                }
+            dataStoreFlow(PreferencesKeys.NOTIFICATION_ENABLED, true)
 
         override suspend fun setNotificationEnabled(enabled: Boolean) {
             dataStore.edit { preferences ->
@@ -69,16 +57,7 @@ class SettingsRepositoryImpl
         }
 
         override val excludedIngredients: Flow<Set<String>> =
-            dataStore.data
-                .catch { exception ->
-                    if (exception is IOException) {
-                        emit(emptyPreferences())
-                    } else {
-                        throw exception
-                    }
-                }.map { preferences ->
-                    preferences[PreferencesKeys.EXCLUDED_INGREDIENTS] ?: emptySet()
-                }
+            dataStoreFlow(PreferencesKeys.EXCLUDED_INGREDIENTS, emptySet<String>())
 
         override suspend fun setExcludedIngredients(ingredients: Set<String>) {
             dataStore.edit { preferences ->
@@ -87,16 +66,7 @@ class SettingsRepositoryImpl
         }
 
         override val isIngredientCheckSkip: Flow<Boolean> =
-            dataStore.data
-                .catch { exception ->
-                    if (exception is IOException) {
-                        emit(emptyPreferences())
-                    } else {
-                        throw exception
-                    }
-                }.map { preferences ->
-                    preferences[PreferencesKeys.INGREDIENT_CHECK_SKIP] ?: false
-                }
+            dataStoreFlow(PreferencesKeys.INGREDIENT_CHECK_SKIP, false)
 
         override suspend fun setIngredientCheckSkip(isSkip: Boolean) {
             dataStore.edit { preferences ->
@@ -105,16 +75,7 @@ class SettingsRepositoryImpl
         }
 
         override val isFirstLaunch: Flow<Boolean> =
-            dataStore.data
-                .catch { exception ->
-                    if (exception is IOException) {
-                        emit(emptyPreferences())
-                    } else {
-                        throw exception
-                    }
-                }.map { preferences ->
-                    preferences[PreferencesKeys.IS_FIRST_LAUNCH] ?: true
-                }
+            dataStoreFlow(PreferencesKeys.IS_FIRST_LAUNCH, true)
 
         override suspend fun setFirstLaunchComplete() {
             dataStore.edit { preferences ->

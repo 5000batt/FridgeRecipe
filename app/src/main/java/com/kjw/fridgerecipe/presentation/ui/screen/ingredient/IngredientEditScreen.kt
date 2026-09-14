@@ -50,7 +50,6 @@ import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IconSelectionS
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientDetailFields
 import com.kjw.fridgerecipe.presentation.ui.components.ingredient.IngredientInputFields
 import com.kjw.fridgerecipe.presentation.ui.model.IngredientValidationField
-import com.kjw.fridgerecipe.presentation.ui.model.OperationResult
 import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.presentation.viewmodel.IngredientEditViewModel
 import java.time.Instant
@@ -112,24 +111,17 @@ fun IngredientEditScreen(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.operationResultEvent.collect { result ->
-            when (result) {
-                is OperationResult.Success -> {
-                    onShowSnackbar(result.message.asString(context), SnackbarType.SUCCESS)
+        viewModel.sideEffect.collect { effect ->
+            when (effect) {
+                is IngredientEditViewModel.IngredientEditSideEffect.ShowSnackbar ->
+                    onShowSnackbar(effect.message.asString(context), effect.type)
+                is IngredientEditViewModel.IngredientEditSideEffect.NavigateBack ->
                     onNavigateBack()
-                }
-                is OperationResult.Failure -> {
-                    onShowSnackbar(result.message.asString(context), SnackbarType.ERROR)
-                }
-            }
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.validationEvent.collect { field ->
-            when (field) {
-                IngredientValidationField.NAME -> nameFocusRequester.requestFocus()
-                IngredientValidationField.AMOUNT -> amountFocusRequester.requestFocus()
+                is IngredientEditViewModel.IngredientEditSideEffect.ScrollToField ->
+                    when (effect.field) {
+                        IngredientValidationField.NAME -> nameFocusRequester.requestFocus()
+                        IngredientValidationField.AMOUNT -> amountFocusRequester.requestFocus()
+                    }
             }
         }
     }

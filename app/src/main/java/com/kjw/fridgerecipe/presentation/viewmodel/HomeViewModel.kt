@@ -3,22 +3,31 @@ package com.kjw.fridgerecipe.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kjw.fridgerecipe.R
-import com.kjw.fridgerecipe.data.repository.TicketRepository
 import com.kjw.fridgerecipe.domain.model.CookingToolType
 import com.kjw.fridgerecipe.domain.model.Ingredient
 import com.kjw.fridgerecipe.domain.model.IngredientCategoryType
 import com.kjw.fridgerecipe.domain.model.LevelType
 import com.kjw.fridgerecipe.domain.model.RecipeCategoryType
-import com.kjw.fridgerecipe.domain.model.TicketException
-import com.kjw.fridgerecipe.domain.repository.SettingsRepository
+import com.kjw.fridgerecipe.domain.usecase.AddTicketUseCase
+import com.kjw.fridgerecipe.domain.usecase.CheckAndResetTicketUseCase
 import com.kjw.fridgerecipe.domain.usecase.CheckIngredientConflictsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetIngredientsUseCase
 import com.kjw.fridgerecipe.domain.usecase.GetRecommendedRecipeUseCase
+import com.kjw.fridgerecipe.domain.usecase.ObserveExcludedIngredientsUseCase
+import com.kjw.fridgerecipe.domain.usecase.ObserveFirstLaunchUseCase
+import com.kjw.fridgerecipe.domain.usecase.ObserveIngredientCheckSkipUseCase
+import com.kjw.fridgerecipe.domain.usecase.ObserveTicketCountUseCase
+import com.kjw.fridgerecipe.domain.usecase.SetFirstLaunchCompleteUseCase
+import com.kjw.fridgerecipe.domain.usecase.SetIngredientCheckSkipUseCase
+import com.kjw.fridgerecipe.domain.usecase.SetNotificationEnabledUseCase
+import com.kjw.fridgerecipe.domain.usecase.UseTicketUseCase
+import com.kjw.fridgerecipe.domain.util.DataError
 import com.kjw.fridgerecipe.domain.util.DataResult
 import com.kjw.fridgerecipe.presentation.ui.model.ErrorDialogState
 import com.kjw.fridgerecipe.presentation.ui.model.HomeUiState
 import com.kjw.fridgerecipe.presentation.ui.model.RecipeFilterState
 import com.kjw.fridgerecipe.presentation.util.RecipeConstants.FILTER_ANY
+import com.kjw.fridgerecipe.presentation.util.SnackbarType
 import com.kjw.fridgerecipe.presentation.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -28,6 +37,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -40,8 +50,16 @@ class HomeViewModel
         private val getIngredientsUseCase: GetIngredientsUseCase,
         private val getRecommendedRecipeUseCase: GetRecommendedRecipeUseCase,
         private val checkIngredientConflictsUseCase: CheckIngredientConflictsUseCase,
-        private val settingsRepository: SettingsRepository,
-        private val ticketRepository: TicketRepository,
+        private val observeIngredientCheckSkipUseCase: ObserveIngredientCheckSkipUseCase,
+        private val observeFirstLaunchUseCase: ObserveFirstLaunchUseCase,
+        private val observeExcludedIngredientsUseCase: ObserveExcludedIngredientsUseCase,
+        private val setFirstLaunchCompleteUseCase: SetFirstLaunchCompleteUseCase,
+        private val setNotificationEnabledUseCase: SetNotificationEnabledUseCase,
+        private val setIngredientCheckSkipUseCase: SetIngredientCheckSkipUseCase,
+        private val observeTicketCountUseCase: ObserveTicketCountUseCase,
+        private val checkAndResetTicketUseCase: CheckAndResetTicketUseCase,
+        private val useTicketUseCase: UseTicketUseCase,
+        private val addTicketUseCase: AddTicketUseCase,
     ) : ViewModel() {
         sealed interface HomeSideEffect {
             data class NavigateToRecipeDetail(
@@ -50,6 +68,7 @@ class HomeViewModel
 
             data class ShowSnackbar(
                 val message: UiText,
+                val type: SnackbarType = SnackbarType.SUCCESS,
             ) : HomeSideEffect
         }
 
@@ -104,7 +123,7 @@ class HomeViewModel
 
         private fun observeTickets() {
             viewModelScope.launch {
-                ticketRepository.ticketCount.collect { count ->
+                observeTicketCountUseCase().collect { count ->
                     _homeUiState.update { it.copy(remainingTickets = count) }
                 }
             }
@@ -112,35 +131,38 @@ class HomeViewModel
 
         fun checkTicketReset() {
             viewModelScope.launch {
-                ticketRepository.checkAndResetTicket()
+                checkAndResetTicketUseCase()
             }
         }
 
         private fun observeSettings() {
             viewModelScope.launch {
-                settingsRepository.isIngredientCheckSkip.collect { isSkip ->
-                    _homeUiState.update { it.copy(isIngredientCheckSkip = isSkip) }
-                }
-            }
-
-            viewModelScope.launch {
-                settingsRepository.isFirstLaunch.collect { isFirst ->
-                    _homeUiState.update { it.copy(isFirstLaunch = isFirst) }
-                }
+                combine(
+                    observeIngredientCheckSkipUseCase(),
+                    observeFirstLaunchUseCase(),
+                ) { isSkip, isFirst -> isSkip to isFirst }
+                    .collect { (isSkip, isFirst) ->
+                        _homeUiState.update {
+                            it.copy(
+                                isIngredientCheckSkip = isSkip,
+                                isFirstLaunch = isFirst,
+                            )
+                        }
+                    }
             }
         }
 
         // 가이드 완료 시 호출
         fun completeOnboarding() {
             viewModelScope.launch {
-                settingsRepository.setFirstLaunchComplete()
+                setFirstLaunchCompleteUseCase()
             }
         }
 
         // 알림 권한 여부
         fun setNotificationEnabled(isEnabled: Boolean) {
             viewModelScope.launch {
-                settingsRepository.setNotificationEnabled(isEnabled)
+                setNotificationEnabledUseCase(isEnabled)
             }
         }
 
@@ -166,7 +188,7 @@ class HomeViewModel
         fun onConfirmIngredientCheck(doNotShowAgain: Boolean) {
             _homeUiState.update { it.copy(showIngredientCheckDialog = false) }
             if (doNotShowAgain) {
-                viewModelScope.launch { settingsRepository.setIngredientCheckSkip(true) }
+                viewModelScope.launch { setIngredientCheckSkipUseCase(true) }
             }
             checkIngredientConflicts()
         }
@@ -199,13 +221,13 @@ class HomeViewModel
 
         fun testAddTicket() {
             viewModelScope.launch {
-                ticketRepository.addTicket(3)
+                addTicketUseCase(3)
             }
         }
 
         fun testUseTicket() {
             viewModelScope.launch {
-                ticketRepository.useTicket()
+                useTicketUseCase()
             }
         }
 
@@ -213,7 +235,6 @@ class HomeViewModel
             _homeUiState.update { it.copy(showConflictDialog = false, conflictIngredients = emptyList()) }
 
             viewModelScope.launch {
-                var isTicketUsed = false
                 val startTime = System.currentTimeMillis()
                 val minDataLoadingTime = 3000L // 최소 데이터 로딩 시간
                 val minAdDisplayTime = 2500L // 광고 로드 후 최소 노출 시간
@@ -232,31 +253,25 @@ class HomeViewModel
                         currentIngredientsQuery = ingredientsQuery
                     }
 
-                    val excludedList = settingsRepository.excludedIngredients.first().toList()
+                    val excludedList = observeExcludedIngredientsUseCase().first().toList()
                     val selectedIngredientNames = selectedIngredients.map { it.name }
                     val finalExcludedList = excludedList.filter { it !in selectedIngredientNames }
 
                     val currentFilters = _homeUiState.value.filterState
+                    val domainTimeFilter = if (currentFilters.timeLimit == FILTER_ANY) null else currentFilters.timeLimit
 
                     // 레시피 데이터 호출
                     val result =
                         getRecommendedRecipeUseCase(
                             ingredients = selectedIngredients,
+                            ingredientsQuery = ingredientsQuery,
                             seenIds = seenRecipeIds.value,
-                            timeFilter = currentFilters.timeLimit,
+                            timeFilter = domainTimeFilter,
                             level = currentFilters.level,
                             categoryFilter = currentFilters.category,
                             cookingToolFilter = currentFilters.cookingTool,
                             useOnlySelected = currentFilters.useOnlySelected,
                             excludedIngredients = finalExcludedList,
-                            onAiCall = {
-                                if (_homeUiState.value.remainingTickets <= 0) {
-                                    _homeUiState.update { it.copy(showAdDialog = true, isRecipeLoading = false) }
-                                    throw TicketException.Exhausted
-                                }
-                                ticketRepository.useTicket()
-                                isTicketUsed = true
-                            },
                         )
 
                     // 최소 레시피 데이터 로딩 시간 대기
@@ -278,37 +293,50 @@ class HomeViewModel
 
                     when (result) {
                         is DataResult.Success -> {
-                            val newRecipe = result.data
+                            val newRecipe = result.data.recipe
+                            val isFromCache = result.data.isFromCache
+
                             _homeUiState.update { it.copy(recommendedRecipe = newRecipe, isRecipeLoading = false) }
 
                             newRecipe.id?.let { recipeId ->
                                 seenRecipeIds.value = seenRecipeIds.value + recipeId
                                 _sideEffect.emit(HomeSideEffect.NavigateToRecipeDetail(recipeId))
 
-                                if (!isTicketUsed) {
+                                if (isFromCache) {
                                     _sideEffect.emit(HomeSideEffect.ShowSnackbar(UiText.StringResource(R.string.msg_recipe_found_saved)))
                                 }
                             }
                         }
                         is DataResult.Error -> {
-                            if (isTicketUsed) ticketRepository.addTicket(1)
+                            if (result.error == DataError.TICKET_EXHAUSTED) {
+                                _homeUiState.update { it.copy(showAdDialog = true, isRecipeLoading = false) }
+                                return@launch
+                            }
+
+                            val (titleRes, messageRes) =
+                                when (result.error) {
+                                    DataError.QUOTA_EXCEEDED -> R.string.error_title_quota to R.string.error_msg_quota
+                                    DataError.SERVER_ERROR -> R.string.error_title_server to R.string.error_msg_server
+                                    DataError.API_KEY_ERROR -> R.string.error_title_update to R.string.error_msg_update
+                                    DataError.PARSING_ERROR -> R.string.error_title_parsing to R.string.error_msg_parsing
+                                    DataError.NETWORK_ERROR -> R.string.error_title_network to R.string.error_msg_network
+                                    DataError.RESPONSE_BLOCKED -> R.string.error_title_blocked to R.string.error_msg_blocked
+                                    else -> R.string.error_title_generic to R.string.error_msg_generic
+                                }
+
                             _homeUiState.update {
                                 it.copy(
                                     isRecipeLoading = false,
                                     errorDialogState =
                                         ErrorDialogState(
-                                            title = result.title ?: UiText.StringResource(R.string.error_title_generic),
-                                            message = result.message,
+                                            title = UiText.StringResource(titleRes),
+                                            message = UiText.StringResource(messageRes),
                                         ),
                                 )
                             }
                         }
-                        else -> _homeUiState.update { it.copy(isRecipeLoading = false) }
                     }
-                } catch (e: TicketException.Exhausted) {
-                    // 티켓 소진 시 조용히 중단
                 } catch (e: Exception) {
-                    if (isTicketUsed) ticketRepository.addTicket(1)
                     _homeUiState.update {
                         it.copy(
                             isRecipeLoading = false,
@@ -368,7 +396,7 @@ class HomeViewModel
 
         fun onAdWatched() {
             viewModelScope.launch {
-                ticketRepository.addTicket(1)
+                addTicketUseCase(1)
                 dismissAdDialog()
             }
         }
