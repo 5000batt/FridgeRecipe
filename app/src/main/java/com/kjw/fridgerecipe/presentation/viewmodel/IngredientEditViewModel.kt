@@ -183,7 +183,12 @@ class IngredientEditViewModel
                                 _sideEffect.emit(IngredientEditSideEffect.ShowSnackbar(uiErrorMessage, SnackbarType.ERROR))
                             }
                             else -> {
-                                _sideEffect.emit(IngredientEditSideEffect.ShowSnackbar(UiText.StringResource(R.string.error_msg_generic), SnackbarType.ERROR))
+                                _sideEffect.emit(
+                                    IngredientEditSideEffect.ShowSnackbar(
+                                        UiText.StringResource(R.string.error_msg_generic),
+                                        SnackbarType.ERROR,
+                                    ),
+                                )
                             }
                         }
                     }
@@ -197,7 +202,9 @@ class IngredientEditViewModel
                     val result = delIngredientUseCase(it)
                     when (result) {
                         is DataResult.Success -> {
-                            _sideEffect.emit(IngredientEditSideEffect.ShowSnackbar(UiText.StringResource(R.string.msg_deleted), SnackbarType.SUCCESS))
+                            _sideEffect.emit(
+                                IngredientEditSideEffect.ShowSnackbar(UiText.StringResource(R.string.msg_deleted), SnackbarType.SUCCESS),
+                            )
                             _sideEffect.emit(IngredientEditSideEffect.NavigateBack)
                         }
                         is DataResult.Error -> {

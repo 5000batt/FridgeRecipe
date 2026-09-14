@@ -97,7 +97,9 @@ class RecipeEditViewModel
                         val savedPath = result.data
                         _editUiState.update { state -> state.copy(imageUri = savedPath) }
                     } else if (result is DataResult.Error) {
-                        _sideEffect.emit(RecipeEditSideEffect.ShowSnackbar(UiText.StringResource(R.string.error_msg_generic), SnackbarType.ERROR))
+                        _sideEffect.emit(
+                            RecipeEditSideEffect.ShowSnackbar(UiText.StringResource(R.string.error_msg_generic), SnackbarType.ERROR),
+                        )
                     }
                 }
             }
@@ -187,7 +189,12 @@ class RecipeEditViewModel
                                 _sideEffect.emit(RecipeEditSideEffect.ShowSnackbar(uiErrorMessage, SnackbarType.ERROR))
                             }
                             else -> {
-                                _sideEffect.emit(RecipeEditSideEffect.ShowSnackbar(UiText.StringResource(R.string.error_msg_generic), SnackbarType.ERROR))
+                                _sideEffect.emit(
+                                    RecipeEditSideEffect.ShowSnackbar(
+                                        UiText.StringResource(R.string.error_msg_generic),
+                                        SnackbarType.ERROR,
+                                    ),
+                                )
                             }
                         }
                     }
@@ -201,7 +208,9 @@ class RecipeEditViewModel
                     val result = delRecipeUseCase(it)
                     when (result) {
                         is DataResult.Success -> {
-                            _sideEffect.emit(RecipeEditSideEffect.ShowSnackbar(UiText.StringResource(R.string.msg_deleted), SnackbarType.SUCCESS))
+                            _sideEffect.emit(
+                                RecipeEditSideEffect.ShowSnackbar(UiText.StringResource(R.string.msg_deleted), SnackbarType.SUCCESS),
+                            )
                             _sideEffect.emit(RecipeEditSideEffect.NavigateToList)
                         }
                         is DataResult.Error -> {

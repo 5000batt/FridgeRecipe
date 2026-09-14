@@ -14,10 +14,12 @@ fun Recipe.validate(): DataResult<Unit> {
     if (servings <= 0) return DataResult.Error(DataError.RECIPE_INVALID_SERVINGS)
     if (time <= 0) return DataResult.Error(DataError.RECIPE_INVALID_TIME)
     if (ingredients.isEmpty()) return DataResult.Error(DataError.RECIPE_EMPTY_INGREDIENTS)
-    if (ingredients.any { it.name.isBlank() || it.quantity.isBlank() })
+    if (ingredients.any { it.name.isBlank() || it.quantity.isBlank() }) {
         return DataResult.Error(DataError.RECIPE_INVALID_INGREDIENT_ITEM)
+    }
     if (steps.isEmpty()) return DataResult.Error(DataError.RECIPE_EMPTY_STEPS)
-    if (steps.any { it.description.isBlank() })
+    if (steps.any { it.description.isBlank() }) {
         return DataResult.Error(DataError.RECIPE_INVALID_STEP_ITEM)
+    }
     return DataResult.Success(Unit)
 }

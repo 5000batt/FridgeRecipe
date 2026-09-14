@@ -117,14 +117,15 @@ class RecipeRepositoryImpl
             useOnlySelected: Boolean,
         ): DataResult<List<Recipe>> =
             safeDbCall {
-                recipeDao.findRecipesByFilters(
-                    ingredientsQuery = ingredientsQuery,
-                    category = categoryFilter,
-                    cookingTool = cookingToolFilter,
-                    timeFilter = timeFilter,
-                    level = level,
-                    useOnlySelected = useOnlySelected,
-                ).map { it.toDomainModel() }
+                recipeDao
+                    .findRecipesByFilters(
+                        ingredientsQuery = ingredientsQuery,
+                        category = categoryFilter,
+                        cookingTool = cookingToolFilter,
+                        timeFilter = timeFilter,
+                        level = level,
+                        useOnlySelected = useOnlySelected,
+                    ).map { it.toDomainModel() }
             }
 
         override suspend fun insertRecipe(recipe: Recipe): DataResult<Long> =
@@ -136,6 +137,5 @@ class RecipeRepositoryImpl
         override suspend fun deleteRecipe(recipe: Recipe): DataResult<Unit> =
             safeDbCall(DataError.DELETE_FAILED) { recipeDao.deleteRecipe(recipe.toEntity()) }
 
-        override suspend fun deleteAllRecipes(): DataResult<Unit> =
-            safeDbCall(DataError.DELETE_FAILED) { recipeDao.deleteAllRecipes() }
+        override suspend fun deleteAllRecipes(): DataResult<Unit> = safeDbCall(DataError.DELETE_FAILED) { recipeDao.deleteAllRecipes() }
     }

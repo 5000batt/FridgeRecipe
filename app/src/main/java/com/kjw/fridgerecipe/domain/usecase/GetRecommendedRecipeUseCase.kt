@@ -34,7 +34,6 @@ class GetRecommendedRecipeUseCase
             useOnlySelected: Boolean,
             excludedIngredients: List<String> = emptyList(),
         ): DataResult<RecommendedRecipeResult> {
-
             // 1. 캐시 확인
             val cachedResult =
                 recipeRepository.findRecipesByFilters(

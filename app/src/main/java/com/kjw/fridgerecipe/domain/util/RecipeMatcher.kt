@@ -25,15 +25,19 @@ class RecipeMatcher
 
         @Volatile private var cachedSynonyms: Map<String, String>? = null
 
-        private fun getRemoteSynonyms(): Map<String, String> =
-            cachedSynonyms ?: parseSynonyms().also { cachedSynonyms = it }
+        private fun getRemoteSynonyms(): Map<String, String> = cachedSynonyms ?: parseSynonyms().also { cachedSynonyms = it }
 
         private fun parseSynonyms(): Map<String, String> =
             try {
                 val jsonString = remoteConfig.getString("ingredient_synonyms")
-                if (jsonString.isBlank()) emptyMap()
-                else jsonParser.parseToJsonElement(jsonString).jsonObject
-                    .mapValues { it.value.jsonPrimitive.content }
+                if (jsonString.isBlank()) {
+                    emptyMap()
+                } else {
+                    jsonParser
+                        .parseToJsonElement(jsonString)
+                        .jsonObject
+                        .mapValues { it.value.jsonPrimitive.content }
+                }
             } catch (e: Exception) {
                 emptyMap()
             }

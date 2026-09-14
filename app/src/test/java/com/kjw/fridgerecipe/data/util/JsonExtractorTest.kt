@@ -6,7 +6,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class JsonExtractorTest {
-
     // ── 코드블록 경로 ───────────────────────────────────────────────────────
 
     @Test

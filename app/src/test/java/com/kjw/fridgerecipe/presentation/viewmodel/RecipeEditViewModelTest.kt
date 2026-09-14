@@ -26,7 +26,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class RecipeEditViewModelTest {
-
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
@@ -38,122 +37,130 @@ class RecipeEditViewModelTest {
 
     private lateinit var viewModel: RecipeEditViewModel
 
-    private val fakeRecipe = Recipe(
-        id = 1L,
-        title = "테스트 레시피",
-        servings = 2,
-        time = 30,
-        level = LevelType.BEGINNER,
-        ingredients = emptyList(),
-        steps = emptyList(),
-    )
+    private val fakeRecipe =
+        Recipe(
+            id = 1L,
+            title = "테스트 레시피",
+            servings = 2,
+            time = 30,
+            level = LevelType.BEGINNER,
+            ingredients = emptyList(),
+            steps = emptyList(),
+        )
 
     @Before
     fun setup() {
-        viewModel = RecipeEditViewModel(
-            getSavedRecipeByIdUseCase = getSavedRecipeByIdUseCase,
-            insertRecipeUseCase = insertRecipeUseCase,
-            updateRecipeUseCase = updateRecipeUseCase,
-            delRecipeUseCase = delRecipeUseCase,
-            saveRecipeImageUseCase = saveRecipeImageUseCase,
-            mapper = RecipeUiMapper(),
-        )
+        viewModel =
+            RecipeEditViewModel(
+                getSavedRecipeByIdUseCase = getSavedRecipeByIdUseCase,
+                insertRecipeUseCase = insertRecipeUseCase,
+                updateRecipeUseCase = updateRecipeUseCase,
+                delRecipeUseCase = delRecipeUseCase,
+                saveRecipeImageUseCase = saveRecipeImageUseCase,
+                mapper = RecipeUiMapper(),
+            )
     }
 
     // ── 저장 성공 ──────────────────────────────────────────────────────────
 
     @Test
-    fun `신규 저장 성공 시 ShowSnackbar SUCCESS 후 NavigateBack 순서로 emit`() = runTest {
-        coEvery { insertRecipeUseCase(any()) } returns DataResult.Success(1L)
+    fun `신규 저장 성공 시 ShowSnackbar SUCCESS 후 NavigateBack 순서로 emit`() =
+        runTest {
+            coEvery { insertRecipeUseCase(any()) } returns DataResult.Success(1L)
 
-        viewModel.sideEffect.test {
-            viewModel.onSaveOrUpdateRecipe(isEditMode = false)
+            viewModel.sideEffect.test {
+                viewModel.onSaveOrUpdateRecipe(isEditMode = false)
 
-            val first = awaitItem()
-            assertIs<RecipeEditViewModel.RecipeEditSideEffect.ShowSnackbar>(first)
-            assertEquals(SnackbarType.SUCCESS, first.type)
+                val first = awaitItem()
+                assertIs<RecipeEditViewModel.RecipeEditSideEffect.ShowSnackbar>(first)
+                assertEquals(SnackbarType.SUCCESS, first.type)
 
-            assertIs<RecipeEditViewModel.RecipeEditSideEffect.NavigateBack>(awaitItem())
+                assertIs<RecipeEditViewModel.RecipeEditSideEffect.NavigateBack>(awaitItem())
+            }
         }
-    }
 
     // ── 유효성 오류 ────────────────────────────────────────────────────────
 
     @Test
-    fun `제목 오류 시 ScrollToField TITLE emit`() = runTest {
-        coEvery { insertRecipeUseCase(any()) } returns DataResult.Error(DataError.RECIPE_EMPTY_TITLE)
+    fun `제목 오류 시 ScrollToField TITLE emit`() =
+        runTest {
+            coEvery { insertRecipeUseCase(any()) } returns DataResult.Error(DataError.RECIPE_EMPTY_TITLE)
 
-        viewModel.sideEffect.test {
-            viewModel.onSaveOrUpdateRecipe(isEditMode = false)
+            viewModel.sideEffect.test {
+                viewModel.onSaveOrUpdateRecipe(isEditMode = false)
 
-            val effect = awaitItem()
-            assertIs<RecipeEditViewModel.RecipeEditSideEffect.ScrollToField>(effect)
-            assertEquals(RecipeValidationField.TITLE, effect.field)
+                val effect = awaitItem()
+                assertIs<RecipeEditViewModel.RecipeEditSideEffect.ScrollToField>(effect)
+                assertEquals(RecipeValidationField.TITLE, effect.field)
+            }
         }
-    }
 
     @Test
-    fun `재료 비어있음 오류 시 ScrollToField INGREDIENTS emit`() = runTest {
-        coEvery { insertRecipeUseCase(any()) } returns DataResult.Error(DataError.RECIPE_EMPTY_INGREDIENTS)
+    fun `재료 비어있음 오류 시 ScrollToField INGREDIENTS emit`() =
+        runTest {
+            coEvery { insertRecipeUseCase(any()) } returns DataResult.Error(DataError.RECIPE_EMPTY_INGREDIENTS)
 
-        viewModel.sideEffect.test {
-            viewModel.onSaveOrUpdateRecipe(isEditMode = false)
+            viewModel.sideEffect.test {
+                viewModel.onSaveOrUpdateRecipe(isEditMode = false)
 
-            val effect = awaitItem()
-            assertIs<RecipeEditViewModel.RecipeEditSideEffect.ScrollToField>(effect)
-            assertEquals(RecipeValidationField.INGREDIENTS, effect.field)
+                val effect = awaitItem()
+                assertIs<RecipeEditViewModel.RecipeEditSideEffect.ScrollToField>(effect)
+                assertEquals(RecipeValidationField.INGREDIENTS, effect.field)
+            }
         }
-    }
 
     // ── DB 오류 ────────────────────────────────────────────────────────────
 
     @Test
-    fun `DB 저장 실패 시 ShowSnackbar ERROR emit`() = runTest {
-        coEvery { insertRecipeUseCase(any()) } returns DataResult.Error(DataError.SAVE_FAILED)
+    fun `DB 저장 실패 시 ShowSnackbar ERROR emit`() =
+        runTest {
+            coEvery { insertRecipeUseCase(any()) } returns DataResult.Error(DataError.SAVE_FAILED)
 
-        viewModel.sideEffect.test {
-            viewModel.onSaveOrUpdateRecipe(isEditMode = false)
+            viewModel.sideEffect.test {
+                viewModel.onSaveOrUpdateRecipe(isEditMode = false)
 
-            val effect = awaitItem()
-            assertIs<RecipeEditViewModel.RecipeEditSideEffect.ShowSnackbar>(effect)
-            assertEquals(SnackbarType.ERROR, effect.type)
+                val effect = awaitItem()
+                assertIs<RecipeEditViewModel.RecipeEditSideEffect.ShowSnackbar>(effect)
+                assertEquals(SnackbarType.ERROR, effect.type)
+            }
         }
-    }
 
     // ── 삭제 ───────────────────────────────────────────────────────────────
 
     @Test
-    fun `삭제 성공 시 ShowSnackbar SUCCESS 후 NavigateToList 순서로 emit`() = runTest {
-        coEvery { getSavedRecipeByIdUseCase(any()) } returns DataResult.Success(fakeRecipe)
-        coEvery { delRecipeUseCase(any()) } returns DataResult.Success(Unit)
+    fun `삭제 성공 시 ShowSnackbar SUCCESS 후 NavigateToList 순서로 emit`() =
+        runTest {
+            coEvery { getSavedRecipeByIdUseCase(any()) } returns DataResult.Success(fakeRecipe)
+            coEvery { delRecipeUseCase(any()) } returns DataResult.Success(Unit)
 
-        viewModel.loadRecipeForEdit(1L)
+            viewModel.loadRecipeForEdit(1L)
 
-        viewModel.sideEffect.test {
-            viewModel.onDeleteRecipe()
+            viewModel.sideEffect.test {
+                viewModel.onDeleteRecipe()
 
-            val first = awaitItem()
-            assertIs<RecipeEditViewModel.RecipeEditSideEffect.ShowSnackbar>(first)
-            assertEquals(SnackbarType.SUCCESS, first.type)
+                val first = awaitItem()
+                assertIs<RecipeEditViewModel.RecipeEditSideEffect.ShowSnackbar>(first)
+                assertEquals(SnackbarType.SUCCESS, first.type)
 
-            assertIs<RecipeEditViewModel.RecipeEditSideEffect.NavigateToList>(awaitItem())
+                assertIs<RecipeEditViewModel.RecipeEditSideEffect.NavigateToList>(awaitItem())
+            }
         }
-    }
 
     // ── 이미지 ─────────────────────────────────────────────────────────────
 
     @Test
-    fun `이미지 저장 실패 시 ShowSnackbar ERROR emit`() = runTest {
-        val mockUri = mockk<Uri>()
-        every { mockUri.toString() } returns "content://test/image"
-        coEvery { saveRecipeImageUseCase(any()) } returns DataResult.Error(DataError.SAVE_FAILED)
+    fun `이미지 저장 실패 시 ShowSnackbar ERROR emit`() =
+        runTest {
+            val mockUri = mockk<Uri>()
+            every { mockUri.toString() } returns "content://test/image"
+            coEvery { saveRecipeImageUseCase(any()) } returns DataResult.Error(DataError.SAVE_FAILED)
 
-        viewModel.sideEffect.test {
-            viewModel.onImageSelected(mockUri)
+            viewModel.sideEffect.test {
+                viewModel.onImageSelected(mockUri)
 
-            val effect = awaitItem()
-            assertIs<RecipeEditViewModel.RecipeEditSideEffect.ShowSnackbar>(effect)
-            assertEquals(SnackbarType.ERROR, effect.type)
+                val effect = awaitItem()
+                assertIs<RecipeEditViewModel.RecipeEditSideEffect.ShowSnackbar>(effect)
+                assertEquals(SnackbarType.ERROR, effect.type)
+            }
         }
-    }
 }
