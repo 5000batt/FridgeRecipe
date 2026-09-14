@@ -2,7 +2,13 @@
 
 > 사용자의 냉장고 속 재료를 기반으로 맞춤형 레시피를 추천해 주는 안드로이드 애플리케이션입니다.
 
-📱 **현재 구글 플레이 스토어 비공개 테스트 진행 중입니다.**
+📱 **구글 플레이 스토어에 출시되었습니다.**
+
+<a href="https://play.google.com/store/apps/details?id=com.kjw.fridgerecipe">
+  <img src="https://img.shields.io/badge/Google_Play-냉파고-414141?logo=googleplay&logoColor=white" alt="Google Play"/>
+</a>
+<img src="https://img.shields.io/badge/version-1.0.8-blue" alt="version"/>
+<img src="https://img.shields.io/badge/minSdk-26-brightgreen" alt="minSdk"/>
 
 <br>
 
@@ -22,8 +28,13 @@
 - **UI:** Jetpack Compose
 - **Architecture:** Clean Architecture, MVVM Pattern
 - **Asynchronous:** Coroutines, Flow
-- **Local Database:** Room
+- **Local Database:** Room, DataStore
 - **Dependency Injection:** Hilt
+- **Background:** WorkManager
+- **AI / Remote:** Firebase Gemini API, Firebase Remote Config
+- **Text Processing:** Komoran (한국어 형태소 분석)
+- **Monetization:** Google Mobile Ads (Banner / Rewarded)
+- **CI/CD:** GitHub Actions, Ktlint, Slack Webhook
 
 <br>
 
@@ -75,6 +86,20 @@
 
 - **Learnings (배운 점)**:
   단순히 기능 구현에만 집중하는 것을 넘어, 파이프라인을 구축해 봄으로써 코드의 무결성을 시스템적으로 보장받는 든든함을 체감했습니다. GitHub Actions의 쉘 스크립트 작성법부터 보안 데이터의 안전한 격리, 그리고 각종 컨벤션 에러를 추적하고 예외 처리하는 과정 전반을 깊이 있게 이해하는 계기가 되었습니다.
+
+#### 4. 서버리스 AI 앱의 비용 구조 설계: 사용량 제한과 리워드 광고
+- **Issue (문제 배경)**:
+  클라이언트가 Gemini API를 직접 호출하는 서버리스 구조는 서버 유지비가 들지 않는 대신, **사용량이 늘어날수록 API 호출 비용이 그대로 개발자 부담으로 누적**되는 구조적 한계를 가지고 있었습니다. 무료로 배포하는 앱인 만큼 사용자가 늘어나는 것이 곧 비용 부담이 되는 상황을, 기능을 제한하지 않으면서 해결할 방법이 필요했습니다.
+
+- **Solution (해결 과정)**:
+  AI 추천 기능에 **티켓(Ticket) 기반 사용량 제어**를 도입했습니다. DataStore에 티켓 잔량을 저장하고(`TicketRepository`), 잔량이 없을 경우 도메인 레이어에서 `TicketException`으로 분기되도록 설계했습니다.
+  여기에 **리워드 광고(Rewarded Ad)를 연동**하여, 사용자가 광고를 시청하면 티켓이 충전되도록 구성했습니다. 사용자는 비용을 지불하지 않고도 기능을 계속 사용할 수 있고, 늘어난 API 호출 비용은 광고 수익으로 상쇄되는 구조입니다.
+  또한 광고 단위 ID(`admob_banner_id`, `admob_reward_id`)까지 Remote Config로 관리하여, 광고 정책이 변경되더라도 앱 업데이트 없이 대응할 수 있도록 했습니다.
+
+- **Learnings (배운 점)**:
+  기능을 '구현'하는 것과 서비스를 '운영'하는 것은 다른 문제라는 것을 체감했습니다. 개인 프로젝트라도 지속 가능하려면 비용 구조를 먼저 설계해야 하며, 기술적 선택이 곧 비즈니스 구조가 된다는 점을 배웠습니다.
+
+<br>
 
 ## 👨‍💻 Developer
 - **곽정원** - Android Developer
